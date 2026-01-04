@@ -1,0 +1,110 @@
+{
+  "system": {
+    "cert_only_mode": false,
+    "enable_brand_keywords": true,
+    "gpu_auto_detect": true,
+    "development_mode": false,
+    "seed": 42,
+    "batch_size": 500
+  },
+  "llm": {
+    "provider": "vllm",
+    "vllm_base_url": "http://192.168.100.71:30000/v1",
+    "vllm_model": "Qwen/Qwen3-14B-FP8",
+    "ollama_base_url": "http://localhost:11434/v1",
+    "ollama_model": "qwen3:14b",
+    "fallback_enabled": true,
+    "temperature": 0.1,
+    "max_tokens": 2000,
+    "enabled": true,
+    "api_key": null,
+    "base_url": "http://192.168.100.71:30000/v1",
+    "model": "Qwen/Qwen3-14B-FP8"
+  },
+  "db": {
+    "dbname": "rapids_data",
+    "user": "postgres",
+    "password": "asomura",
+    "host": "localhost",
+    "port": "5432",
+    "timeout_s": 30,
+    "read_only": true
+  },
+  "DB_CONFIG": {
+    "dbname": "rapids_data",
+    "user": "postgres",
+    "password": "asomura",
+    "host": "localhost",
+    "port": "5432"
+  },
+  "analysis": {
+    "brand_openset": true,
+    "brand_openset_threshold": 0.72,
+    "brand_openset_min_token_len": 5
+  },
+  "brand_keywords": {
+    "dynamic_extraction": true,
+    "min_count": 2,
+    "max_brands": 100,
+    "default_list": []
+  },
+  "paths": {
+    "models_dir": "models",
+    "results_dir": "results",
+    "base_dir": "artifacts"
+  },
+  "engine": {
+    "batch_size": 10000,
+    "gpu_auto_detect": true,
+    "max_concurrent": 20,
+    "max_retries": 3
+  },
+  "visualization": {
+    "enabled": true
+  },
+  "model": {
+    "n_estimators": 300,
+    "max_depth": 8,
+    "learning_rate": 0.1,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "early_stopping_rounds": 20
+  },
+  "tld_analysis": {
+    "enabled": true,
+    "use_all_data": true,
+    "balance_data": true,
+    "sample_size": null,
+    "min_sample_size": 10,
+    "max_dangerous_tlds": 30,
+    "max_legitimate_tlds": 30,
+    "percentile_thresholds": [
+      50,
+      75,
+      90
+    ],
+    "fn_weight": 1.5
+  },
+  "free_ca_list": [
+    "Let's Encrypt",
+    "ZeroSSL",
+    "Cloudflare",
+    "cPanel",
+    "Sectigo",
+    "DigiCert"
+  ],
+  "run_id": null,
+  "session_id": null,
+  "output_dirs": {},
+  "handoff": {},
+  "full_processing": {
+    "mode": "FULL",
+    "batch_size": 100,
+    "max_concurrent": 20,
+    "checkpoint_interval": 500,
+    "retry_failed": true,
+    "max_retries": 3,
+    "save_intermediate": true,
+    "enable_monitoring": true
+  }
+}

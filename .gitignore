@@ -1,0 +1,26 @@
+# python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.dist-info/
+
+# notebooks
+.ipynb_checkpoints/
+
+# env / secrets
+.env
+*.env
+
+# artifacts / outputs (your project)
+artifacts/
+results/
+handoff/
+logs/
+traces/
+*.tgz
+*.zip
+*.pkl
+*.pt
+*.onnx
