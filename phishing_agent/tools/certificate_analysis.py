@@ -152,8 +152,8 @@ def _mitigate_score_for_legit_domain(
     except Exception:
         conf = 0.0
 
-    # no_cert / self_signed を含む場合は「本当におかしい」ので緩和しない
-    severe = ("no_cert" in detected_issues) or ("self_signed" in detected_issues)
+    # self_signed を含む場合は「本当におかしい」ので緩和しない
+    severe = ("self_signed" in detected_issues)
     if severe:
         return risk_score
 
@@ -173,6 +173,7 @@ def _mitigate_score_for_legit_domain(
         return mitigated
 
     return risk_score
+
 
 
 # ------------------------------------------------------------
@@ -197,14 +198,20 @@ def _analyze_certificate_core(domain: str, cert_meta: Optional[Dict[str, Any]], 
         "is_many_san": False,
         "is_self_signed": False,
         "is_wildcard": False,
+        # identity attributes (approximation)
+        "subject_org": None,
+        "validation_level": None,
+        "identity_level": None,
+        "has_ov_ev_like_identity": False,
     }
 
     # --- 1. 証明書メタデータが無い場合（no_cert） --------------------------
     if not cert_meta:
         detected_issues.append("no_cert")
-        risk_score = 0.70  # 以前の 0.30 から強化
+        # データ不足として扱い、単体では high に行かないように抑える
+        risk_score = 0.20  # ← 0.70 ではなく「弱いシグナル」扱い
 
-        # 正規ドメインでも「証明書が無い」は異常なのでスコアは緩和しない
+        # 正規ドメインであればさらに緩和（no_cert 自体は強異常とはみなさない）
         risk_score = _mitigate_score_for_legit_domain(domain, detected_issues, risk_score, details)
 
         return {
@@ -212,7 +219,7 @@ def _analyze_certificate_core(domain: str, cert_meta: Optional[Dict[str, Any]], 
             "detected_issues": detected_issues,
             "risk_score": min(1.0, risk_score),
             "details": details,
-            "reasoning": "Certificate not found (no_cert)",
+            "reasoning": "Certificate metadata not available (treated as low signal, not high risk)",
         }
 
     # --- 2. メタデータあり：正規化して解析 ---------------------------------
@@ -241,6 +248,34 @@ def _analyze_certificate_core(domain: str, cert_meta: Optional[Dict[str, Any]], 
         subj = meta.get("subject", {})
         has_org = isinstance(subj, dict) and bool(subj.get("O") or subj.get("organizationName"))
     details["has_org"] = has_org
+
+    # 2-3b. Optional identity attributes (OV/EV/DV approximation)
+    subj = meta.get("subject", {})
+    subject_org = None
+    try:
+        if isinstance(subj, dict):
+            subject_org = subj.get("O") or subj.get("organizationName") or None
+    except Exception:
+        subject_org = None
+
+    details["subject_org"] = subject_org
+
+    val_level = None
+    for k in ("validation_level", "validation", "cert_type", "type"):
+        v = meta.get(k)
+        if isinstance(v, str) and v.strip():
+            val_level = v.strip()
+            break
+    details["validation_level"] = val_level
+
+    vnorm = str(val_level or "").upper()
+    if vnorm in ("EV", "OV", "DV"):
+        identity_level = vnorm
+    else:
+        # Fallback: any subject organization implies OV/EV-like identity
+        identity_level = "OV" if has_org else "DV"
+    details["identity_level"] = identity_level
+    details["has_ov_ev_like_identity"] = bool(has_org)
 
     # 2-4. SAN 情報
     san_raw = meta.get("san")
@@ -368,6 +403,7 @@ def _analyze_certificate_core(domain: str, cert_meta: Optional[Dict[str, Any]], 
         "details": details,
         "reasoning": reasoning,
     }
+
 
 
 # ------------------------------------------------------------

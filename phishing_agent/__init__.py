@@ -5,6 +5,12 @@ phishing_agent package — Phase1 + Phase2(v1.3 precheck) + Phase3 (tools) unifi
 - Phase3 の 05 連携（外部データローダ）とエージェント入口を保持
 - Python 3.9 互換の型表記（Optional[...] を使用）
 """
+# ---------------------------------------------------------------------
+# Change history
+# - 2026-01-03: dvguard4 - Added a small extra brand keyword seed ("whatsapp")
+#               based on observed TP miss (brand not detected).
+# ---------------------------------------------------------------------
+
 from __future__ import annotations
 
 from importlib import import_module
@@ -154,6 +160,13 @@ def _resolve_05_resources(*, run_id: str, base_dir: Optional[str] = None) -> Dic
     try:
         pk43 = _load_pickle(paths["PICKLE_04_3"])
         brand_keywords = list(pk43.get("brand_keywords") or [])
+        # dvguard4: Add a minimal set of high-value brands observed in regressions.
+        # NOTE: Keep this small and precise to avoid brand-tool false positives.
+        for _b in ["whatsapp"]:
+            _b = str(_b).strip().lower()
+            if _b and (_b not in brand_keywords):
+                brand_keywords.append(_b)
+
         cert_full_info_map = dict(pk43.get("cert_full_info_map") or {})
         cfg = pk43.get("cfg") or {}
         tla = cfg.get("tld_analysis") or {}

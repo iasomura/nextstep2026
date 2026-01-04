@@ -22,6 +22,13 @@ Phase 1「基礎設計と型定義」: 型・定数・例外・ヘルパー関�
 
 仕様参照: Phase1_基礎設計と型定義_仕様書.md / マスター仕様書（Phase 1）
 """
+
+# ---------------------------------------------------------------------
+# Change history
+# - 2026-01-02: convert_to_phase2_format now includes risk_factors and (if
+#              available) Phase6 structured fields (primary_category,
+#              mitigated_risk_factors) to simplify FP/FN diagnostics.
+# ---------------------------------------------------------------------
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Literal, Annotated, TypedDict
@@ -263,12 +270,27 @@ def convert_to_phase2_format(
         "ai_confidence": clip_confidence(assessment.confidence),
         "ai_risk_level": assessment.risk_level,
         "detected_brands": list(assessment.detected_brands),
+        # NOTE(2026-01-02): risk_factors は FP/FN 解析の最重要シグナルなので
+        #                   Phase2成果物にも常に含める。
+        "risk_factors": list(getattr(assessment, "risk_factors", []) or []),
         "reasoning": assessment.reasoning,
         "success": bool(success),
         "processing_time": float(processing_time),
         "tools_used": list(tools_used or []),
         "llm_driven": True,
     }
+
+    # Phase6 structured output fields (best effort; non-breaking)
+    if hasattr(assessment, "primary_category"):
+        try:
+            result["primary_category"] = str(getattr(assessment, "primary_category"))
+        except Exception:
+            pass
+    if hasattr(assessment, "mitigated_risk_factors"):
+        try:
+            result["mitigated_risk_factors"] = list(getattr(assessment, "mitigated_risk_factors") or [])
+        except Exception:
+            pass
     if error:
         result["error"] = error
         result["error_category"] = kwargs.get("error_category", "unknown")
@@ -452,6 +474,16 @@ class AgentState(TypedDict, total=False):
     retry_count: int
     fallback_count: int
     fallback_locations: Annotated[List[str], add]
+
+    # LangGraph debug message stream (for graph.stream values)
+    messages: Annotated[List[Any], add]
+
+    # LLM usage flags (tool selection / final decision)
+    llm_used_selection: Optional[bool]
+    llm_selection_error: Optional[str]
+
+    # Phase6 LLM final decision debug info
+    debug_llm_final: Dict[str, Any]
 
 # ==============================
 # カスタム例外

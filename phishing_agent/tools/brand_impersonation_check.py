@@ -20,11 +20,30 @@ Brand Impersonation Check - Rule-based core + optional LLM helper
 Public function `brand_impersonation_check(...)` keeps backward-
 compatible arguments and returns {"success": True/False, "data": {...}}.
 """
+# ---------------------------------------------------------------------
+# Change history
+# - 2026-01-03: dvguard4 - Added guard for very short brand keywords (<=3)
+#               to avoid false positives from substring/compound matches.
+# ---------------------------------------------------------------------
+
 from __future__ import annotations
 
 from typing import Any, Dict, List, Tuple, Optional
 import json
 import os
+
+try:
+    from pydantic import BaseModel, Field, confloat, constr  # type: ignore
+except Exception:  # pragma: no cover
+    # pydantic v1 fallback
+    from pydantic.v1 import BaseModel, Field, confloat, constr  # type: ignore
+
+try:
+    from ..agent_foundations import StructuredOutputError  # type: ignore
+except Exception:  # pragma: no cover
+    class StructuredOutputError(Exception):  # type: ignore
+        """Structured Output error (local fallback for brand tool)."""
+        pass
 
 # ---------------------------------------------------------------------------
 # Imports: safe_tool_wrapper & whitelist helpers
@@ -170,6 +189,12 @@ def _check_brand_substring(token: str, brand: str) -> Tuple[bool, str]:
     if token == brand:
         return True, "exact"
 
+    # dvguard4: For very short brand keywords (<=3 chars),
+    # avoid substring/compound matches inside unrelated words (e.g., "att" in "attack").
+    # Only exact token matches are considered reliable at this length.
+    if len(brand) <= 3:
+        return False, ""
+
     # substring (token contains brand with small prefix/suffix)
     if len(token) > len(brand) and brand in token:
         idx = token.find(brand)
@@ -244,9 +269,50 @@ def _load_llm_client(config_path: Optional[str] = None):
             return None
         api_key = llm_cfg.get("api_key") or os.getenv("OPENAI_API_KEY") or "EMPTY"
         temperature = float(llm_cfg.get("temperature", 0.1) or 0.1)
-        return ChatOpenAI(model=model, base_url=base_url, api_key=api_key, temperature=temperature)
+        max_tokens = int(llm_cfg.get('brand_max_tokens') or llm_cfg.get('max_tokens') or 256)
+        # Brand tool は短い SO 応答だけ欲しいので max_tokens を小さく固定
+        return ChatOpenAI(
+            model=model,
+            base_url=base_url,
+            api_key=api_key,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
     except Exception:
         return None
+
+
+class BrandDetectionSO(BaseModel):
+    """Structured Output schema for brand impersonation detection.
+
+    Important:
+    - evidence_token MUST be an exact substring (case-insensitive) found in the domain.
+      (Do not invent tokens. If none exists, set evidence_token=null and is_brand_impersonation=false.)
+    - Keep reasoning short (1-2 sentences).
+    """
+
+    is_brand_impersonation: bool = Field(
+        description="Whether this domain is impersonating a known brand."
+    )
+    detected_brand: Optional[str] = Field(
+        default=None,
+        description="Detected brand name, or null if none.",
+    )
+    evidence_token: Optional[constr(min_length=3, max_length=60)] = Field(
+        default=None,
+        description=(
+            "Evidence token taken from the domain labels (must appear in the domain as a substring)."
+        ),
+    )
+    confidence: confloat(ge=0.0, le=1.0) = Field(
+        default=0.0,
+        description="Confidence in the impersonation judgement (0.0-1.0).",
+    )
+    reasoning: constr(min_length=10, max_length=360) = Field(
+        default="",
+        description="Short explanation for the decision.",
+    )
+
 
 def _llm_brand_detect(
     domain: str,
@@ -256,54 +322,95 @@ def _llm_brand_detect(
     config_path: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     """
-    Ask the LLM to judge brand impersonation.
-    Returns normalized dict or None on any failure.
+    Ask the LLM to judge brand impersonation via Structured Output.
+
+    - Returns a normalized dict on success:
+        {
+            "detected": bool,
+            "brand": Optional[str],
+            "confidence": float,
+            "reasoning": str,
+            "method": "llm_so",
+        }
+    - Returns None when the LLM client is not available / disabled.
+    - Raises StructuredOutputError when Structured Output cannot be executed or validated.
     """
     llm = _load_llm_client(config_path)
+    # LLM クライアントが無効 / 未設定の場合は、従来どおり LLM を使わずに None を返す
     if llm is None:
         return None
 
+    # SO をサポートしていない LLM はエラー扱いにする
+    if not hasattr(llm, "with_structured_output"):
+        raise StructuredOutputError(
+            "LLM client does not support with_structured_output for brand detection",
+        )
+
     sys_text = (
-        "You are a cybersecurity expert specializing in phishing and brand impersonation detection. "
-        "Respond ONLY with a compact JSON dictionary containing keys: "
-        "is_brand_impersonation (bool), detected_brand (string or null), confidence (0.0-1.0), reasoning (string)."
+        "You are a cybersecurity analyst specializing in phishing and brand impersonation detection.\n"
+        "Return ONLY a BrandDetectionSO object.\n"
+        "Rules (strict):\n"
+        "- evidence_token must be an exact substring found in the domain (case-insensitive).\n"
+        "- If you cannot point to an evidence_token, set is_brand_impersonation=false and detected_brand=null.\n"
+        "- Keep reasoning to 1-2 short sentences.\n"
     )
+
     user_payload = {
         "domain": domain,
+        "domain_labels": _split_labels(domain),
         "ml_probability": float(ml_probability or 0.0),
-        "brand_keywords_sample": list(brands_sample or [])[:20],
+        "brand_keywords_sample": list(brands_sample or [])[:24],
         "instructions": [
-            "Flag true if the domain is likely a fake / phishing site impersonating a known brand.",
-            "Treat official / legitimate domains (e.g., paypal.com, google.com, accounts.google.com) as NOT impersonation.",
-            "Consider typosquatting, extra words like 'secure', 'login', 'verify', and suspicious TLDs.",
+            "If the domain is impersonating a brand, set is_brand_impersonation=true.",
+            "If you set is_brand_impersonation=true, you MUST also provide evidence_token (a substring found in the domain) and detected_brand.",
+            "Treat official / legitimate domains as NOT impersonation.",
+            "Consider typosquatting and extra words like secure/login/verify.",
         ],
     }
+
+    messages = [
+        {"role": "system", "content": sys_text},
+        {"role": "user", "content": json.dumps(user_payload, ensure_ascii=False)},
+    ]
+
     try:
-        msg = llm.invoke(
-            [
-                {"role": "system", "content": sys_text},
-                {"role": "user", "content": json.dumps(user_payload, ensure_ascii=False)},
-            ]
+        chain = llm.with_structured_output(BrandDetectionSO)  # type: ignore[attr-defined]
+    except Exception as e:
+        raise StructuredOutputError(
+            f"Failed to initialize structured output chain for brand detection: {e}",
+        ) from e
+
+    try:
+        so = chain.invoke(messages)  # type: ignore[assignment]
+    except Exception as e:
+        raise StructuredOutputError(
+            f"Structured output invocation for brand detection failed: {e}",
+        ) from e
+
+    # 通常は BrandDetectionSO インスタンスだが、dict が返ってきた場合も受ける
+    if isinstance(so, BrandDetectionSO):
+        parsed = so
+    elif isinstance(so, dict):
+        try:
+            parsed = BrandDetectionSO(**so)
+        except Exception as e:
+            raise StructuredOutputError(
+                f"LLM returned a dict that does not conform to BrandDetectionSO: {e}",
+            ) from e
+    else:
+        raise StructuredOutputError(
+            f"LLM returned an unexpected type for BrandDetectionSO: {type(so)!r}",
         )
-        content = getattr(msg, "content", "") if msg is not None else ""
-        if not content:
-            return None
-        # Try to locate JSON in content
-        start = content.find("{")
-        end = content.rfind("}")
-        if start == -1 or end == -1 or end <= start:
-            return None
-        raw_json = content[start : end + 1]
-        data = json.loads(raw_json)
-        return {
-            "detected": bool(data.get("is_brand_impersonation", False)),
-            "brand": (data.get("detected_brand") or None),
-            "confidence": float(data.get("confidence", 0.0) or 0.0),
-            "reasoning": str(data.get("reasoning", "") or ""),
-            "method": "llm",
-        }
-    except Exception:
-        return None
+
+    return {
+        "detected": bool(parsed.is_brand_impersonation),
+        "brand": (parsed.detected_brand or None),
+        "evidence_token": (getattr(parsed, "evidence_token", None) or None),
+        "confidence": float(parsed.confidence),
+        "reasoning": str(parsed.reasoning or ""),
+        "method": "llm_so",
+    }
+
 
 # ---------------------------------------------------------------------------
 # Core logic (no safe_tool_wrapper here)
@@ -505,32 +612,33 @@ def _brand_impersonation_check_core(
         pre.get("potential_brands") or [],
     )
 
-    # If we have no brands at all, we still return a valid payload
-    if not brands_norm:
+    # If we have no brand keywords, we can still run the LLM (LLM-first mode)
+    no_brand_keywords = not brands_norm
+    if no_brand_keywords and not use_llm:
         details = {
-            "detected_brands": [],
-            "match_type": "none",
-            "rule_hits": [],
-            "whitelist": whitelist_info,
-            "used_llm": False,
-            "llm_confidence": None,
-            "llm_reasoning": None,
-            "issue_flags": [],
-            "precheck": {
-                "ml_probability": ml_p,
-                "ml_category": ml_category,
-                "tld_category": tld_category,
-                "domain_length_category": domain_length_category,
-                "quick_risk": quick_risk,
-                "ml_paradox_flag_from_precheck": ml_paradox_flag,
+            'detected_brands': [],
+            'match_type': 'none',
+            'rule_hits': [],
+            'whitelist': whitelist_info,
+            'used_llm': False,
+            'llm_confidence': None,
+            'llm_reasoning': None,
+            'issue_flags': ['no_brand_keywords'],
+            'precheck': {
+                'ml_probability': ml_p,
+                'ml_category': ml_category,
+                'tld_category': tld_category,
+                'domain_length_category': domain_length_category,
+                'quick_risk': quick_risk,
+                'ml_paradox_flag_from_precheck': ml_paradox_flag,
             },
         }
         return {
-            "tool_name": "brand_impersonation_check",
-            "detected_issues": [],
-            "risk_score": 0.0,
-            "details": details,
-            "reasoning": "No brand keywords available; brand impersonation cannot be evaluated by rules.",
+            'tool_name': 'brand_impersonation_check',
+            'detected_issues': ['no_brand_keywords'],
+            'risk_score': 0.0,
+            'details': details,
+            'reasoning': 'No brand keywords available and LLM is disabled; cannot evaluate brand impersonation.',
         }
 
     # --- Rule-based detection -----------------------------------------------
@@ -570,47 +678,144 @@ def _brand_impersonation_check_core(
         risk_score = 0.0
 
     # --- Optional LLM detection ---------------------------------------------
-    # Cost-saving: only call when explicitly enabled and rule-based score is low/zero.
+    # LLM-first 方針: ルールで拾えないケース（辞書漏れ）を埋める用途。
+    # - ルールで brand_detected が立っている場合は LLM を追加で呼ばない
+    # - evidence_token がドメインに存在しない場合は「不採用」
+    llm_evidence_token: Optional[str] = None
+    llm_detected_brand: Optional[str] = None
+    llm_match_distance: Optional[int] = None
+    llm_match_ratio: Optional[float] = None
+    llm_candidate_quality: Optional[str] = None  # confirmed/suspected/rejected/none
+
+    rules_found = (base_score > 0.0) or ("brand_detected" in detected_issues)
+    # "suspected" 判定は confirmed よりも広く拾うが、FP を増やしやすい。
+    # そのため「precheck 上の怪しさ」がある場合だけ、やや低い confidence でも疑いとして採用する。
+    # - quick_risk の閾値を少し下げる
+    # - ML が中低域（<0.5）でも疑いとして拾えるようにする
+    precheck_suspicious = (
+        (tld_category in ("dangerous", "unknown"))
+        or (domain_length_category in ("very_short", "short"))
+        or (quick_risk is not None and float(quick_risk) >= 0.45)
+        or (ml_p is not None and float(ml_p) < 0.50)
+    )
+    # suspected 用の最低 confidence（confirmed とは別）
+    # llm_threshold を尊重しつつ、0.48〜0.55 の範囲に収める
+    if llm_threshold:
+        suspect_threshold = max(0.48, min(0.55, float(llm_threshold) - 0.12))
+    else:
+        suspect_threshold = 0.55
+
     if (
         use_llm
+        and not rules_found
         and not should_skip_llm_check(domain, ml_p)
-        and (risk_score < 0.35)
     ):
         try:
+            # brands_norm が空でも LLM は動作（辞書無し運用のため）
             llm_raw = _llm_brand_detect(domain, brands_norm, ml_p, config_path=config_path)
             if llm_raw:
                 used_llm = True
                 llm_confidence = float(llm_raw.get("confidence", 0.0) or 0.0)
-                llm_reasoning = (llm_raw.get("reasoning") or "")[:500] or None
-                if llm_raw.get("detected") and llm_confidence >= float(llm_threshold):
-                    brand_label = (llm_raw.get("brand") or "").strip()
-                    label_str = f"{brand_label} (llm)" if brand_label else "unknown (llm)"
-                    if label_str not in detected_brands:
-                        detected_brands.append(label_str)
-                    if "brand_detected" not in detected_issues:
-                        detected_issues.append("brand_detected")
-                    if "brand_llm" not in detected_issues:
-                        detected_issues.append("brand_llm")
-                    # base LLM score similar to fuzzy
-                    llm_base = 0.30
-                    llm_score = _apply_precheck_boosts(
-                        llm_base,
-                        tld_category=tld_category,
-                        domain_length_category=domain_length_category,
-                        quick_risk=quick_risk,
+                llm_reasoning = (llm_raw.get("reasoning") or "")[:320] or None
+
+                llm_detected_brand = (llm_raw.get("brand") or None)
+                llm_evidence_token = (llm_raw.get("evidence_token") or None)
+
+                dom_norm = _normalize_token(domain)
+                ev_norm = _normalize_token(llm_evidence_token or "")
+                br_norm = _normalize_token(llm_detected_brand or "")
+
+                evidence_ok = bool(ev_norm and len(ev_norm) >= 3 and ev_norm in dom_norm)
+                llm_candidate_quality = "rejected"
+
+                if bool(llm_raw.get("detected")) and evidence_ok and br_norm:
+                    ed = _calculate_edit_distance(ev_norm, br_norm)
+                    llm_match_distance = int(ed)
+                    llm_match_ratio = round(ed / max(len(br_norm), 1), 3)
+
+                    # confirmed: 強い一致（substring noise 小 or ed<=1）+ 高信頼
+                    confirmed = (
+                        llm_confidence >= float(llm_threshold)
+                        and (
+                            (ev_norm == br_norm)
+                            or (_ed_le1(ev_norm, br_norm))
+                            or (br_norm in ev_norm and (len(ev_norm) - len(br_norm) <= 4))
+                        )
                     )
-                    llm_score *= risk_adjustment
-                    risk_score = max(risk_score, llm_score)
+
+                    # suspected: edit distance 2 を許容するが、短いブランドで暴発しないよう比率で制限
+                    suspected = (
+                        (llm_confidence >= float(suspect_threshold))
+                        and precheck_suspicious
+                        and (
+                            (
+                                ed <= 2
+                                and (ed / max(len(br_norm), 1)) <= 0.25
+                                and abs(len(ev_norm) - len(br_norm)) <= 2
+                            )
+                            or (br_norm in ev_norm and (len(ev_norm) - len(br_norm) <= 8))
+                            or (ev_norm in br_norm and len(ev_norm) >= 5 and (len(br_norm) - len(ev_norm) <= 10))
+                        )
+                    )
+
+                    if confirmed:
+                        llm_candidate_quality = "confirmed"
+                        label = (llm_detected_brand or "").strip() or "unknown"
+                        label_str = f"{label} (llm_confirmed)"
+                        if label_str not in detected_brands:
+                            detected_brands.append(label_str)
+                        if "brand_detected" not in detected_issues:
+                            detected_issues.append("brand_detected")
+                        detected_issues.append("brand_llm")
+                        detected_issues.append("brand_llm_confirmed")
+
+                        # base LLM score similar to fuzzy
+                        llm_base = 0.30
+                        llm_score = _apply_precheck_boosts(
+                            llm_base,
+                            tld_category=tld_category,
+                            domain_length_category=domain_length_category,
+                            quick_risk=quick_risk,
+                        )
+                        llm_score *= risk_adjustment
+                        risk_score = max(risk_score, llm_score)
+                        match_type = "llm_confirmed"
+
+                    elif suspected:
+                        llm_candidate_quality = "suspected"
+                        label = (llm_detected_brand or "").strip() or "unknown"
+                        label_str = f"{label} (llm_suspected)"
+                        if label_str not in detected_brands:
+                            detected_brands.append(label_str)
+                        detected_issues.append("brand_suspected")
+                        detected_issues.append("brand_llm_candidate")
+
+                        # suspected は弱めに加点（単体で high に行かせない）
+                        llm_base = 0.18
+                        llm_score = _apply_precheck_boosts(
+                            llm_base,
+                            tld_category=tld_category,
+                            domain_length_category=domain_length_category,
+                            quick_risk=quick_risk,
+                        )
+                        llm_score = min(0.32, llm_score)  # 上限
+                        llm_score *= risk_adjustment
+                        risk_score = max(risk_score, llm_score)
+                        match_type = "llm_suspected"
+
+                # evidence_token が無い/不整合なら、品質は rejected のまま
         except Exception as e:
             if fail_on_llm_error:
-                # This exception will be handled by safe_tool_wrapper (strict_mode decides)
                 raise RuntimeError(f"LLM brand detection failed for {domain}: {e}") from e
             # otherwise: just ignore and continue with rule-based result
 
     # --- ML paradox for brand -----------------------------------------------
-    brand_found = risk_score > 0.0 or "brand_detected" in detected_issues
-    if brand_found:
-        # derived category if missing
+    # NOTE: ml_paradox_brand は「ブランド強検知」があるときだけ発火させる（suspected では暴発しやすい）
+    brand_detected_flag = ("brand_detected" in detected_issues) or any("(llm_confirmed)" in b for b in detected_brands)
+    brand_suspected_flag = ("brand_suspected" in detected_issues) or any("(llm_suspected)" in b for b in detected_brands)
+    brand_found = brand_detected_flag or brand_suspected_flag
+
+    if brand_detected_flag:
         ml_cat = ml_category or _compute_ml_category(ml_p)
         paradox_cond = (
             (ml_p < 0.2 or ml_cat == "very_low")
@@ -625,7 +830,8 @@ def _brand_impersonation_check_core(
     risk_score = max(0.0, min(1.0, risk_score))
 
     # --- details & reasoning -------------------------------------------------
-    issue_flags = list(dict.fromkeys(detected_issues)) if detected_issues else []
+    detected_issues = list(dict.fromkeys(detected_issues)) if detected_issues else []
+    issue_flags = list(detected_issues)
 
     details: Dict[str, Any] = {
         "detected_brands": detected_brands,
@@ -635,6 +841,16 @@ def _brand_impersonation_check_core(
         "used_llm": used_llm,
         "llm_confidence": llm_confidence,
         "llm_reasoning": llm_reasoning,
+        # LLM candidate diagnostics (short & analysis-friendly)
+        "llm_detected_brand": llm_detected_brand,
+        "llm_evidence_token": llm_evidence_token,
+        "llm_match_distance": llm_match_distance,
+        "llm_match_ratio": llm_match_ratio,
+        "llm_candidate_quality": llm_candidate_quality,
+        # convenience flags
+        "brand_detected": brand_detected_flag,
+        "brand_suspected": brand_suspected_flag,
+        "no_brand_keywords": bool(no_brand_keywords),
         "issue_flags": issue_flags,
         "precheck": {
             "ml_probability": ml_p,
@@ -650,7 +866,13 @@ def _brand_impersonation_check_core(
     reasoning_parts: List[str] = []
     if brand_found:
         if detected_brands:
-            reasoning_parts.append(f"ブランド候補 {', '.join(detected_brands)} を含むドメイン構造を検出")
+            joined = ", ".join(detected_brands)
+            if brand_detected_flag and not brand_suspected_flag:
+                reasoning_parts.append(f"ブランド候補 {joined} を含むドメイン構造を検出")
+            elif brand_detected_flag and brand_suspected_flag:
+                reasoning_parts.append(f"ブランド候補 {joined} を検出（強/弱混在）")
+            else:
+                reasoning_parts.append(f"ブランド候補 {joined} を弱く検出（LLM候補）")
         else:
             reasoning_parts.append("ブランド名に類似するパターンを検出")
         if tld_category == "dangerous":

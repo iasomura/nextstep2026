@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+import math
 from typing import Any, Dict, List, Optional, Tuple
 
 # ---- tldextract を優先、無ければ簡易フォールバック -----------------------------
@@ -65,11 +66,96 @@ def _detect_brands(domain: str, brand_keywords: List[str]) -> Tuple[bool, List[s
     hits = list(dict.fromkeys(hits))
     return (len(hits) > 0, hits)
 
+# ---- TLD safety guard ---------------------------------------------------------
+# NOTE:
+# - upstream の統計/学習が壊れても、.com/.net/.org 等の汎用TLDを "dangerous" 扱いにしない。
+# - ここは「TLD自体の危険度」ではなく、「分類事故を防ぐガード」。
+_COMMON_SAFE_TLDS = {
+    "com", "net", "org",
+    "jp", "co.jp", "ne.jp", "ac.jp", "go.jp",
+    "edu", "gov",
+}
+
+def _tld_stats_to_map(stats: Any) -> Dict[str, float]:
+    """phishing_tld_stats の型ゆらぎ（dict / DataFrame / Series）を吸収して {tld: value} にする。"""
+    if not stats:
+        return {}
+
+    if isinstance(stats, dict):
+        out: Dict[str, float] = {}
+        for k, v in stats.items():
+            kk = str(k).lower().strip(".")
+            try:
+                out[kk] = float(v)
+            except Exception:
+                try:
+                    if hasattr(v, "item"):
+                        out[kk] = float(v.item())
+                except Exception:
+                    continue
+        return out
+
+    # pandas DataFrame: columns = ['tld', 'count'] などを想定
+    try:
+        import pandas as pd  # type: ignore
+        if isinstance(stats, pd.DataFrame) and ("tld" in stats.columns):
+            col = "count" if "count" in stats.columns else None
+            if col is None:
+                num_cols = [c for c in stats.columns if c != "tld" and pd.api.types.is_numeric_dtype(stats[c])]
+                col = num_cols[0] if num_cols else None
+            if col:
+                out: Dict[str, float] = {}
+                for t, v in zip(stats["tld"], stats[col]):
+                    tt = str(t).lower().strip(".")
+                    try:
+                        out[tt] = float(v)
+                    except Exception:
+                        try:
+                            if hasattr(v, "item"):
+                                out[tt] = float(v.item())
+                        except Exception:
+                            continue
+                return out
+    except Exception:
+        pass
+
+    # pandas Series / other dict-like
+    try:
+        if hasattr(stats, "to_dict"):
+            d = stats.to_dict()  # type: ignore
+            if isinstance(d, dict):
+                out: Dict[str, float] = {}
+                for k, v in d.items():
+                    if isinstance(v, dict):
+                        continue  # DataFrame.to_dict 由来のネストは拒否
+                    kk = str(k).lower().strip(".")
+                    try:
+                        out[kk] = float(v)
+                    except Exception:
+                        try:
+                            if hasattr(v, "item"):
+                                out[kk] = float(v.item())
+                        except Exception:
+                            continue
+                if out:
+                    return out
+    except Exception:
+        pass
+
+    return {}
+
+
 def _categorize_tld(suffix: str, dangerous: List[str], legitimate: List[str], neutral: List[str]) -> str:
-    s = (suffix or "").lower()
-    D = {x.lower() for x in (dangerous or [])}
-    L = {x.lower() for x in (legitimate or [])}
-    N = {x.lower() for x in (neutral or [])}
+    s = (suffix or "").lower().strip(".")
+
+    # Guard: common TLDs should never be treated as "dangerous"
+    if s in _COMMON_SAFE_TLDS:
+        return "legitimate"
+
+    D = {x.lower().strip(".") for x in (dangerous or []) if x}
+    L = {x.lower().strip(".") for x in (legitimate or []) if x}
+    N = {x.lower().strip(".") for x in (neutral or []) if x}
+
     if s in D: return "dangerous"
     if s in L: return "legitimate"
     if s in N: return "neutral"
@@ -119,16 +205,30 @@ def generate_precheck_hints(
         else: domain_length_category = "long"
         # tld
         tld_category = _categorize_tld(et.suffix, dangerous_tlds or [], legitimate_tlds or [], neutral_tlds or [])
-        # stats weight
+                # stats weight（robust: dict / DataFrame / Series）
         stat_w = 0.0
-        if phishing_tld_stats and et.suffix in phishing_tld_stats:
+        stats_map = _tld_stats_to_map(phishing_tld_stats)
+        suf = (et.suffix or "").lower().strip(".")
+        if stats_map and suf:
             try:
-                v = float(phishing_tld_stats[et.suffix])
-                vmax = max(1.0, max(float(x) for x in phishing_tld_stats.values()))
-                stat_w = max(0.0, min(0.30, 0.30 * (v / vmax)))
+                v = float(stats_map.get(suf, 0.0) or 0.0)
+
+                # Guard: common TLDs は統計の大小で危険扱いしない（頻度≠危険度）
+                if v > 0.0 and suf not in _COMMON_SAFE_TLDS:
+                    vmax = max([float(x) for x in stats_map.values() if x is not None] + [1.0])
+
+                    if vmax <= 1.0:
+                        # 0〜1 の確率/比率として扱える場合
+                        stat_w = max(0.0, min(0.30, 0.30 * v))
+                    else:
+                        # count-like stats → log scaling to avoid common/popular TLD dominance
+                        stat_w = max(
+                            0.0,
+                            min(0.30, 0.30 * (math.log1p(v) / math.log1p(vmax))),
+                        )
             except Exception:
                 stat_w = 0.0
-        # high risk words
+# high risk words
         tokens = _tokenize_domain_labels(et)
         hr_set = {w.strip().lower() for w in (high_risk_words or []) if w and str(w).strip()}
         hr_hits = sum(1 for t in tokens if t in hr_set)

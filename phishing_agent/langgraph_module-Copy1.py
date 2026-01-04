@@ -16,27 +16,10 @@ langgraph_module.py — Phase 4 状態管理 (spec latest v1.3, toolexec fix)
 仕様: Phase4_v1.3_完全版_ipynb統合.md
 """
 
-# ---------------------------------------------------------------------
-# Change history
-# - 2026-01-02: Added per-tool timings (tool_timings_ms) and
-#              analysis-friendly logs (graph_state_slim + trace_* fields)
-#              to make FP/FN postmortems easier.
-# - 2026-01-02: Included phase6_rules_fired in graph_state_slim for
-# - 2026-01-03: Exported phase6_policy_version / phase6_rules_fired / phase6_gate_* as top-level fields
-#              in the evaluate() output so CSV logs can be analyzed without parsing JSON blobs.
-#              one-glance policy debugging in downstream CSV logs.
-# ---------------------------------------------------------------------
-
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 import json, os, time, traceback, sys, importlib.util as _iu, types as _types
-
-try:
-    from langchain_core.messages import HumanMessage, AIMessage  # type: ignore
-except Exception:  # LangChain 未インストール環境でも動くようにする
-    HumanMessage = None
-    AIMessage = None
 
 __version__ = "1.3.4-phase4-toolexec-fix-2025-11-08"
 
@@ -219,25 +202,6 @@ class LangGraphPhishingAgent:
         g.add_edge("final_decision", END)       # type: ignore
         return g.compile()
 
-    # --------------- Debug: message channel ---------------
-    def _append_debug_message(self, state: AgentState, content: str, *, role: str = "system") -> None:
-        """LangGraph の stream から `messages[-1].pretty_print()` したい用のメッセージを積む。"""
-        msg_obj: Any
-        try:
-            if HumanMessage is not None and AIMessage is not None:
-                if role == "ai":
-                    msg_obj = AIMessage(content=content)
-                else:
-                    msg_obj = HumanMessage(content=content)
-            else:
-                msg_obj = {"role": role, "content": content}
-        except Exception:
-            msg_obj = {"role": role, "content": content}
-        msgs = list(state.get("messages", []) or [])
-        msgs.append(msg_obj)
-        state["messages"] = msgs
-
-
     # --------------- Util ---------------
     def _update_fallback(self, state: AgentState, where: str, error: Optional[str] = None) -> None:
         state["fallback_count"] = state.get("fallback_count", 0) + 1
@@ -248,19 +212,6 @@ class LangGraphPhishingAgent:
     # --------------- Nodes ---------------
     def _precheck_node(self, state: AgentState) -> AgentState:
         """precheck: Phase2 I/F に ipynb データを渡す"""
-        state["current_step"] = "precheck"
-
-        dbg = getattr(self, "_append_debug_message", None)
-        if callable(dbg):
-            try:
-                dbg(
-                    state,
-                    f"[precheck] start domain={state.get('domain')} ml={state.get('ml_probability')}",
-                    role="system",
-                )
-            except Exception:
-                pass
-
         ed = self.external_data or {}
         try:
             hints = generate_precheck_hints(
@@ -277,106 +228,39 @@ class LangGraphPhishingAgent:
                 strict_mode=self.strict_mode,
             )
             state["precheck_hints"] = hints
+            state["current_step"] = "precheck"
             if isinstance(hints, dict) and hints.get("_fallback"):
                 self._update_fallback(state, "precheck_fallback")
-
-            if callable(dbg):
-                try:
-                    dbg(
-                        state,
-                        "[precheck] "
-                        f"ml_category={hints.get('ml_category')} "
-                        f"tld_category={hints.get('tld_category')} "
-                        f"quick_risk={hints.get('quick_risk')}",
-                        role="ai",
-                    )
-                except Exception:
-                    pass
-
         except Exception as e:
             if self.strict_mode:
                 raise PhishingAgentError(f"precheck failed: {e}")
             state["precheck_hints"] = {}
             self._update_fallback(state, "precheck_exception", str(e))
-
-            if callable(dbg):
-                try:
-                    dbg(
-                        state,
-                        f"[precheck] exception={type(e).__name__}: {e}",
-                        role="ai",
-                    )
-                except Exception:
-                    pass
-
         return state
 
     def _tool_selection_node(self, state: AgentState) -> AgentState:
         """Step1: SO必須（Phase5で本接続）。ここではフック + フォールバックを実装。"""
-        state["current_step"] = "tool_selection"
-
-        ml = float(state.get("ml_probability", 0.0) or 0.0)
-        state["llm_used_selection"] = False
-        state["llm_selection_error"] = None
-
-        dbg = getattr(self, "_append_debug_message", None)
-        if callable(dbg):
-            try:
-                dbg(
-                    state,
-                    "[tool_selection] start "
-                    f"ml={ml} use_llm_selection={self.use_llm_selection} "
-                    f"so_available={getattr(self.so, 'available', False)}",
-                    role="system",
-                )
-            except Exception:
-                pass
-
+        ml = float(state["ml_probability"] or 0.0)
         try:
             if self.use_llm_selection and self.so.available:
-                sel = self.so.select_tools(
-                    state["domain"],
-                    ml,
-                    state.get("precheck_hints", {}),
-                )
+                sel = self.so.select_tools(state["domain"], ml, state.get("precheck_hints", {}))
                 selected_tools = list(sel.selected_tools or [])
-                state["llm_used_selection"] = True
-
-                if callable(dbg):
-                    try:
-                        dbg(
-                            state,
-                            f"[tool_selection] LLM selected_tools={selected_tools}",
-                            role="ai",
-                        )
-                    except Exception:
-                        pass
             else:
                 raise RuntimeError("SO(select_tools) unavailable")
         except Exception as e:
-            state["llm_used_selection"] = False
-            state["llm_selection_error"] = f"{type(e).__name__}: {e}"
-
-            # Step1 selection failure must not abort evaluation; continue with base tools (3 tools).
-            selected_tools = [
-                "brand_impersonation_check",
-                "certificate_analysis",
-                "short_domain_analysis",
-            ]
+            if self.strict_mode and self.use_llm_selection:
+                raise PhishingAgentError(f"SO(select_tools) failed: {e}")
+            # ML確率ルールでフォールバック
+            if ml < 0.2:
+                selected_tools = ["brand_impersonation_check","certificate_analysis","short_domain_analysis"]
+            elif ml < 0.5:
+                selected_tools = ["brand_impersonation_check","certificate_analysis","short_domain_analysis"]
+            else:
+                selected_tools = ["brand_impersonation_check","certificate_analysis"]
             self._update_fallback(state, "tool_selection_llm", str(e))
 
-            if callable(dbg):
-                try:
-                    dbg(
-                        state,
-                        "[tool_selection] fallback selected_tools="
-                        f"{selected_tools} reason={e}",
-                        role="ai",
-                    )
-                except Exception:
-                    pass
-
         state["selected_tools"] = selected_tools
+        state["current_step"] = "tool_selection"
         return state
 
     def _fanout_dispatcher_node(self, state: AgentState) -> AgentState:
@@ -391,12 +275,15 @@ class LangGraphPhishingAgent:
         return state
 
     def _tool_execution_node(self, state: AgentState) -> dict:
-        """選択されたツール（brand/cert/domain）を順次実行し、差分 {"tool_results": {...}} のみ返す。"""
+        """
+        選択されたツール（brand/cert/domain）を順次実行し、差分 {"tool_results": {...}} のみ返す。
+        fan-out 環境差があっても確実に tool_results が蓄積されるよう、ここで集約する。
+        """
         sel = state.get("selected_tools", []) or []
         flags = {
             "brand": ("brand_impersonation_check" in sel),
-            "cert": ("certificate_analysis" in sel),
-            "domain": ("short_domain_analysis" in sel),
+            "cert":  ("certificate_analysis" in sel),
+            "domain":("short_domain_analysis" in sel),
         }
         ed = self.external_data or {}
         domain = state["domain"]
@@ -405,158 +292,38 @@ class LangGraphPhishingAgent:
 
         updates: Dict[str, Any] = {}
         tr: Dict[str, Any] = {}
-        tool_timings_ms: Dict[str, int] = {}
-
-        dbg = getattr(self, "_append_debug_message", None)
-        base_msgs = list(state.get("messages", []) or [])
-        base_len = len(base_msgs)
-        base_msgs = list(state.get("messages", []) or [])
-        base_len = len(base_msgs)
-        if callable(dbg):
-            try:
-                dbg(
-                    state,
-                    f"[tool_execution] start selected_tools={sel}",
-                    role="system",
-                )
-            except Exception:
-                pass
 
         if flags["brand"]:
-            _t0 = time.perf_counter()
-            # BrandTool は「必ず何かしらのデータを返す」方針に変更
-            primary_error: Optional[str] = None
-            data: Dict[str, Any] = {}
-
             try:
-                # 1st: LLM 有りで実行（strict_mode は常に False に固定）
                 r = brand_impersonation_check(
                     domain=domain,
                     brand_keywords=ed.get("brand_keywords", []),
                     precheck_hints=precheck,
                     ml_probability=ml,
-                    strict_mode=False,
-                    use_llm=True,
+                    strict_mode=self.strict_mode,
                 )
-
-                if isinstance(r, dict) and r.get("success") is False:
-                    # safe_tool_wrapper がエラーを握っているケース
-                    primary_error = str(r.get("error") or "")
-                    # 2nd: LLM を切ってルールのみでもう一度
-                    r2 = brand_impersonation_check(
-                        domain=domain,
-                        brand_keywords=ed.get("brand_keywords", []),
-                        precheck_hints=precheck,
-                        ml_probability=ml,
-                        strict_mode=False,
-                        use_llm=False,
-                    )
-                    data = (r2.get("data") or {}) if isinstance(r2, dict) else {}
-                else:
-                    data = (r.get("data") or {}) if isinstance(r, dict) else {}
-
+                tr["brand"] = (r.get("data") or {}) if isinstance(r, dict) else {}
             except Exception as e:
-                primary_error = str(e)
-                # BrandTool 内部で想定外例外が飛んだ場合も、LLM なしルールのみで最後まで粘る
-                try:
-                    r2 = brand_impersonation_check(
-                        domain=domain,
-                        brand_keywords=ed.get("brand_keywords", []),
-                        precheck_hints=precheck,
-                        ml_probability=ml,
-                        strict_mode=False,
-                        use_llm=False,
-                    )
-                    data = (r2.get("data") or {}) if isinstance(r2, dict) else {}
-                except Exception as e2:
-                    # それでもダメなときだけ、中立な結果を合成して返す
-                    data = {
-                        "tool_name": "brand_impersonation_check",
-                        "detected_issues": [],
-                        "risk_score": 0.0,
-                        "details": {
-                            "error": f"BrandTool failed (primary={primary_error}, fallback={e2})",
-                        },
-                        "reasoning": "BrandTool failed; returned neutral result.",
-                    }
-
-            # どのパスでも _fallback は一切セットしない
-            details = data.setdefault("details", {})
-            if primary_error and "error" not in details:
-                details["error"] = primary_error
-
-            tr["brand"] = data
-            try:
-                tool_timings_ms["brand"] = int((time.perf_counter() - _t0) * 1000)
-            except Exception:
-                pass
-
-            if callable(dbg):
-                try:
-                    dbg(
-                        state,
-                        "[tool_execution] brand "
-                        f"risk={data.get('risk_score')} "
-                        f"issues={data.get('detected_issues')}",
-                        role="ai",
-                    )
-                except Exception:
-                    pass
-
+                if self.strict_mode:
+                    raise
+                tr["brand"] = {"detected_issues": [], "risk_score": 0.0, "_fallback": True}
+                self._update_fallback(state, "tool_brand_exception", str(e))
 
         if flags["cert"]:
-            _t0 = time.perf_counter()
             try:
                 r = certificate_analysis(
                     domain=domain,
                     cert_full_info_map=ed.get("cert_full_info_map", {}),
                     strict_mode=self.strict_mode,
                 )
-                data = (r.get("data") or {}) if isinstance(r, dict) else {}
-                tr["cert"] = data
-                try:
-                    tool_timings_ms["cert"] = int((time.perf_counter() - _t0) * 1000)
-                except Exception:
-                    pass
-
-                if callable(dbg):
-                    try:
-                        dbg(
-                            state,
-                            "[tool_execution] cert "
-                            f"risk={data.get('risk_score')} "
-                            f"issues={data.get('detected_issues')}",
-                            role="ai",
-                        )
-                    except Exception:
-                        pass
+                tr["cert"] = (r.get("data") or {}) if isinstance(r, dict) else {}
             except Exception as e:
                 if self.strict_mode:
                     raise
-                tr["cert"] = {
-                    "detected_issues": [],
-                    "risk_score": 0.0,
-                    "_fallback": True,
-                }
+                tr["cert"] = {"detected_issues": [], "risk_score": 0.0, "_fallback": True}
                 self._update_fallback(state, "tool_cert_exception", str(e))
 
-                try:
-                    tool_timings_ms["cert"] = int((time.perf_counter() - _t0) * 1000)
-                except Exception:
-                    pass
-
-                if callable(dbg):
-                    try:
-                        dbg(
-                            state,
-                            f"[tool_execution] cert exception={type(e).__name__}: {e}",
-                            role="ai",
-                        )
-                    except Exception:
-                        pass
-
         if flags["domain"]:
-            _t0 = time.perf_counter()
             try:
                 r = short_domain_analysis(
                     domain=domain,
@@ -566,69 +333,15 @@ class LangGraphPhishingAgent:
                     phishing_tld_stats=ed.get("phishing_tld_stats", {}),
                     strict_mode=self.strict_mode,
                 )
-                data = (r.get("data") or {}) if isinstance(r, dict) else {}
-                tr["domain"] = data
-                try:
-                    tool_timings_ms["domain"] = int((time.perf_counter() - _t0) * 1000)
-                except Exception:
-                    pass
-
-                if callable(dbg):
-                    try:
-                        dbg(
-                            state,
-                            "[tool_execution] domain "
-                            f"risk={data.get('risk_score')} "
-                            f"issues={data.get('detected_issues')}",
-                            role="ai",
-                        )
-                    except Exception:
-                        pass
+                tr["domain"] = (r.get("data") or {}) if isinstance(r, dict) else {}
             except Exception as e:
                 if self.strict_mode:
                     raise
-                tr["domain"] = {
-                    "detected_issues": [],
-                    "risk_score": 0.0,
-                    "_fallback": True,
-                }
+                tr["domain"] = {"detected_issues": [], "risk_score": 0.0, "_fallback": True}
                 self._update_fallback(state, "tool_domain_exception", str(e))
-
-                try:
-                    tool_timings_ms["domain"] = int((time.perf_counter() - _t0) * 1000)
-                except Exception:
-                    pass
-
-                if callable(dbg):
-                    try:
-                        dbg(
-                            state,
-                            f"[tool_execution] domain exception={type(e).__name__}: {e}",
-                            role="ai",
-                        )
-                    except Exception:
-                        pass
 
         if tr:
             updates["tool_results"] = tr
-        if tool_timings_ms:
-            updates["tool_timings_ms"] = tool_timings_ms
-
-        # このノードで追加されたデバッグメッセージ差分のみを StateGraph に返す
-        if callable(dbg):
-            try:
-                dbg(
-                    state,
-                    f"[tool_execution] done tools={list(tr.keys())}",
-                    role="ai",
-                )
-            except Exception:
-                pass
-
-        all_msgs = list(state.get("messages", []) or [])
-        if len(all_msgs) > base_len:
-            updates['messages'] = all_msgs[base_len:]
-
         return updates
 
     def _aggregate_node(self, state: AgentState) -> AgentState:
@@ -754,11 +467,6 @@ class LangGraphPhishingAgent:
             "fallback_locations": [],
             "tool_execution_flags": {},
             "next_step": "",
-            # LangGraph debug / LLM trace
-            "messages": [],
-            "debug_llm_final": {},
-            "llm_used_selection": None,
-            "llm_selection_error": None,
         }
 
         try:
@@ -796,143 +504,6 @@ class LangGraphPhishingAgent:
             )
             out["graph_state"] = final_state
             out["module_version"] = __version__
-
-            # ------------------------------------------------------------------
-            # Log/analysis-friendly trace (JSON serializable & flat columns)
-            # NOTE(2026-01-02): 次回の FP/FN 解析を "超楽" にするため、
-            #  - graph_state_slim: 重要フィールドだけ抜き出した JSON 互換 dict
-            #  - graph_state_slim_json: その JSON 文字列
-            #  - trace_*: CSV でも扱えるフラット列
-            # を常に付与する（既存キーは保持）。
-            # ------------------------------------------------------------------
-            try:
-                def _dumps(obj: Any) -> str:
-                    return json.dumps(obj, ensure_ascii=False, sort_keys=True, default=str)
-
-                pre = (final_state.get("precheck_hints") or {})
-                tr = (final_state.get("tool_results") or {})
-                ctx = (tr.get("contextual_risk_assessment") or {})
-                ctx_details = (ctx.get("details") or {}) if isinstance(ctx, dict) else {}
-                score_components = (ctx_details.get("score_components") or {}) if isinstance(ctx_details, dict) else {}
-
-                fa = final_state.get("final_assessment")
-                if hasattr(fa, "model_dump"):
-                    fa_json = fa.model_dump()  # type: ignore
-                elif isinstance(fa, dict):
-                    fa_json = fa
-                else:
-                    fa_json = str(fa) if fa is not None else None
-
-                slim = {
-                    "domain": final_state.get("domain"),
-                    "ml_probability": final_state.get("ml_probability"),
-                    "precheck_hints": pre,
-                    "selected_tools": final_state.get("selected_tools"),
-                    "tool_execution_flags": final_state.get("tool_execution_flags"),
-                    "tool_timings_ms": final_state.get("tool_timings_ms"),
-                    "tool_results": tr,
-                    "fallback_info": final_state.get("fallback_info"),
-                    "phase6_policy_version": final_state.get("phase6_policy_version"),
-                    "phase6_rules_fired": final_state.get("phase6_rules_fired"),
-                    "decision_trace": final_state.get("decision_trace"),
-                    "debug_llm_final": final_state.get("debug_llm_final"),
-                    "llm_used_selection": final_state.get("llm_used_selection"),
-                    "llm_used_final": final_state.get("llm_used_final"),
-                    "final_assessment": fa_json,
-                }
-
-                out["graph_state_slim"] = slim
-                out["graph_state_slim_json"] = _dumps(slim)
-
-                # ---- Phase6 fields (CSV-friendly top-level) ----
-                out["phase6_policy_version"] = final_state.get("phase6_policy_version")
-                out["phase6_rules_fired"] = list(final_state.get("phase6_rules_fired") or [])
-                try:
-                    out["phase6_rules_fired_str"] = "|".join([str(x) for x in (out.get("phase6_rules_fired") or [])])
-                except Exception:
-                    out["phase6_rules_fired_str"] = ""
-                gate = final_state.get("phase6_gate")
-                out["phase6_gate"] = gate
-                out["phase6_gate_blocked"] = bool(isinstance(gate, dict) and gate.get("rule") == "POST_LLM_FLIP_GATE")
-                out["phase6_gate_threshold"] = (gate.get("threshold") if isinstance(gate, dict) else None)
-                out["phase6_gate_ml"] = (gate.get("ml") if isinstance(gate, dict) else None)
-                out["phase6_gate_tld_category"] = (gate.get("tld_category") if isinstance(gate, dict) else None)
-
-                # ---- Flat trace columns (CSV-friendly) ----
-                stats = (pre.get("stats") or {}) if isinstance(pre, dict) else {}
-
-                b = (tr.get("brand") or {})
-                c = (tr.get("cert") or {})
-                d = (tr.get("domain") or {})
-
-                b_det = ((b.get("details") or {}) if isinstance(b, dict) else {})
-                c_det = ((c.get("details") or {}) if isinstance(c, dict) else {})
-                d_det = ((d.get("details") or {}) if isinstance(d, dict) else {})
-
-                paradox = (ctx_details.get("paradox") or {}) if isinstance(ctx_details, dict) else {}
-
-                out.update({
-                    "trace_schema_version": "v1",
-
-                    # engine trace
-                    "trace_llm_used_selection": final_state.get("llm_used_selection"),
-                    "trace_llm_used_final": final_state.get("llm_used_final"),
-                    "trace_fallback_count": int(final_state.get("fallback_count") or 0),
-                    "trace_fallback_locations_json": _dumps(final_state.get("fallback_locations") or []),
-
-                    # precheck
-                    "trace_precheck_ml_category": str(pre.get("ml_category") or ""),
-                    "trace_precheck_tld_category": str(pre.get("tld_category") or ""),
-                    "trace_precheck_domain_length_category": str(pre.get("domain_length_category") or ""),
-                    "trace_precheck_brand_detected": bool(pre.get("brand_detected") or False),
-                    "trace_precheck_potential_brands_count": int(len(pre.get("potential_brands") or [])),
-                    "trace_precheck_high_risk_hits": int(stats.get("high_risk_hits") or 0),
-                    "trace_precheck_phishing_tld_weight": float(stats.get("phishing_tld_weight") or 0.0),
-                    "trace_precheck_quick_risk": float(pre.get("quick_risk") or 0.0),
-
-                    # tool selection/execution
-                    "trace_selected_tools_json": _dumps(final_state.get("selected_tools") or []),
-                    "trace_tool_timings_ms_json": _dumps(final_state.get("tool_timings_ms") or {}),
-
-                    # brand
-                    "trace_brand_risk_score": float(b.get("risk_score") or 0.0),
-                    "trace_brand_issues_json": _dumps(b.get("detected_issues") or []),
-                    "trace_brand_detected_brands_json": _dumps(b_det.get("detected_brands") or []),
-
-                    # cert
-                    "trace_cert_risk_score": float(c.get("risk_score") or 0.0),
-                    "trace_cert_issues_json": _dumps(c.get("detected_issues") or []),
-                    "trace_cert_issuer": str(c_det.get("issuer") or ""),
-                    "trace_cert_is_free_ca": bool(c_det.get("is_free_ca") or False),
-                    "trace_cert_has_org": bool(c_det.get("has_org") or False),
-                    "trace_cert_is_self_signed": bool(c_det.get("is_self_signed") or False),
-                    "trace_cert_is_wildcard": bool(c_det.get("is_wildcard") or False),
-
-                    # domain
-                    "trace_domain_risk_score": float(d.get("risk_score") or 0.0),
-                    "trace_domain_issues_json": _dumps(d.get("detected_issues") or []),
-                    "trace_domain_tld_category": str(d_det.get("tld_category") or ""),
-                    "trace_domain_length_category": str(d_det.get("domain_length_category") or ""),
-                    "trace_domain_entropy": float(d_det.get("entropy") or 0.0),
-                    "trace_domain_label_count": int(d_det.get("label_count") or 0),
-
-                    # contextual
-                    "trace_ctx_risk_score": float(ctx.get("risk_score") or 0.0) if isinstance(ctx, dict) else 0.0,
-                    "trace_ctx_issues_json": _dumps(ctx.get("detected_issues") or []) if isinstance(ctx, dict) else "[]",
-                    "trace_ctx_is_ml_paradox": bool(paradox.get("is_paradox_strong") or False),
-                    "trace_ctx_is_ml_paradox_weak": bool(paradox.get("is_paradox_weak") or False),
-                    "trace_ctx_risk_signal_count": int(paradox.get("risk_signal_count") or 0),
-                    "trace_ctx_score_components_json": _dumps(score_components),
-
-                    # phase6/policy trace
-                    "trace_phase6_policy_version": str(final_state.get("phase6_policy_version") or ""),
-                    "trace_phase6_rules_fired_json": _dumps(final_state.get("phase6_rules_fired") or []),
-                    "trace_decision_trace_json": _dumps(final_state.get("decision_trace") or []),
-                    "trace_debug_llm_final_json": _dumps(final_state.get("debug_llm_final") or {}),
-                })
-            except Exception as _trace_e:
-                out["trace_error"] = f"{type(_trace_e).__name__}: {_trace_e}"
-
             return out
         except Exception as e:
             tb = traceback.format_exc(limit=4)
@@ -964,12 +535,8 @@ except Exception:  # pragma: no cover
 
 # ---- SO Schemas (as provided in implementer memo) ----
 class ToolSelectionSO(BaseModel):
-    """
-    Step1 tool selection (Structured Output).
-    NOTE: Schema is intentionally tiny (no free-form long text) to prevent length-truncation
-    that can break JSON parsing in provider-native structured output.
-    """
-    selected_tools: List[str] = Field(default_factory=list)
+    selected_tools: List[Literal["brand_impersonation_check","certificate_analysis","short_domain_analysis"]]
+    rationale: constr(min_length=30)
 
 class FinalAssessmentSO(BaseModel):
     is_phishing: bool
@@ -1025,62 +592,40 @@ if "_SOClient" in globals():
             if llm is None:
                 raise RuntimeError("LLM not available")
 
-            pre = precheck_hints or {}
-
-            # Keep prompts compact; schema has NO long free-form text fields.
+            # System/User を分離（PHASE5_PROMPTS の方針）
             sys_text = (
-                "Select security analysis tools for the given domain. Return ONLY ToolSelectionSO. "
-                "Allowed tools: brand_impersonation_check, certificate_analysis, short_domain_analysis. "
-                "Policy: ml<0.5 => 3 tools; ml>=0.5 => exactly 2 tools."
+                "You are responsible ONLY for selecting security analysis tools (Step1). "
+                "Return output as ToolSelectionSO. "
+                "Follow policy: if ml<0.2 then 3 tools; if 0.2<=ml<0.5 then 3; if ml>=0.5 then exactly 2. "
+                "Allowed tools only. Keep rationale concise."
             )
-
-            # Minimal precheck summary (keep small)
-            potential_brands = list(pre.get('potential_brands', []) or [])[:3]
-            high_risk_words = list(pre.get('high_risk_words', []) or [])[:3]
-            known_flag = bool((pre.get('known_domain_info') or {}))
-            quick_risk = pre.get('quick_risk')
-
+            pre = precheck_hints or {}
             user_text = (
                 f"domain: {domain}\n"
                 f"ml_probability: {ml_probability:.6f}\n"
-                f"tld_category: {pre.get('tld_category')}\n"
-                f"potential_brands: {potential_brands}\n"
-                f"high_risk_words: {high_risk_words}\n"
-                f"known: {known_flag}\n"
-                f"quick_risk: {quick_risk}\n"
+                f"available_tools: {sorted(_ALLOWED_TOOLS_SO)}\n"
+                "precheck_summary:\n"
+                f"  tld_category: {pre.get('tld_category')}\n"
+                f"  potential_brands: {pre.get('potential_brands', [])}\n"
+                f"  high_risk_words: {pre.get('high_risk_words', [])}\n"
+                f"  known: {bool((pre.get('known_domain_info') or {}))}\n"
+                f"  quick_risk: {pre.get('quick_risk')}\n"
+                "Output: ToolSelectionSO"
             )
+            chain = llm.with_structured_output(ToolSelectionSO)  # type: ignore
+            so: ToolSelectionSO = chain.invoke([{"role":"system","content":sys_text},{"role":"user","content":user_text}])  # type: ignore
 
-            # Hard cap tokens for Step1 output (stability against runaway generations).
+            # 返却を検証・正規化（policy/enforce + Allowed のみ）
+            tools = _phase5__enforce_policy(float(ml_probability or 0.0), list(so.selected_tools or []))
             try:
-                llm_sel = llm.bind(max_tokens=96, temperature=0)
+                # Pydantic v2：model_validate / v1：__init__
+                return ToolSelectionResult(selected_tools=tools, reasoning=str(so.rationale), confidence=0.75)
             except Exception:
-                llm_sel = llm
+                # v1互換（dataclass の可能性も）
+                return ToolSelectionResult(
+                    selected_tools=tools, reasoning=str(getattr(so, "rationale", "")), confidence=0.75
+                )
 
-            errors = []
-            for method in ('json_schema', 'function_calling', 'json_mode'):
-                try:
-                    chain = llm_sel.with_structured_output(ToolSelectionSO, method=method, include_raw=False)  # type: ignore
-                    resp = chain.invoke([{'role':'system','content':sys_text}, {'role':'user','content':user_text}])  # type: ignore
-                    so = resp.get('parsed') if isinstance(resp, dict) and 'parsed' in resp else resp
-
-                    raw_tools = list(getattr(so, 'selected_tools', []) or [])
-                    # Filter to allowed tools only (LLM may output extras when provider doesn't enforce schema strictly)
-                    raw_tools = [t for t in raw_tools if t in _ALLOWED_TOOLS_SO]
-
-                    tools = _phase5__enforce_policy(float(ml_probability or 0.0), raw_tools)
-
-                    # Generate compact reasoning locally (avoid putting free-form text in schema)
-                    reasoning = f"ToolSelection: ml={ml_probability:.3f} tld={pre.get('tld_category')} brands={potential_brands} known={known_flag} quick_risk={quick_risk}"
-                    reasoning = ' '.join(str(reasoning).split())
-                    if len(reasoning) > 480:
-                        reasoning = reasoning[:480] + '...'
-
-                    return ToolSelectionResult(selected_tools=tools, reasoning=reasoning, confidence=0.75)
-                except Exception as e:
-                    errors.append(f"{method}={type(e).__name__}:{e}")
-                    continue
-
-            raise RuntimeError('SO(select_tools) failed: ' + ' | '.join(errors))
         def final_assessment(self, domain: str, ml_probability: float, tool_results: Dict[str,Any]) -> "PhishingAssessment":
             llm = _phase5__init_llm(self.cfg)
             if llm is None:
@@ -1095,9 +640,7 @@ if "_SOClient" in globals():
 
             sys_text = (
                 "You are the final assessor (Step3). Return output as FinalAssessmentSO. "
-                "Use contextual_risk_assessment.risk_score as a strong signal when available. "
-                "IMPORTANT: ctx_score>=0.5 MUST imply is_phishing=true, but ctx_score<0.5 does NOT imply safe. "
-                "Do NOT set is_phishing=true based on ml_probability alone; if you mark phishing, include at least one non-ML risk_factors from tool outputs. "
+                "Use contextual_risk_assessment.risk_score as a primary signal if available. "
                 "Ensure confidence is in [0,1] and reasoning length>=50."
             )
             user_text = (

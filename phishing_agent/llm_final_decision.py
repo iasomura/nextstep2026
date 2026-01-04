@@ -1,11 +1,46 @@
 # -*- coding: utf-8 -*-
 """
-llm_final_decision.py (Phase6 v1.3.2-trace)
+llm_final_decision.py (Phase6 v1.4.7-dvguard4)
 -------------------------------------------
-- 安全側に倒しすぎる分岐（no_org 単体で True になり得る経路）を削除
-- ML/Cert/Contextual の「複合条件」でのみ昇格（R1/R2/R3）
-- decision_trace を graph_state に埋め込み、risk_factors に policyタグを追記
-- 既存の I/F / Strict モード / SO 必須の契約は維持
+変更履歴:
+  - 2025-12-14: R4/R5 を追加（ML<0.5 帯の FN 改善）
+      - R4: ML<0.5 かつ {free_ca,no_org} かつ contextual>=しきい値 → phishing
+           * legitimate TLD & normal/long は少しだけ厳しめのしきい値
+      - R5: ML<0.5 かつ dangerous_tld & no_org かつ contextual>=0.33 → phishing
+
+  - 2025-12-15: R4(multiple_risk_factors) のしきい値を 0.34→0.33 に微調整（追加FN 4件を狙う）
+  - 2025-12-15: R4 の legitimate TLD ガードを微調整（FN 端の救済）
+      - legitimate TLD & normal/long でも ctx_issues に multiple_risk_factors がある場合は r4_threshold=0.33 を許容
+  - 2025-12-16: graph_state に phase6_policy_version を必ず stamp（LLM/SO 失敗時も追跡可能に）
+
+  - 2026-01-02: FP 低減のため、contextual>=0.5 の hard forcing を緩和し、
+                「strong evidence（brand/dangerous_tld/idn_homograph/random/self_signed 等）」
+                がある場合のみ phishing へ強制するよう変更。
+                併せて free_ca/no_org(DV相当) を単独で決定要因にしないように
+                R1/R2/R3/R4 を tighten。
+                事後分析を容易にするため、発火した Phase6 ルール一覧を
+                graph_state['phase6_rules_fired'] に保存。
+
+  - 2026-01-02: v1.4.5-dvguard2b
+      - Low-ML guard: ml<0.25 かつ {free_ca,no_org} だけで Phishing へ反転させない（dangerous_tld / brand は例外）
+      - System Prompt: 'valid certificate' を安全・緩和理由として使うことを禁止（DV/Let's Encrypt は中立〜リスク）
+
+  - 2026-01-03: v1.4.6-dvguard3
+      - Post-LLM Flip Gate: ml<0.25 & non-dangerous TLD の LLM phishing 反転をブロック（FP止血）
+      - System Prompt: 低ML帯の反転制約を明示（ポリシーゲートと整合）
+      - graph_state: phase6_gate にゲート発動情報を stamp（後解析を容易に）
+
+
+  - 2026-01-03: v1.4.7-dvguard4
+      - Strong-evidence refinement: dv_suspicious_combo を単独で "strong" 扱いしない。
+        random_pattern も単独では強証拠にせず、{short/very_short/dangerous_tld/idn_homograph 等} との複合でのみ強証拠扱い。
+      - Post-Policy Gate: domain_issues が random_pattern のみ & brand無し の場合は、
+        追加反転（Benign→Phishing）をブロックして FP を抑制（例: cryptpad.org のような誤反転）。
+
+既存方針:
+  - no_org 単体で True になり得る経路は持たない（複合条件のみ）
+  - decision_trace を graph_state に埋め込み、risk_factors に policyタグを追記
+  - 既存の I/F / Strict モード / SO 必須の契約は維持
 """
 from __future__ import annotations
 
@@ -22,6 +57,9 @@ except Exception:
         PhishingAssessment, StructuredOutputError, get_risk_level, clip_confidence
     )
 
+
+# ------------------------- phase6 meta -------------------------
+PHASE6_POLICY_VERSION = "v1.4.7-dvguard4"
 # ------------------------- small utils -------------------------
 def _json_dumps(obj: Any) -> str:
     return json.dumps(obj, ensure_ascii=False, separators=(",", ":"))
@@ -76,15 +114,21 @@ def _apply_policy_adjustments(
     trace: Optional[List[Dict[str, Any]]] = None,
 ) -> PhishingAssessment:
     """
-    仕様整合の最終補正 + Phase6ポリシールール（R1/R2/R3）。
+    仕様整合の最終補正 + Phase6ポリシールール（R1/R2/R3/R4/R5）。
+
     - ハード: contextual.risk_score >= 0.5 → True（維持）
     - ブランド×証明書の強連携は維持（brand_detected & {no_org, free_ca, no_cert}）
-    - 旧: no_org 単体 → True の分岐は **削除**
+    - 旧: no_org 単体 → True の分岐は **持たない**
+
+    追加（2025-12-14）:
+      - R4: ML<0.5 かつ {free_ca,no_org} かつ contextual>=しきい値 → phishing
+      - R5: ML<0.5 かつ dangerous_tld & no_org かつ contextual>=0.33 → phishing
     """
     tr = trace if isinstance(trace, list) else []
     c = clip_confidence(getattr(asmt, "confidence", 0.0))
     rl = getattr(asmt, "risk_level", "low") or "low"
     ip = bool(getattr(asmt, "is_phishing", False))
+    reasoning_text = str(getattr(asmt, "reasoning", "") or "")
 
     # 低レベル補正
     if ip and rl == "low":
@@ -114,16 +158,123 @@ def _apply_policy_adjustments(
         rl = _priority_bump(rl, "high")
         tr.append({"rule":"brand_cert_high","ip":True,"c_min":0.70})
 
-    # ---- hard: contextual >= 0.5（維持） ----
-    if ctx_score >= 0.50:
+    # ---- contextual thresholds (FP-safe) ----
+    # NOTE(2026-01-02): ctx>=0.5 を無条件で phishing にすると、DV相当(=free_ca/no_org)
+    # や軽いドメイン特徴だけで 0.5 を超えた benign を大量に誤検知しやすい。
+    #   - ctx>=0.65 は hard trigger
+    #   - 0.50<=ctx<0.65 は "strong evidence" がある場合のみ trigger
+    HARD_CTX = 0.65
+    SOFT_CTX = 0.50
+
+    _strong_domain = {
+        "dangerous_tld",
+        "idn_homograph",
+        "high_entropy",
+        "very_high_entropy",
+        "short_random_combo",
+        "random_with_high_tld_stat",
+        "very_short_dangerous_combo",
+        "deep_chain_with_risky_tld",
+    }
+    _strong_cert = {
+        "self_signed",
+        "dv_multi_risk_combo",
+    }
+    _strong_ctx = {
+        "ml_paradox",
+        "ml_paradox_medium",
+    }
+
+    def _has_strong_evidence() -> bool:
+        # Brand is always strong (but brand tool itself should aim for high precision).
+        if brand_detected:
+            return True
+
+        # Domain strong evidence (excluding random_pattern-only which is too noisy).
+        if domain_issues & _strong_domain:
+            return True
+
+        # random_pattern becomes "strong" only when combined with other domain red flags.
+        # (random_pattern-only は誤検知が多い: cryptpad.org など)
+        if "random_pattern" in domain_issues:
+            if domain_issues & {
+                "short",
+                "very_short",
+                "dangerous_tld",
+                "idn_homograph",
+                "high_entropy",
+                "very_high_entropy",
+                "short_random_combo",
+                "very_short_dangerous_combo",
+                "deep_chain_with_risky_tld",
+                "random_with_high_tld_stat",
+            }:
+                return True
+
+        # Cert strong evidence (rare; DV/NoOrg alone is NOT strong).
+        if cert_issues & _strong_cert:
+            return True
+
+        # Context strong evidence: paradox flags are meaningful; dv_suspicious_combo alone is not.
+        if ctx_issues & _strong_ctx:
+            return True
+
+        # dv_suspicious_combo は単体では弱いが、ドメイン側の強シグナルと組み合わせると強証拠として扱う
+        if ("dv_suspicious_combo" in ctx_issues) and (domain_issues & {
+            "dangerous_tld",
+            "short",
+            "very_short",
+            "idn_homograph",
+            "high_entropy",
+            "very_high_entropy",
+            "short_random_combo",
+            "very_short_dangerous_combo",
+            "deep_chain_with_risky_tld",
+        }):
+            return True
+
+        return False
+
+    strong_evidence = _has_strong_evidence()
+
+    # hard trigger
+    if ctx_score >= HARD_CTX:
         if not ip:
-            tr.append({"rule":"hard_ctx_ge_0.50","ip":True,"ctx":ctx_score})
+            tr.append({"rule":"hard_ctx_ge_0.65","ip":True,"ctx":ctx_score})
         ip = True
         rl = _priority_bump(rl, "high")
-        c = max(c, ctx_score, 0.50)
+        c = max(c, ctx_score, HARD_CTX)
+
+    # soft trigger (requires strong evidence)
+    elif (ctx_score >= SOFT_CTX) and strong_evidence:
+        if not ip:
+            tr.append({"rule":"ctx_ge_0.50_with_strong_evidence","ip":True,"ctx":ctx_score})
+        ip = True
+        rl = _priority_bump(rl, "medium-high")
+        c = max(c, ctx_score, SOFT_CTX)
 
     else:
-        # ---- Phase6 tightened rules (R1/R2/R3) ----
+        # ---- Phase6 tightened rules (R1/R2/R3/R4/R5) ----
+        # Low-ML guard (2026-01-02):
+        # - ml が強く安全（<0.25）と出ているとき、DV系証明書（free_ca+no_org）だけで
+        #   Phishing に反転させると FP が急増する（stage2_handoff で顕著）。
+        # - dangerous_tld や brand など「独立した強い根拠」が無い限り、R1/R2/R4 系の反転は抑止する。
+        low_ml_guard = (
+            (ml < 0.25)
+            and ({"free_ca","no_org"} <= cert_issues)
+            and ("dangerous_tld" not in domain_issues)
+            and (not brand_detected)
+        )
+        if low_ml_guard:
+            tr.append({
+                "rule": "LOW_ML_GUARD",
+                "note": "skip DV-only overrides when ml<0.25 (unless dangerous_tld/brand)",
+                "ml": round(ml, 4),
+                "ctx_score": round(ctx_score, 4),
+                "tld_category": tld_cat,
+                "domain_length_category": dom_len,
+            })
+
         # guard: legitimate TLD & long/normal length → R1 しきい値を引き上げ
         r1_th = 0.28
         if (tld_cat == "legitimate") and (dom_len in ("normal","long")) and ("dangerous_tld" not in domain_issues):
@@ -131,25 +282,126 @@ def _apply_policy_adjustments(
             tr.append({"note":"legit_tld_guard","r1_threshold":r1_th})
 
         # R1: very_low-ML + free_ca & no_org + 中強度ctx
-        if (ml < 0.20) and ({"free_ca","no_org"} <= cert_issues) and (ctx_score >= r1_th):
+        # NOTE(2026-01-02): DV相当(free_ca/no_org)だけで True にしない。必ず strong evidence を要求。
+        if (ml < 0.20) and ({"free_ca","no_org"} <= cert_issues) and (ctx_score >= r1_th) and strong_evidence and (not low_ml_guard):
             ip = True
             rl = _priority_bump(rl, "medium-high")
             c = max(c, ctx_score, 0.55)
             tr.append({"rule":"R1","ml":ml,"ctx":ctx_score,"req":["ml<0.2","free_ca&no_org","ctx>=%.2f"%r1_th]})
 
         # R2: low-ML + no_org + (free_ca or short) + ctx>=0.34
-        elif (ml < 0.30) and ("no_org" in cert_issues) and (("free_ca" in cert_issues) or (("short" in domain_issues) or ("very_short" in domain_issues))) and (ctx_score >= 0.34):
+        # NOTE(2026-01-02): short/no_org/free_ca は benign でも頻出 → strong evidence を要求。
+        elif (ml < 0.30) and ("no_org" in cert_issues) and (("free_ca" in cert_issues) or (("short" in domain_issues) or ("very_short" in domain_issues))) and (ctx_score >= 0.34) and strong_evidence:
             ip = True
             rl = _priority_bump(rl, "medium-high")
             c = max(c, ctx_score, 0.55)
             tr.append({"rule":"R2","ml":ml,"ctx":ctx_score})
 
         # R3: <0.40 + short + no_org + ctx>=0.36
-        elif (ml < 0.40) and ("no_org" in cert_issues) and (("short" in domain_issues) or ("very_short" in domain_issues)) and (ctx_score >= 0.36):
+        # NOTE(2026-01-02): short/no_org は単独では弱い → strong evidence を要求。
+        elif (ml < 0.40) and ("no_org" in cert_issues) and (("short" in domain_issues) or ("very_short" in domain_issues)) and (ctx_score >= 0.36) and strong_evidence:
             ip = True
             rl = _priority_bump(rl, "medium-high")
             c = max(c, ctx_score, 0.55)
             tr.append({"rule":"R3","ml":ml,"ctx":ctx_score})
+
+        # R4: <0.50 + free_ca & no_org + ctx>=th
+        # - 目的: ML が 0.30〜0.50 帯に張り付く FN を救済
+        # - 副作用: Let's Encrypt + no_org が一般サイトでも多いので、
+        #           legitimate TLD かつ normal/long は少しだけ厳しめにする。
+        # - 2025-12-15: 500件検証で「ctx=0.34〜0.35 & multiple_risk_factors」のFNがまとまって発生したため、
+        #              legitimate TLD & normal/long でも multiple_risk_factors がある場合は 0.33 を許容。
+        elif (ml < 0.50) and ({"free_ca", "no_org"} <= cert_issues) and strong_evidence:
+            r4_th = 0.34
+            if (tld_cat == "legitimate") and (dom_len in ("normal", "long")) and ("dangerous_tld" not in domain_issues):
+                # default guard
+                r4_th = 0.35
+                # relax if contextual already sees multiple supporting risk factors
+                if "multiple_risk_factors" in ctx_issues:
+                    r4_th = 0.33
+                    tr.append({"note":"legit_tld_guard_r4_relaxed_mrf","r4_threshold":r4_th})
+                else:
+                    tr.append({"note":"legit_tld_guard_r4","r4_threshold":r4_th})
+            if ctx_score >= r4_th:
+                ip = True
+                rl = _priority_bump(rl, "medium-high")
+                c = max(c, ctx_score, 0.55)
+                tr.append({"rule":"R4","ml":ml,"ctx":ctx_score,"th":r4_th})
+
+        # R5: <0.50 + dangerous_tld + no_org + ctx>=0.33
+        # - free_ca が無くても「危険TLD × DVっぽい（no_org）」は強めに扱う
+        elif (ml < 0.50) and ("dangerous_tld" in domain_issues) and ("no_org" in cert_issues) and (ctx_score >= 0.33):
+            ip = True
+            rl = _priority_bump(rl, "medium-high")
+            c = max(c, ctx_score, 0.55)
+            tr.append({"rule":"R5","ml":ml,"ctx":ctx_score})
+
+    # ---- Over-mitigation guard (FN-safe) ----
+    # NOTE(2026-01-02): When ML is already in the phishing range (>=0.50),
+    # do NOT flip to benign unless the domain is strongly allowlisted.
+    is_allowlisted = False
+    try:
+        dom_details = dict((tsum.get("domain") or {}).get("details", {}) or {})
+        lc = dict(dom_details.get("legitimate_check", {}) or {})
+        is_allowlisted = bool(lc.get("is_legitimate")) and float(lc.get("confidence", 0.0) or 0.0) >= 0.95
+    except Exception:
+        is_allowlisted = False
+
+    if (ml >= 0.50) and (not ip) and (not is_allowlisted):
+        ip = True
+        rl = _priority_bump(rl, "medium-high")
+        c = max(c, ml, 0.55)
+        tr.append({"rule":"ml_ge_0.50_no_mitigation","ml":ml,"allowlisted":False})
+
+    # Post-LLM Flip Gate (2026-01-03):
+    # - LLM が is_phishing=true を返しても、ML が強く benign（<0.25）で
+    #   かつ dangerous TLD でない場合は、弱い根拠(DV/NoOrg + 軽いドメイン特徴)での反転を抑止する。
+    #   ※Stage2 handoff での FP 多発を止血する目的。
+    LOW_ML_FLIP_GATE_TH = 0.25
+    if ip and (ml < LOW_ML_FLIP_GATE_TH) and (tld_cat != "dangerous"):
+        ip = False
+        # 反転ブロック時は「安全」だが警戒は残す（confidence を過大にしない）
+        c = max(min(c, 0.70), 0.55)
+        rl = "medium"
+        try:
+            reasoning_text = (reasoning_text + f" | Phase6 gate: blocked low-ML flip (ml={ml:.3f} < {LOW_ML_FLIP_GATE_TH}, tld_category={tld_cat})")
+        except Exception:
+            pass
+        tr.append({
+            "rule": "POST_LLM_FLIP_GATE",
+            "action": "block_low_ml_llm_phishing",
+            "ml": round(ml, 4),
+            "tld_category": tld_cat,
+            "threshold": LOW_ML_FLIP_GATE_TH,
+        })
+
+    # ------------------------------------------------------------------
+    # Post-Policy flip gate (dvguard4):
+    # - domain_issues が random_pattern のみ の場合は、誤反転（FP）が多い。
+    #   brand が無い限り、Benign→Phishing の追加反転をブロックする。
+    #   (例: cryptpad.org など)
+    # ------------------------------------------------------------------
+    if ip:
+        try:
+            _domain_issues_list = list(domain_issues or [])
+            _random_only = ("random_pattern" in _domain_issues_list) and (len(_domain_issues_list) == 1)
+        except Exception:
+            _random_only = False
+        if _random_only and (not brand_detected) and (tld_cat in {"legitimate", "neutral", "unknown", ""}):
+            ip = False
+            c = min(c, 0.35)
+            rl = "low"
+            try:
+                reasoning_text = (reasoning_text + " | Phase6 gate: blocked random_pattern-only flip (dvguard4)")
+            except Exception:
+                pass
+            tr.append({
+                "rule": "POST_RANDOM_PATTERN_ONLY_GATE",
+                "action": "block_random_pattern_only_flip",
+                "ml": round(ml, 4),
+                "tld_category": tld_cat,
+                "domain_issues": _domain_issues_list,
+            })
 
     # final clip + external risk level
     c = clip_confidence(c)
@@ -170,7 +422,7 @@ def _apply_policy_adjustments(
         risk_level=rl,
         detected_brands=list(getattr(asmt, "detected_brands", []) or []),
         risk_factors=rf,
-        reasoning=str(getattr(asmt, "reasoning", "") or ""),
+        reasoning=reasoning_text,
     )
     return asmt
 
@@ -239,6 +491,15 @@ def final_decision(
     - mitigated_risk_factors を risk_factors にタグとして埋め込み
     - decision_trace と LLM の思考過程を graph_state に保存
     """
+    # 0) Traceability: Phase6 policy version stamp
+    #    - 解析CSV側で phase6_policy_version を確実に参照できるように、
+    #      LLM 呼び出し前に graph_state へ書き込む（Strict/SO失敗でも残る）。
+    try:
+        if isinstance(graph_state, dict):
+            graph_state.setdefault("phase6_policy_version", PHASE6_POLICY_VERSION)
+    except Exception:
+        pass
+
     # 1) シグナル集約
     tsum = _summarize_tool_signals(tool_results or {})
 
@@ -258,27 +519,51 @@ def final_decision(
 
     # 2) LLM へのプロンプト構築
     system_text = (
-        "あなたはサイバーセキュリティのエキスパートAIアナリストです。\n"
-        "与えられた ML スコアと各種ツールの結果をもとに、このドメインがフィッシングかどうかを判定します。\n"
+        "You are an expert AI analyst specializing in cybersecurity and phishing detection.\n"
+        "Using the given ML score and the outputs of the analysis tools, decide whether this domain is phishing or not.\n"
         "\n"
-        "必ず Pydantic スキーマ PhishingAssessmentSO に従った JSON だけを出力してください。\n"
+        "You MUST output ONLY JSON that conforms to the Pydantic schema PhishingAssessmentSO:\n"
         "- is_phishing: bool\n"
-        "- confidence: 0.0〜1.0 （迷いがあれば小さく）\n"
+        "- confidence: float between 0.0 and 1.0 (use a smaller value when you are uncertain)\n"
         "- risk_level: one of ['low','medium','medium-high','high','critical']\n"
-        "- detected_brands: 検出したブランド名のリスト（なければ空）\n"
-        "- risk_factors: 最終判定の根拠として採用したリスク要因（dangerous_tld, free_ca, no_org, ml_paradox など）\n"
-        "- primary_category: ReasoningCategory から 1つ選ぶ\n"
-        "- mitigated_risk_factors: 検知したが『安全/許容』と判断して無視したリスク要因\n"
-        "- reasoning: 50文字以上で、なぜ is_phishing をその値にしたか、なぜ mitigated_risk_factors を無視できると考えたかを説明すること。\n"
+        "- detected_brands: list of detected brand names (empty if none)\n"
+        "- risk_factors: risk factors that you treat as ACTIVE evidence for the final decision\n"
+        "    (for example: dangerous_tld, free_ca, no_org, ml_paradox, etc.)\n"
+        "- primary_category: choose exactly one value from ReasoningCategory\n"
+        "- mitigated_risk_factors: risk factors that you detected but decided to treat as\n"
+        "    safe/acceptable in the final decision\n"
+        "- reasoning: at least 50 characters explaining why you chose the value of is_phishing\n"
+        "    and why you decided that the mitigated_risk_factors can be ignored in the final\n"
+        "    decision.\n"
         "\n"
-        "重要ルール:\n"
-        "1. DGA と思われるランダムドメイン（高エントロピー or 母音が少ないランダム文字列）は、\n"
-        "   コンテンツが正常に見えても原則として危険寄りに評価すること。\n"
-        "2. ブランド要素が無いからといって安全とは限らない。危険TLD (.icu, .xyz, .top 等) や free_ca, no_org が揃う場合はブランド無しでも強いリスク要因とみなすこと。\n"
-        "3. contextual_risk_assessment.risk_score >= 0.5 のときは、必ず is_phishing=true にすること。\n"
-        "4. dangerous_tld, free_ca, no_org, ml_paradox などの強いリスク要因が存在するにもかかわらず is_phishing=false と判断する場合は、\n"
-        "   それらを risk_factors ではなく mitigated_risk_factors に入れ、explanation で『なぜそれでも安全とみなしたのか』を必ず説明すること。\n"
-        "5. risk_factors / mitigated_risk_factors には、tool_signals.*.issues に現れる短い識別子（dangerous_tld, free_ca, brand_detected, high_entropy など）を優先して用いること。\n"
+        "Important rules:\n"
+        "1. Domains that look like random strings (high entropy / very few vowels) can be risky,\n"
+        "   but do NOT treat a single weak heuristic like random_pattern alone as sufficient\n"
+        "   for is_phishing=true. Require corroborating signals (e.g., short+random, dangerous_tld,\n"
+        "   brand impersonation, idn_homograph, etc.).\n"
+        "2. The absence of brand elements does NOT automatically mean the site is safe. When a\n"
+        "   dangerous TLD (.icu, .xyz, .top, etc.) is combined with free_ca and no_org, treat\n"
+        "   this as a strong risk signal even without any brand element.\n"
+        "3. Do NOT set is_phishing=true based on ml_probability alone. If you decide phishing, include at least one\n"
+        "   non-ML risk_factors that appear in tool_signals.*.issues.\n"
+        "4. When contextual_risk_assessment.risk_score >= 0.65, you MUST set is_phishing=true.\n"
+        "   When 0.50 <= contextual_risk_assessment.risk_score < 0.65, set is_phishing=true ONLY if\n"
+        "   there is at least one strong non-ML signal (e.g., brand_detected, dangerous_tld, idn_homograph,\n"
+        "   random_pattern/high_entropy, self_signed, dv_multi_risk_combo, dv_suspicious_combo, ml_paradox).\n"
+        "5. contextual_risk_assessment.risk_score < 0.50 does NOT imply the site is safe. It only means it is not an automatic trigger.\n"
+        "6. If you decide is_phishing=false even though there are strong risk signals such as\n"
+        "   dangerous_tld, free_ca, no_org, or ml_paradox, you MUST put those signals into\n"
+        "   mitigated_risk_factors (not risk_factors) and clearly explain in reasoning why the\n"
+        "   site is still considered safe.\n"
+        "7. For both risk_factors and mitigated_risk_factors, prefer to use the short\n"
+        "   identifiers that appear in tool_signals.*.issues (for example: dangerous_tld,\n"
+        "   free_ca, brand_detected, high_entropy, etc.).\n"
+        "8. A \"valid\" SSL certificate (especially DV / Let\'s Encrypt) is NOT a mitigating factor.\n"
+        "   Phishing sites commonly use valid DV certificates. Do NOT cite \"valid certificate\" as a reason for safety or mitigation.\n"
+        "   Treat DV/Let\'s Encrypt as neutral-to-risk unless there is strong identity evidence (e.g., OV/EV with org).\n"
+        "9. When ml_probability < 0.25 and precheck_summary.tld_category is not 'dangerous', be VERY conservative about setting is_phishing=true.\n"
+        "   Only set is_phishing=true if there is clear independent evidence (e.g., strong brand impersonation).\n"
+        "   Otherwise set is_phishing=false and place any detected risk signals into mitigated_risk_factors.\n"
     )
 
     user_payload = {
@@ -306,7 +591,7 @@ def final_decision(
 
     trace: list[dict[str, object]] = []
     trace.append({
-        "phase6_version": "v1.4.0-mitigated",
+        "phase6_version": PHASE6_POLICY_VERSION,
         "ml": ml,
         "ml_category": ml_category,
         "ctx_score": ctx_score,
@@ -331,7 +616,7 @@ def final_decision(
             "assessment": asmt_so.model_dump(),
         })
 
-        # 4) ポリシー補正（R1/R2/R3 を適用）
+        # 4) ポリシー補正（R1/R2/R3/R4/R5 を適用）
         asmt2 = _apply_policy_adjustments(
             asmt_so,
             tsum,
@@ -360,10 +645,32 @@ def final_decision(
         # 6) graph_state へのトレース保存
         try:
             if isinstance(graph_state, dict):
-                graph_state["phase6_policy_version"] = "v1.4.0-mitigated"
+                graph_state["phase6_policy_version"] = PHASE6_POLICY_VERSION
+
+                # 事後分析用: 発火した policy rule をフラットに保存（CSV展開を楽にする）
+                rules_fired: list[str] = []
+                for t in trace:
+                    if isinstance(t, dict) and t.get("rule"):
+                        r = str(t.get("rule"))
+                        if r not in rules_fired:
+                            rules_fired.append(r)
+                graph_state["phase6_rules_fired"] = rules_fired
+
+                # Post-LLM gate info stamp (CSV-friendly)
+                try:
+                    gate = None
+                    for t in trace:
+                        if isinstance(t, dict) and t.get("rule") == "POST_LLM_FLIP_GATE":
+                            gate = dict(t)
+                            break
+                    if gate:
+                        graph_state["phase6_gate"] = gate
+                except Exception:
+                    pass
+
                 dt = list(graph_state.get("decision_trace", []) or [])
                 dt.append({
-                    "phase6_version": "v1.4.0-mitigated",
+                    "phase6_version": PHASE6_POLICY_VERSION,
                     "domain": domain,
                     "ml": ml,
                     "ml_category": ml_category,
@@ -373,6 +680,7 @@ def final_decision(
                     "llm_primary_category": str(getattr(asmt_so, "primary_category", "")),
                     "llm_mitigated_risk_factors": mitigated,
                     "llm_risk_factors": list(getattr(asmt_so, "risk_factors", []) or []),
+                    "policy_rules_fired": rules_fired,
                     "policy_trace": trace,
                 })
                 graph_state["decision_trace"] = dt

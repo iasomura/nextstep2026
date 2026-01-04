@@ -4,10 +4,18 @@ tools_module.py — Phase 3 v1.3 準拠（スリム化版）
 - brand_impersonation_check と certificate_analysis は tools/ ディレクトリに移行済み。
 - ここには short_domain_analysis と contextual_risk_assessment、および共通ヘルパーを残しています。
 """
+
+# ---------------------------------------------------------------------
+# Change history
+# - 2026-01-02: safe_tool_wrapper now returns a neutral `data` payload even
+#              on failure (error included in details) so downstream logic/logs
+#              remain stable and analysis-friendly.
+# ---------------------------------------------------------------------
 from __future__ import annotations
 
 import re
 import unicodedata
+import math
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -56,11 +64,25 @@ def _local_extract_etld1(host: str) -> _ETLD1Shim:
 def _ET(host: str):
     return (_extract_etld1 or _local_extract_etld1)(host)
 
+# ---- TLD safety guard ---------------------------------------------------------
+# upstream の統計/学習が壊れても、.com/.net/.org 等の汎用TLDを "dangerous" 扱いにしない
+_COMMON_SAFE_TLDS = {
+    "com", "net", "org",
+    "jp", "co.jp", "ne.jp", "ac.jp", "go.jp",
+    "edu", "gov",
+}
+
+
 def _local_categorize_tld(suffix: str, dangerous: List[str], legitimate: List[str], neutral: List[str]) -> str:
-    s = (suffix or "").lower()
-    D = {x.lower() for x in (dangerous or [])}
-    L = {x.lower() for x in (legitimate or [])}
-    N = {x.lower() for x in (neutral or [])}
+    s = (suffix or "").lower().strip(".")
+
+    # Guard: common TLDs should never be treated as "dangerous"
+    if s in _COMMON_SAFE_TLDS:
+        return "legitimate"
+
+    D = {x.lower().strip(".") for x in (dangerous or []) if x}
+    L = {x.lower().strip(".") for x in (legitimate or []) if x}
+    N = {x.lower().strip(".") for x in (neutral or []) if x}
     if s in D: return "dangerous"
     if s in L: return "legitimate"
     if s in N: return "neutral"
@@ -89,10 +111,25 @@ def safe_tool_wrapper(name_or_fn=None):
                         tool_name=(tool_name or fn.__name__),
                         original_error=str(e),
                     ) from e
+                # --- logging/analysis friendly fallback ---
+                # Always return a minimal neutral `data` payload even on failure.
+                # This keeps downstream aggregation and log export schemas stable.
+                err = str(e)
+                tn = (tool_name or fn.__name__)
                 return {
                     "success": False,
-                    "error": str(e),
-                    "_fallback": {"location": f"tool_{tool_name or fn.__name__}"},
+                    "error": err,
+                    "data": {
+                        "tool_name": tn,
+                        "detected_issues": ["tool_error"],
+                        "risk_score": 0.0,
+                        "details": {
+                            "error": err,
+                            "exception_type": type(e).__name__,
+                        },
+                        "reasoning": f"Tool execution failed: {tn} ({type(e).__name__}).",
+                    },
+                    "_fallback": {"location": f"tool_{tn}"},
                 }
         return _inner
     if callable(name_or_fn):
@@ -115,53 +152,123 @@ def _tokenize_domain_labels(et: Any) -> List[str]:
     return [unicodedata.normalize("NFKC", t) for t in labels if t]
 
 
-def _tld_stat_weight(suffix: str, phishing_tld_stats: Optional[Dict[str, Any]]) -> float:
+def _coerce_tld_stats_to_map(stats: Any) -> Dict[str, float]:
+    """phishing_tld_stats の型ゆらぎ（dict / DataFrame / Series）を吸収して {tld: value} にする。"""
+    if not stats:
+        return {}
+    if isinstance(stats, dict):
+        out: Dict[str, float] = {}
+        for k, v in stats.items():
+            kk = str(k).lower().strip(".")
+            try:
+                out[kk] = float(v)
+            except Exception:
+                try:
+                    if hasattr(v, "item"):
+                        out[kk] = float(v.item())
+                except Exception:
+                    continue
+        return out
+
+    # pandas DataFrame: columns = ['tld', 'count'] など
+    try:
+        import pandas as pd  # type: ignore
+        if isinstance(stats, pd.DataFrame) and ("tld" in stats.columns):
+            col = "count" if "count" in stats.columns else None
+            if col is None:
+                num_cols = [c for c in stats.columns if c != "tld" and pd.api.types.is_numeric_dtype(stats[c])]
+                col = num_cols[0] if num_cols else None
+            if col:
+                out: Dict[str, float] = {}
+                for t, v in zip(stats["tld"], stats[col]):
+                    tt = str(t).lower().strip(".")
+                    try:
+                        out[tt] = float(v)
+                    except Exception:
+                        try:
+                            if hasattr(v, "item"):
+                                out[tt] = float(v.item())
+                        except Exception:
+                            continue
+                return out
+    except Exception:
+        pass
+
+    # pandas Series / other dict-like
+    try:
+        if hasattr(stats, "to_dict"):
+            d = stats.to_dict()  # type: ignore
+            if isinstance(d, dict):
+                out: Dict[str, float] = {}
+                for k, v in d.items():
+                    if isinstance(v, dict):
+                        continue
+                    kk = str(k).lower().strip(".")
+                    try:
+                        out[kk] = float(v)
+                    except Exception:
+                        try:
+                            if hasattr(v, "item"):
+                                out[kk] = float(v.item())
+                        except Exception:
+                            continue
+                if out:
+                    return out
+    except Exception:
+        pass
+
+    return {}
+
+
+def _tld_stat_weight(suffix: str, phishing_tld_stats: Optional[Any]) -> float:
     """
-    TLDごとのフィッシング寄与統計から 0.0〜0.30 の重みを計算するヘルパー。
-    - phishing_tld_stats[suffix] が 0〜1 なら、そのまま 0.30*v にスケール
-    - 1 を超える場合は、全 TLD の最大値で正規化して 0.30 * (v / vmax)
-    - 何かおかしければ 0.0 を返す
+    TLD統計から 0.0〜0.30 の重みを計算するヘルパー（頑健化版）
+
+    - stats が 0〜1 の確率/比率っぽい場合: 0.30*v
+    - stats が count-like（>1）場合:
+        * 汎用TLD（.com/.net/.org 等）は weight=0.0（頻度≠危険度のため）
+        * それ以外は log scaling で 0.0〜0.30 に収める
     """
-    if not suffix or not isinstance(phishing_tld_stats, dict) or not phishing_tld_stats:
+    if not suffix or not phishing_tld_stats:
         return 0.0
 
-    val = phishing_tld_stats.get(suffix, 0)
+    sfx = str(suffix).lower().strip(".")
+    if sfx in _COMMON_SAFE_TLDS:
+        return 0.0
+
+    stats_map = _coerce_tld_stats_to_map(phishing_tld_stats)
+    if not stats_map:
+        return 0.0
+
+    # key は lower を想定（念のため2通り）
+    val = stats_map.get(sfx, stats_map.get(suffix, 0.0))
     try:
         v = float(val)
     except Exception:
         try:
-            # pandas / numpy の scalar 対応
             if hasattr(val, "item"):
                 v = float(val.item())
-            elif hasattr(val, "__float__"):
-                v = float(val)
             else:
                 return 0.0
         except Exception:
             return 0.0
 
-    # 0〜1 の範囲ならそのままスケール
+    if v <= 0.0:
+        return 0.0
+
+    # 0〜1 の範囲ならそのままスケール（確率/比率）
     if v <= 1.0:
         return max(0.0, min(0.30, 0.30 * v))
 
-    # 1 を超える場合は vmax で正規化
+    # count-like: log scaling
     try:
-        vmax = float(
-            max(
-                float(x)
-                for x in phishing_tld_stats.values()
-                if str(x).strip() != ""
-            )
-        )
-        if vmax <= 0:
+        vmax = max([float(x) for x in stats_map.values() if x is not None] + [1.0])
+        if vmax <= 1.0:
             return 0.0
-        return max(0.0, min(0.30, 0.30 * (v / vmax)))
+        w = 0.30 * (math.log1p(v) / math.log1p(vmax))
+        return max(0.0, min(0.30, float(w)))
     except Exception:
         return 0.0
-
-
-
-
 
 # ---------------------------------------------------------------------
 # Tool re-exports（本体は phishing_agent.tools.* にあり）
