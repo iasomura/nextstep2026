@@ -27,7 +27,11 @@ FEATURE_ORDER = [
     'cert_san_dns_count', 'cert_san_ip_count', 'cert_cn_matches_domain',
     'cert_san_matches_domain', 'cert_san_matches_etld1', 'cert_has_ocsp',
     'cert_has_crl_dp', 'cert_has_sct', 'cert_sig_algo_weak',
-    'cert_pubkey_size', 'cert_key_type_code', 'cert_is_lets_encrypt'
+    'cert_pubkey_size', 'cert_key_type_code', 'cert_is_lets_encrypt',
+
+    # New certificate features (added via feature search, +0.28% AUC)
+    'cert_key_bits_normalized', 'cert_issuer_country_code', 'cert_serial_entropy',
+    'cert_has_ext_key_usage', 'cert_has_policies', 'cert_issuer_type',
 ]
 
 
@@ -217,6 +221,14 @@ def extract_certificate_features(cert_data: Any, domain: Optional[str] = None) -
         'cert_pubkey_size': 0,
         'cert_key_type_code': 0,  # 0=unknown, 1=RSA, 2=EC, 3=DSA/other
         'cert_is_lets_encrypt': 0,
+
+        # New certificate features (added via feature search, +0.28% AUC)
+        'cert_key_bits_normalized': 0.0,  # Key size normalized (0-1 scale)
+        'cert_issuer_country_code': 0,    # 0=unknown, 1=US, 2=other
+        'cert_serial_entropy': 0.0,       # Serial number entropy
+        'cert_has_ext_key_usage': 0,      # Has Extended Key Usage extension
+        'cert_has_policies': 0,           # Has Certificate Policies extension
+        'cert_issuer_type': 0,            # 0=unknown, 1=LE, 2=Google, 3=Cloudflare, 4=Commercial
     }
 
     if cert_data is None:
@@ -408,6 +420,61 @@ def extract_certificate_features(cert_data: Any, domain: Optional[str] = None) -
         except Exception:
             features['cert_sig_algo_weak'] = 0
 
+        # === New certificate features (added via feature search) ===
+
+        # Key size normalized (0-1 scale, 2048=0.5, 4096=1.0, 256=0.5 for EC)
+        try:
+            pk = cert.public_key()
+            key_size = pk.key_size
+            if key_size <= 256:  # EC keys
+                features['cert_key_bits_normalized'] = key_size / 512
+            else:  # RSA keys
+                features['cert_key_bits_normalized'] = min(key_size / 4096, 1.0)
+        except Exception:
+            features['cert_key_bits_normalized'] = 0.0
+
+        # Issuer country code (0=unknown, 1=US, 2=other)
+        try:
+            from cryptography.x509.oid import NameOID
+            country_attrs = cert.issuer.get_attributes_for_oid(NameOID.COUNTRY_NAME)
+            if country_attrs:
+                country = country_attrs[0].value.upper()
+                features['cert_issuer_country_code'] = 1 if country == 'US' else 2
+        except Exception:
+            features['cert_issuer_country_code'] = 0
+
+        # Serial number entropy
+        try:
+            serial_hex = format(cert.serial_number, 'x')
+            features['cert_serial_entropy'] = calculate_entropy(serial_hex)
+        except Exception:
+            features['cert_serial_entropy'] = 0.0
+
+        # Extended Key Usage extension
+        try:
+            cert.extensions.get_extension_for_oid(ExtensionOID.EXTENDED_KEY_USAGE)
+            features['cert_has_ext_key_usage'] = 1
+        except Exception:
+            features['cert_has_ext_key_usage'] = 0
+
+        # Certificate Policies extension
+        try:
+            cert.extensions.get_extension_for_oid(ExtensionOID.CERTIFICATE_POLICIES)
+            features['cert_has_policies'] = 1
+        except Exception:
+            features['cert_has_policies'] = 0
+
+        # Issuer type (0=unknown, 1=LE, 2=Google, 3=Cloudflare, 4=Commercial)
+        # Note: cert_is_lets_encrypt already extracts issuer_l, reuse logic
+        if "let's encrypt" in issuer_l or "letsencrypt" in issuer_l:
+            features['cert_issuer_type'] = 1
+        elif 'google' in issuer_l:
+            features['cert_issuer_type'] = 2
+        elif 'cloudflare' in issuer_l:
+            features['cert_issuer_type'] = 3
+        elif any(ca in issuer_l for ca in ['digicert', 'comodo', 'sectigo', 'geotrust', 'thawte', 'entrust', 'globalsign']):
+            features['cert_issuer_type'] = 4
+
     except Exception:
         # Keep defaults
         pass
@@ -503,12 +570,12 @@ class FeatureEngineer:
 
     def print_feature_info(self) -> None:
         """Print feature information."""
-        print(f"📊 Total features: {len(self.feature_names)}")
-        print(f"🏷️ Brand keywords: {len(self.brand_keywords)}")
-        print("\n🔍 Feature list:")
-        print("【Domain features】")
+        print(f"Total features: {len(self.feature_names)}")
+        print(f"Brand keywords: {len(self.brand_keywords)}")
+        print("\nFeature list:")
+        print("[Domain features]")
         for i, feature in enumerate(self.feature_names[:15], 1):
             print(f"  {i:2d}. {feature}")
-        print("\n【Certificate features】")
+        print("\n[Certificate features]")
         for i, feature in enumerate(self.feature_names[15:], 16):
             print(f"  {i:2d}. {feature}")
