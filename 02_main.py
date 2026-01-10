@@ -86,7 +86,7 @@ def get_default_config():
         # Stage2 (defaults match 02_original.ipynb Cell 37)
         'stage2_select_mode': 'threshold_cap',  # default in notebook
         'stage2_max_budget': 0,  # 0 = disabled (variable-size handoff)
-        'stage2_tau': 0.60,  # default in notebook
+        'stage2_tau': 0.40,  # optimized via feature search (was 0.60)
         'stage2_override_tau': 0.30,
         'stage2_phi_phish': 0.99,
         'stage2_phi_benign': 0.01,
@@ -635,17 +635,42 @@ def select_route1_thresholds(y_val, p_val, cfg):
 # Stage2 Gate (OOF LR + segment_priority)
 # ============================================================
 
-def train_stage2_lr_oof(X_train, y_train, err_train, cfg):
+def compute_lr_extra_features(p1_proba: np.ndarray) -> np.ndarray:
+    """
+    Compute extra features for Stage2 LR from Stage1 predictions.
+    Selected features: entropy + uncertainty (based on feature search).
+    """
+    eps = 1e-7
+    p_clipped = np.clip(p1_proba, eps, 1 - eps)
+
+    # Entropy (maximum at 0.5)
+    entropy = -(p_clipped * np.log(p_clipped) +
+                (1 - p_clipped) * np.log(1 - p_clipped))
+    entropy = np.nan_to_num(entropy, nan=0.0)
+
+    # Uncertainty (1.0 at p=0.5, 0.0 at p=0 or p=1)
+    uncertainty = 1.0 - np.abs(p1_proba - 0.5) * 2.0
+
+    return np.column_stack([entropy, uncertainty])
+
+
+def train_stage2_lr_oof(X_train, y_train, err_train, p1_proba, cfg):
     """
     Train Stage2 Logistic Regression with Out-of-Fold predictions.
     Predicts probability of Stage1 making an error.
+
+    Uses base features (35) + extra features (entropy, uncertainty from p1_proba).
     """
     n_folds = cfg['stage2_oof_folds']
     random_state = 42
 
+    # Add extra features derived from Stage1 predictions
+    extra_features = compute_lr_extra_features(p1_proba)
+    X_combined = np.hstack([X_train, extra_features])
+
     # Scale features
     scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X_train)
+    X_scaled = scaler.fit_transform(X_combined)
 
     # OOF predictions
     oof_preds = np.zeros(len(X_train))
@@ -688,7 +713,10 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
 
     # Defer score (p_error from LR or simple uncertainty)
     if lr_model is not None and lr_scaler is not None:
-        X_scaled = lr_scaler.transform(X_defer)
+        # Add extra features (entropy, uncertainty) for LR
+        extra_features = compute_lr_extra_features(p1_defer)
+        X_combined = np.hstack([X_defer, extra_features])
+        X_scaled = lr_scaler.transform(X_combined)
         p_error = lr_model.predict_proba(X_scaled)[:, 1]
     else:
         p_error = 1.0 - np.abs(p1_defer - 0.5) * 2.0
@@ -1142,11 +1170,12 @@ def run_pipeline(run_id, cfg):
     sources_defer = np.array(source_test)[handoff_idx]
 
     # Train Stage2 LR (OOF on training data)
-    y_hat_train = (model.predict_proba(X_train_scaled)[:, 1] >= 0.5).astype(int)
+    p1_train = model.predict_proba(X_train_scaled)[:, 1]
+    y_hat_train = (p1_train >= 0.5).astype(int)
     err_train = (y_hat_train != y_train).astype(int)
 
-    print("   Training Stage2 LR (OOF)...")
-    lr_model, lr_scaler, _ = train_stage2_lr_oof(X_train_scaled, y_train, err_train, cfg)
+    print("   Training Stage2 LR (OOF) with entropy+uncertainty features...")
+    lr_model, lr_scaler, _ = train_stage2_lr_oof(X_train_scaled, y_train, err_train, p1_train, cfg)
 
     # Save LR model
     joblib.dump(lr_model, models_dir / "lr_defer_model.pkl")
