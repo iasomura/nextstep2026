@@ -68,11 +68,17 @@ def get_default_config():
     model_cfg = compat_cfg.get('model', {})
 
     return {
-        # XGBoost (from config.json model section or defaults)
+        # XGBoost (optimized via Optuna - Trial 25)
         'xgb_val_size': 0.10,
         'xgb_n_estimators': model_cfg.get('n_estimators', 500),
-        'xgb_max_depth': model_cfg.get('max_depth', 6),
-        'xgb_learning_rate': model_cfg.get('learning_rate', 0.1),
+        'xgb_max_depth': model_cfg.get('max_depth', 10),
+        'xgb_learning_rate': model_cfg.get('learning_rate', 0.206),
+        'xgb_min_child_weight': model_cfg.get('min_child_weight', 6),
+        'xgb_subsample': model_cfg.get('subsample', 0.77),
+        'xgb_colsample_bytree': model_cfg.get('colsample_bytree', 0.70),
+        'xgb_gamma': model_cfg.get('gamma', 2.38),
+        'xgb_reg_alpha': model_cfg.get('reg_alpha', 0.11),
+        'xgb_reg_lambda': model_cfg.get('reg_lambda', 2.37),
         'xgb_early_stopping_rounds': model_cfg.get('early_stopping_rounds', 50),
 
         # Route1 thresholds
@@ -893,18 +899,23 @@ def run_pipeline(run_id, cfg):
     compat_results.mkdir(parents=True, exist_ok=True)
 
     # ================================================================
-    # Step 1: Brand Keywords (LLM)
+    # Step 1: Brand Keywords (LLM or cached)
     # ================================================================
     print("\n" + "-" * 40)
-    print("[1/9] Brand keyword extraction via LLM...")
+    print("[1/9] Brand keyword extraction...")
 
-    brand_keywords = extract_brands_via_llm(cfg)
-
-    # Save brand keywords
     brand_path = models_dir / "brand_keywords.json"
-    with open(brand_path, 'w') as f:
-        json.dump(brand_keywords, f, indent=2)
-    print(f"   Saved: {brand_path.name}")
+    if brand_path.exists():
+        print(f"   Using existing: {brand_path.name}")
+        with open(brand_path, 'r') as f:
+            brand_keywords = json.load(f)
+        print(f"   Loaded {len(brand_keywords)} brand keywords")
+    else:
+        print("   Extracting via LLM...")
+        brand_keywords = extract_brands_via_llm(cfg)
+        with open(brand_path, 'w') as f:
+            json.dump(brand_keywords, f, indent=2)
+        print(f"   Saved: {brand_path.name}")
 
     # ================================================================
     # Step 2: Load Data
@@ -1076,9 +1087,17 @@ def run_pipeline(run_id, cfg):
         n_estimators=cfg['xgb_n_estimators'],
         max_depth=cfg['xgb_max_depth'],
         learning_rate=cfg['xgb_learning_rate'],
+        min_child_weight=cfg['xgb_min_child_weight'],
+        subsample=cfg['xgb_subsample'],
+        colsample_bytree=cfg['xgb_colsample_bytree'],
+        gamma=cfg['xgb_gamma'],
+        reg_alpha=cfg['xgb_reg_alpha'],
+        reg_lambda=cfg['xgb_reg_lambda'],
         random_state=42,
         eval_metric='logloss',
         early_stopping_rounds=cfg['xgb_early_stopping_rounds'],
+        tree_method='hist',
+        device='cuda',  # GPU acceleration
     )
     model.fit(X_tr, y_tr, eval_set=[(X_val, y_val)], verbose=False)
 
