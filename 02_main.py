@@ -1213,8 +1213,8 @@ def run_pipeline(run_id, cfg):
     selected_idx = handoff_idx[selected_mask]
     df_handoff = df_stage1.iloc[selected_idx].copy()
 
-    # Rename ml_probability to prediction_proba for 03 system compatibility
-    df_handoff = df_handoff.rename(columns={'ml_probability': 'prediction_proba'})
+    # Add prediction_proba column for 03 system compatibility (keep ml_probability for 98 notebook)
+    df_handoff['prediction_proba'] = df_handoff['ml_probability']
 
     # Build payload
     payload = {
