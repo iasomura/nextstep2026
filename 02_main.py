@@ -103,6 +103,13 @@ def get_default_config():
         'stage2_seg_min_p1': 0.00,
         'stage2_oof_folds': 5,
 
+        # Scenario 5: Auto-BENIGN filter (reduce Stage3 handoff)
+        # Cases with p1 < safe_benign_p1_max AND defer_score < safe_benign_defer_max
+        # are considered safe to auto-classify as BENIGN (skip Stage3)
+        'stage2_safe_benign_enabled': True,
+        'stage2_safe_benign_p1_max': 0.15,
+        'stage2_safe_benign_defer_max': 0.40,
+
         # Dangerous TLDs
         'dangerous_tlds': [
             'icu', 'top', 'xyz', 'buzz', 'cfd', 'cyou', 'rest',
@@ -760,7 +767,23 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
         # Gray: uncertain or high defer_score
         gray = (~clear) & (defer_score >= tau)
 
-        picked = override | gray
+        # ============================================================
+        # Scenario 5: Safe BENIGN filter
+        # Cases with low p1 AND low defer_score are auto-BENIGN
+        # ============================================================
+        safe_benign_enabled = cfg.get('stage2_safe_benign_enabled', False)
+        safe_benign_p1_max = float(cfg.get('stage2_safe_benign_p1_max', 0.15))
+        safe_benign_defer_max = float(cfg.get('stage2_safe_benign_defer_max', 0.40))
+
+        if safe_benign_enabled:
+            safe_benign = (p1_defer < safe_benign_p1_max) & (defer_score < safe_benign_defer_max)
+            n_safe_benign = int(safe_benign.sum())
+        else:
+            safe_benign = np.zeros(n_defer, dtype=bool)
+            n_safe_benign = 0
+
+        # Exclude safe_benign from selection (they go to PENDING as auto-BENIGN)
+        picked = (override | gray) & (~safe_benign)
         selected_idx = np.where(picked)[0]
 
         tau_final = tau
@@ -774,7 +797,8 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
             for _ in range(2000):
                 _tau = min(0.999999, _tau + tau_step)
                 gray = (~clear) & (~override) & (defer_score >= _tau)
-                selected_idx = np.where(override | gray)[0]
+                # Keep safe_benign exclusion during budget adjustment
+                selected_idx = np.where((override | gray) & (~safe_benign))[0]
                 if len(selected_idx) <= max_budget or _tau >= 0.999999:
                     tau_final = _tau
                     break
@@ -792,6 +816,11 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
             'phi_phish': phi_phish,
             'phi_benign': phi_benign,
             'selected_final': int(selected_mask.sum()),
+            # Scenario 5 stats
+            'safe_benign_enabled': safe_benign_enabled,
+            'safe_benign_p1_max': safe_benign_p1_max,
+            'safe_benign_defer_max': safe_benign_defer_max,
+            'safe_benign_filtered': n_safe_benign,
         }
 
     # ================================================================
@@ -846,6 +875,10 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
     is_legitimate_tld = np.isin(tld_lower, list(legitimate_tlds))
     pool_optional = ~is_dangerous & ~is_legitimate_tld
 
+    # safe_benign is only defined in threshold_cap mode
+    if 'safe_benign' not in dir():
+        safe_benign = np.zeros(n_defer, dtype=bool)
+
     gate_trace = pd.DataFrame({
         'idx': np.arange(n_defer),
         'domain': domains_defer,
@@ -864,6 +897,7 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
         'selected': selected_mask.astype(int),
         'selected_priority': (pool_priority & selected_mask).astype(int),
         'selected_optional': (pool_optional & selected_mask & ~pool_priority).astype(int),
+        'safe_benign': safe_benign.astype(int),  # Scenario 5: auto-BENIGN filter
     })
 
     return selected_mask, gate_trace, stage2_select_stats
@@ -1209,6 +1243,8 @@ def run_pipeline(run_id, cfg):
     print(f"   Mode:          {stage2_stats['mode']}")
     if 'priority_pool' in stage2_stats:
         print(f"   Priority pool: {stage2_stats['priority_pool']:,}")
+    if stage2_stats.get('safe_benign_enabled', False):
+        print(f"   Safe BENIGN:   {stage2_stats['safe_benign_filtered']:,} (p1<{stage2_stats['safe_benign_p1_max']}, defer<{stage2_stats['safe_benign_defer_max']})")
     print(f"   Selected:      {stage2_stats['selected_final']:,}")
 
     # Save gate trace
