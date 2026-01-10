@@ -278,16 +278,235 @@ def run_predict(args, cfg):
     return 0
 
 
+def run_train(args, cfg):
+    """
+    Training mode: Full notebook workflow (train + evaluate).
+
+    This replicates the original Notebook workflow:
+    1. Load train_data.pkl and test_data.pkl
+    2. Train XGBoost model
+    3. Select Route1 thresholds
+    4. Evaluate Stage2 gate
+    5. Save all results to artifacts
+    """
+    print("\n" + "="*80)
+    print("🎓 Training Mode (Notebook Workflow)")
+    print("="*80)
+
+    # Determine RUN_ID
+    run_id = args.run_id or get_latest_run_id()
+    if not run_id:
+        print("❌ Error: No RUN_ID specified.")
+        print("   This mode requires existing artifacts from 01_data_preparation.py")
+        print("   Use --run-id to specify the RUN_ID")
+        return 1
+
+    artifacts_dir = Path("artifacts") / run_id
+    processed_dir = artifacts_dir / "processed"
+
+    # Check for required pkl files
+    train_pkl = processed_dir / "train_data.pkl"
+    test_pkl = processed_dir / "test_data.pkl"
+
+    if not train_pkl.exists() or not test_pkl.exists():
+        print(f"❌ Error: Required pkl files not found")
+        print(f"   Train: {train_pkl} {'✅' if train_pkl.exists() else '❌'}")
+        print(f"   Test:  {test_pkl} {'✅' if test_pkl.exists() else '❌'}")
+        print(f"\n   Please run 01_data_preparation.py first to generate pkl files.")
+        return 1
+
+    print(f"\n📁 Using RUN_ID: {run_id}")
+    print(f"   Artifacts: {artifacts_dir}")
+
+    # Load data
+    print("\n📂 Loading training data...")
+    import joblib
+    train_data = joblib.load(train_pkl)
+    test_data = joblib.load(test_pkl)
+
+    X_train = train_data['X']
+    y_train = train_data['y']
+    X_test = test_data['X']
+    y_test = test_data['y']
+    feature_names = train_data.get('feature_names', [])
+
+    print(f"   ✅ Train: {X_train.shape[0]:,} samples, {X_train.shape[1]} features")
+    print(f"   ✅ Test:  {X_test.shape[0]:,} samples, {X_test.shape[1]} features")
+
+    # Create DataFrames
+    df_train = pd.DataFrame(X_train, columns=feature_names)
+    df_train['y_true'] = y_train
+
+    df_test = pd.DataFrame(X_test, columns=feature_names)
+    df_test['y_true'] = y_test
+
+    # Add domains if available
+    if 'domains' in train_data:
+        df_train['domain'] = train_data['domains']
+    if 'domains' in test_data:
+        df_test['domain'] = test_data['domains']
+
+    # Train XGBoost
+    print("\n🤖 Training XGBoost model...")
+    from sklearn.model_selection import train_test_split
+
+    # Split train into train/val
+    df_train_split, df_val = train_test_split(
+        df_train,
+        test_size=cfg.xgboost.val_size,
+        random_state=cfg.xgboost.random_state,
+        stratify=df_train['y_true']
+    )
+
+    print(f"   Train split: {len(df_train_split):,}")
+    print(f"   Val split:   {len(df_val):,}")
+
+    trainer = Stage1Trainer(cfg.xgboost)
+    model, metrics = trainer.train(df_train_split, feature_names)
+
+    print(f"\n   ✅ Training complete:")
+    print(f"      Best iteration: {metrics['best_iteration']}")
+    print(f"      Best score: {metrics['best_score']:.4f}")
+
+    # Save model
+    models_dir = artifacts_dir / "models"
+    models_dir.mkdir(parents=True, exist_ok=True)
+
+    model_path = models_dir / "xgboost_model_baseline.pkl"
+    trainer.save_model(model_path)
+
+    # Save feature order
+    import json
+    feature_order_path = models_dir / "feature_order.json"
+    with open(feature_order_path, 'w') as f:
+        json.dump(feature_names, f)
+    print(f"   ✅ Model saved: {model_path.name}")
+    print(f"   ✅ Features saved: {feature_order_path.name}")
+
+    # Predict on validation set
+    print("\n🔮 Predicting on validation set...")
+    p_val = trainer.predict_proba(df_val, feature_names)
+    y_val = df_val['y_true'].values
+
+    print(f"   ✅ Predictions: {len(p_val):,} samples")
+    print(f"      Min: {p_val.min():.4f}, Max: {p_val.max():.4f}, Mean: {p_val.mean():.4f}")
+
+    # Select Route1 thresholds
+    print("\n🚦 Selecting Route1 thresholds...")
+    selector = Route1ThresholdSelector(cfg.route1)
+    t_low, t_high, meta = selector.select_thresholds(y_val, p_val)
+
+    print(f"   ✅ Thresholds selected:")
+    print(f"      t_low:  {t_low:.6f}")
+    print(f"      t_high: {t_high:.6f}")
+
+    # Save thresholds
+    results_dir = artifacts_dir / "results"
+    results_dir.mkdir(parents=True, exist_ok=True)
+
+    thresholds_path = results_dir / "route1_thresholds.json"
+    with open(thresholds_path, 'w') as f:
+        json.dump(meta, f, indent=2)
+    print(f"   ✅ Thresholds saved: {thresholds_path.name}")
+
+    # Evaluate on test set
+    print("\n📊 Evaluating on test set...")
+    p_test = trainer.predict_proba(df_test, feature_names)
+    decisions = selector.apply_thresholds(p_test)
+
+    n_benign = (decisions == 0).sum()
+    n_defer = (decisions == 1).sum()
+    n_phish = (decisions == 2).sum()
+
+    print(f"   ✅ Test set classification:")
+    print(f"      AUTO_BENIGN: {n_benign:,} ({100*n_benign/len(decisions):.1f}%)")
+    print(f"      DEFER:       {n_defer:,} ({100*n_defer/len(decisions):.1f}%)")
+    print(f"      AUTO_PHISH:  {n_phish:,} ({100*n_phish/len(decisions):.1f}%)")
+
+    # Stage2 evaluation (if DEFER candidates exist)
+    if n_defer > 0:
+        print(f"\n🚪 Evaluating Stage2 gate...")
+
+        # Load brand keywords
+        brand_keywords_path = models_dir / "brand_keywords.json"
+        if brand_keywords_path.exists():
+            with open(brand_keywords_path) as f:
+                brand_keywords = json.load(f)
+        else:
+            print(f"   ⚠️  No brand keywords found, using empty list")
+            brand_keywords = []
+
+        df_defer = df_test[decisions == 1].copy()
+        p_defer = p_test[decisions == 1]
+
+        gate = Stage2Gate(cfg.stage2, brand_keywords)
+        df_defer = gate.select_segment_priority(df_defer, p_defer)
+
+        n_handoff = (df_defer['stage2_decision'] == 'handoff').sum()
+        n_pending = (df_defer['stage2_decision'] == 'drop_to_auto').sum()
+
+        # Save Stage2 results
+        stage2_stats = {
+            'N_stage1_handoff_region': int(n_defer),
+            'N_stage2_handoff': int(n_handoff),
+            'stage2_select': {
+                'mode': 'segment_priority',
+                'max_budget': cfg.stage2.max_budget,
+                'priority_pool': int((df_defer.get('stage2_priority', pd.Series([False]*len(df_defer)))).sum()),
+                'selected_final': int(n_handoff)
+            }
+        }
+
+        stage2_path = results_dir / "stage2_budget_eval.json"
+        with open(stage2_path, 'w') as f:
+            json.dump(stage2_stats, f, indent=2)
+        print(f"   ✅ Stage2 stats saved: {stage2_path.name}")
+
+    # Calculate metrics
+    from sklearn.metrics import roc_auc_score, classification_report
+
+    auc = roc_auc_score(df_test['y_true'], p_test)
+
+    print(f"\n📈 Performance Metrics:")
+    print(f"   AUC: {auc:.4f}")
+
+    # Auto-classified samples
+    auto_mask = decisions != 1
+    if auto_mask.sum() > 0:
+        y_pred_auto = (decisions[auto_mask] == 2).astype(int)
+        y_true_auto = df_test.loc[auto_mask, 'y_true'].values
+
+        print(f"\n   Auto-classification metrics:")
+        print(classification_report(y_true_auto, y_pred_auto,
+                                   target_names=['Benign', 'Phish'],
+                                   digits=4))
+
+    # Summary
+    print("\n" + "="*80)
+    print("✅ Training Complete!")
+    print("="*80)
+    print(f"\n📁 Results saved to: {artifacts_dir}")
+    print(f"\nGenerated files:")
+    print(f"  - {model_path.relative_to(Path.cwd())}")
+    print(f"  - {feature_order_path.relative_to(Path.cwd())}")
+    print(f"  - {thresholds_path.relative_to(Path.cwd())}")
+    if n_defer > 0:
+        print(f"  - {stage2_path.relative_to(Path.cwd())}")
+    print("\n" + "="*80)
+
+    return 0
+
+
 def run_eval(args, cfg):
     """
-    Evaluation mode: evaluate model on test data.
+    Evaluation mode: evaluate existing model on test data.
     """
     print("\n" + "="*80)
     print("📊 Evaluation Mode")
     print("="*80)
 
-    print("\n⚠️  Evaluation mode not yet implemented in Phase 2.1")
-    print("   Use test_integration.py for testing with real data")
+    print("\n⚠️  Use --train mode for full Notebook workflow")
+    print("   Use --predict mode for new domain predictions")
 
     return 0
 
@@ -373,6 +592,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # Train from pkl data (Notebook workflow)
+  python 02_main.py --train --run-id 2026-01-10_140940
+
   # Predict on CSV file
   python 02_main.py --predict --input domains.csv --output results.csv
 
@@ -389,10 +611,12 @@ Examples:
 
     # Mode selection
     mode_group = parser.add_mutually_exclusive_group(required=True)
+    mode_group.add_argument('--train', action='store_true',
+                           help='Train model from pkl data (Notebook workflow)')
     mode_group.add_argument('--predict', action='store_true',
                            help='Predict on new domains from CSV')
     mode_group.add_argument('--eval', action='store_true',
-                           help='Evaluate on test data (not implemented yet)')
+                           help='Evaluate on test data (use --train instead)')
     mode_group.add_argument('--interactive', action='store_true',
                            help='Interactive mode for single domains')
 
@@ -424,7 +648,9 @@ Examples:
         return 1
 
     # Execute mode
-    if args.predict:
+    if args.train:
+        return run_train(args, cfg)
+    elif args.predict:
         return run_predict(args, cfg)
     elif args.eval:
         return run_eval(args, cfg)
