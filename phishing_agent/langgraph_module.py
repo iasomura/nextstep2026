@@ -101,7 +101,8 @@ from .tools.short_domain_analysis import short_domain_analysis
 # 4. Contextual Risk Tool
 from .tools.contextual_risk_assessment import contextual_risk_assessment
 
-
+# 5. Phase6 LLM Final Decision (policy adjustments)
+from .llm_final_decision import final_decision as phase6_final_decision
 
 # ------------------------------------
 # LLM 設定（Phase5/6 で SO を実接続）
@@ -696,7 +697,18 @@ class LangGraphPhishingAgent:
         ml = float(state.get("ml_probability", 0.0) or 0.0)
         try:
             if self.use_llm_decision and self.so.available:
-                asmt = self.so.final_assessment(state["domain"], ml, state.get("tool_results", {}))
+                # Phase6: final_decision を使用（policy adjustments 適用）
+                llm = _phase5__init_llm(self.so.cfg)
+                if llm is None:
+                    raise RuntimeError("LLM not available for phase6_final_decision")
+                asmt = phase6_final_decision(
+                    llm=llm,
+                    domain=state["domain"],
+                    ml_probability=ml,
+                    tool_results=state.get("tool_results", {}),
+                    graph_state=state,  # precheck_hints を含む
+                    strict_mode=self.strict_mode,
+                )
                 state["final_assessment"] = asmt
                 state["current_step"] = "completed"
                 return state

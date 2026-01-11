@@ -61,10 +61,14 @@ def short_domain_analysis(
         cat = "long"
 
     # 2. TLDチェック（デフォルト付き）
-    danger_def = list(dangerous_tlds or [
+    # Always-dangerous TLDs (merge with external list to ensure coverage)
+    _always_dangerous = [
         "info","top","xyz","buzz","click","win","loan","date","party","review","science",
         "stream","kim","men","gq","cf","ml","ga","tk","icu","download",
-    ])
+        # Additional high-risk TLDs often used in phishing
+        "cc","lat","online","shop","cn","ws","pw","cfd","cyou","wang","bar","mw","live",
+    ]
+    danger_def = list(set((dangerous_tlds or []) + _always_dangerous))
     legit_def = list(legitimate_tlds or ["com","org","net","co.jp","jp","edu","gov","ac.jp","ne.jp"])
     neutral_def = list(neutral_tlds or ["io","co","me","ai"])
 

@@ -37,6 +37,17 @@ llm_final_decision.py (Phase6 v1.4.7-dvguard4)
       - Post-Policy Gate: domain_issues が random_pattern のみ & brand無し の場合は、
         追加反転（Benign→Phishing）をブロックして FP を抑制（例: cryptpad.org のような誤反転）。
 
+  - 2026-01-11: v1.4.8-mlparadox-tld
+      - 全体: ctx_issues (contextual_risk_assessment) の dangerous_tld もチェックするよう統一。
+        precheck/short_domain_analysis/contextual_risk_assessment の TLD リストが異なるため、
+        どのツールが検出しても正しく処理されるように修正。
+      - _has_strong_evidence: ctx_issues に dangerous_tld があれば強証拠として扱う。
+      - LOW_ML_GUARD: ctx_issues の dangerous_tld もチェック。
+      - R5: any_dangerous_tld (domain_issues | ctx_issues) を使用。
+      - R6 (新規): ML Paradox + dangerous_tld + free_ca/no_org + ctx>=0.35 → Phishing。
+      - POST_LLM_FLIP_GATE: ctx_issues の dangerous_tld もチェックしてゲート通過を許可。
+      - dv_suspicious_combo: combined_issues (domain | ctx) の dangerous_tld もチェック。
+
 既存方針:
   - no_org 単体で True になり得る経路は持たない（複合条件のみ）
   - decision_trace を graph_state に埋め込み、risk_factors に policyタグを追記
@@ -59,7 +70,7 @@ except Exception:
 
 
 # ------------------------- phase6 meta -------------------------
-PHASE6_POLICY_VERSION = "v1.4.7-dvguard4"
+PHASE6_POLICY_VERSION = "v1.4.8-mlparadox-tld"
 # ------------------------- small utils -------------------------
 def _json_dumps(obj: Any) -> str:
     return json.dumps(obj, ensure_ascii=False, separators=(",", ":"))
@@ -194,6 +205,11 @@ def _apply_policy_adjustments(
         if domain_issues & _strong_domain:
             return True
 
+        # 2026-01-11: contextual_risk_assessment が dangerous_tld を検出した場合も強証拠
+        # (short_domain_analysis のTLDリストとは異なるTLDを検出している場合がある)
+        if "dangerous_tld" in ctx_issues:
+            return True
+
         # random_pattern becomes "strong" only when combined with other domain red flags.
         # (random_pattern-only は誤検知が多い: cryptpad.org など)
         if "random_pattern" in domain_issues:
@@ -220,7 +236,9 @@ def _apply_policy_adjustments(
             return True
 
         # dv_suspicious_combo は単体では弱いが、ドメイン側の強シグナルと組み合わせると強証拠として扱う
-        if ("dv_suspicious_combo" in ctx_issues) and (domain_issues & {
+        # 2026-01-11: ctx_issues の dangerous_tld もチェック
+        combined_issues = domain_issues | ctx_issues
+        if ("dv_suspicious_combo" in ctx_issues) and (combined_issues & {
             "dangerous_tld",
             "short",
             "very_short",
@@ -254,15 +272,20 @@ def _apply_policy_adjustments(
         c = max(c, ctx_score, SOFT_CTX)
 
     else:
-        # ---- Phase6 tightened rules (R1/R2/R3/R4/R5) ----
+        # ---- Phase6 tightened rules (R1/R2/R3/R4/R5/R6) ----
         # Low-ML guard (2026-01-02):
         # - ml が強く安全（<0.25）と出ているとき、DV系証明書（free_ca+no_org）だけで
         #   Phishing に反転させると FP が急増する（stage2_handoff で顕著）。
         # - dangerous_tld や brand など「独立した強い根拠」が無い限り、R1/R2/R4 系の反転は抑止する。
+        # - 2026-01-11: ctx_issues の dangerous_tld もチェック (contextual_risk_assessment が検出)
+        # - 2026-01-11: cert_issues と ctx_issues を統合してチェック (free_ca/no_org は両方に出る可能性)
+        any_dangerous_tld = ("dangerous_tld" in domain_issues) or ("dangerous_tld" in ctx_issues)
+        all_cert_ctx_issues = cert_issues | ctx_issues  # 証明書関連の issue を統合
+        has_dv_issues = ("free_ca" in all_cert_ctx_issues) and ("no_org" in all_cert_ctx_issues)
         low_ml_guard = (
             (ml < 0.25)
-            and ({"free_ca","no_org"} <= cert_issues)
-            and ("dangerous_tld" not in domain_issues)
+            and has_dv_issues
+            and (not any_dangerous_tld)
             and (not brand_detected)
         )
         if low_ml_guard:
@@ -277,13 +300,14 @@ def _apply_policy_adjustments(
 
         # guard: legitimate TLD & long/normal length → R1 しきい値を引き上げ
         r1_th = 0.28
-        if (tld_cat == "legitimate") and (dom_len in ("normal","long")) and ("dangerous_tld" not in domain_issues):
+        if (tld_cat == "legitimate") and (dom_len in ("normal","long")) and (not any_dangerous_tld):
             r1_th = 0.34
             tr.append({"note":"legit_tld_guard","r1_threshold":r1_th})
 
         # R1: very_low-ML + free_ca & no_org + 中強度ctx
         # NOTE(2026-01-02): DV相当(free_ca/no_org)だけで True にしない。必ず strong evidence を要求。
-        if (ml < 0.20) and ({"free_ca","no_org"} <= cert_issues) and (ctx_score >= r1_th) and strong_evidence and (not low_ml_guard):
+        # NOTE(2026-01-11): cert_issues | ctx_issues を使用
+        if (ml < 0.20) and has_dv_issues and (ctx_score >= r1_th) and strong_evidence and (not low_ml_guard):
             ip = True
             rl = _priority_bump(rl, "medium-high")
             c = max(c, ctx_score, 0.55)
@@ -291,7 +315,8 @@ def _apply_policy_adjustments(
 
         # R2: low-ML + no_org + (free_ca or short) + ctx>=0.34
         # NOTE(2026-01-02): short/no_org/free_ca は benign でも頻出 → strong evidence を要求。
-        elif (ml < 0.30) and ("no_org" in cert_issues) and (("free_ca" in cert_issues) or (("short" in domain_issues) or ("very_short" in domain_issues))) and (ctx_score >= 0.34) and strong_evidence:
+        # NOTE(2026-01-11): cert_issues | ctx_issues を使用
+        elif (ml < 0.30) and ("no_org" in all_cert_ctx_issues) and (("free_ca" in all_cert_ctx_issues) or (("short" in domain_issues) or ("very_short" in domain_issues))) and (ctx_score >= 0.34) and strong_evidence:
             ip = True
             rl = _priority_bump(rl, "medium-high")
             c = max(c, ctx_score, 0.55)
@@ -299,7 +324,8 @@ def _apply_policy_adjustments(
 
         # R3: <0.40 + short + no_org + ctx>=0.36
         # NOTE(2026-01-02): short/no_org は単独では弱い → strong evidence を要求。
-        elif (ml < 0.40) and ("no_org" in cert_issues) and (("short" in domain_issues) or ("very_short" in domain_issues)) and (ctx_score >= 0.36) and strong_evidence:
+        # NOTE(2026-01-11): cert_issues | ctx_issues を使用
+        elif (ml < 0.40) and ("no_org" in all_cert_ctx_issues) and (("short" in domain_issues) or ("very_short" in domain_issues)) and (ctx_score >= 0.36) and strong_evidence:
             ip = True
             rl = _priority_bump(rl, "medium-high")
             c = max(c, ctx_score, 0.55)
@@ -311,9 +337,10 @@ def _apply_policy_adjustments(
         #           legitimate TLD かつ normal/long は少しだけ厳しめにする。
         # - 2025-12-15: 500件検証で「ctx=0.34〜0.35 & multiple_risk_factors」のFNがまとまって発生したため、
         #              legitimate TLD & normal/long でも multiple_risk_factors がある場合は 0.33 を許容。
-        elif (ml < 0.50) and ({"free_ca", "no_org"} <= cert_issues) and strong_evidence:
+        # NOTE(2026-01-11): cert_issues | ctx_issues を使用
+        elif (ml < 0.50) and has_dv_issues and strong_evidence:
             r4_th = 0.34
-            if (tld_cat == "legitimate") and (dom_len in ("normal", "long")) and ("dangerous_tld" not in domain_issues):
+            if (tld_cat == "legitimate") and (dom_len in ("normal", "long")) and (not any_dangerous_tld):
                 # default guard
                 r4_th = 0.35
                 # relax if contextual already sees multiple supporting risk factors
@@ -330,11 +357,21 @@ def _apply_policy_adjustments(
 
         # R5: <0.50 + dangerous_tld + no_org + ctx>=0.33
         # - free_ca が無くても「危険TLD × DVっぽい（no_org）」は強めに扱う
-        elif (ml < 0.50) and ("dangerous_tld" in domain_issues) and ("no_org" in cert_issues) and (ctx_score >= 0.33):
+        # - 2026-01-11: ctx_issues の dangerous_tld および no_org もチェック
+        elif (ml < 0.50) and any_dangerous_tld and ("no_org" in all_cert_ctx_issues) and (ctx_score >= 0.33):
             ip = True
             rl = _priority_bump(rl, "medium-high")
             c = max(c, ctx_score, 0.55)
-            tr.append({"rule":"R5","ml":ml,"ctx":ctx_score})
+            tr.append({"rule":"R5","ml":ml,"ctx":ctx_score,"dangerous_tld_source":"domain_or_ctx"})
+
+        # R6: ML Paradox + dangerous_tld + medium risk (2026-01-11)
+        # - Stage1が安全(ml<0.3)だがStage2/contextualがリスクを検出(ctx>=0.35)
+        # - dangerous_tld + free_ca/no_org の組み合わせで Phishing 判定
+        elif (ml < 0.30) and any_dangerous_tld and has_dv_issues and (ctx_score >= 0.35):
+            ip = True
+            rl = _priority_bump(rl, "medium-high")
+            c = max(c, ctx_score, 0.55)
+            tr.append({"rule":"R6_ML_PARADOX_TLD","ml":ml,"ctx":ctx_score})
 
     # ---- Over-mitigation guard (FN-safe) ----
     # NOTE(2026-01-02): When ML is already in the phishing range (>=0.50),
@@ -357,8 +394,15 @@ def _apply_policy_adjustments(
     # - LLM が is_phishing=true を返しても、ML が強く benign（<0.25）で
     #   かつ dangerous TLD でない場合は、弱い根拠(DV/NoOrg + 軽いドメイン特徴)での反転を抑止する。
     #   ※Stage2 handoff での FP 多発を止血する目的。
+    # - 2026-01-11: domain_issues / ctx_issues に dangerous_tld がある場合もゲートを通過させる
+    #   (precheck の tld_category リストと各ツールのリストが異なるため、全てチェックする)
     LOW_ML_FLIP_GATE_TH = 0.25
-    if ip and (ml < LOW_ML_FLIP_GATE_TH) and (tld_cat != "dangerous"):
+    has_dangerous_tld_signal = (
+        ("dangerous_tld" in domain_issues)
+        or ("dangerous_tld" in ctx_issues)
+        or (tld_cat == "dangerous")
+    )
+    if ip and (ml < LOW_ML_FLIP_GATE_TH) and (not has_dangerous_tld_signal):
         ip = False
         # 反転ブロック時は「安全」だが警戒は残す（confidence を過大にしない）
         c = max(min(c, 0.70), 0.55)
@@ -372,6 +416,7 @@ def _apply_policy_adjustments(
             "action": "block_low_ml_llm_phishing",
             "ml": round(ml, 4),
             "tld_category": tld_cat,
+            "has_dangerous_tld_signal": has_dangerous_tld_signal,
             "threshold": LOW_ML_FLIP_GATE_TH,
         })
 
