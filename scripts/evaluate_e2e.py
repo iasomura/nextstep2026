@@ -263,7 +263,21 @@ def load_external_data(dirs: Dict[str, Path]) -> Dict[str, Any]:
     else:
         print(f"[WARN] not found: {handoff_path}")
 
-    external_data.setdefault("brand_keywords", [])
+    # Load brand_keywords from models directory if not already loaded
+    if not external_data.get("brand_keywords"):
+        brand_keywords_path = dirs["models"] / "brand_keywords.json"
+        if brand_keywords_path.exists():
+            try:
+                with open(brand_keywords_path, "r", encoding="utf-8") as f:
+                    brand_keywords = json.load(f)
+                external_data["brand_keywords"] = brand_keywords
+                print(f"[OK] loaded {len(brand_keywords)} brand_keywords from {brand_keywords_path.name}")
+            except Exception as e:
+                print(f"[WARN] failed to load brand_keywords: {e}")
+                external_data.setdefault("brand_keywords", [])
+        else:
+            external_data.setdefault("brand_keywords", [])
+
     return external_data
 
 
