@@ -10,6 +10,9 @@ from __future__ import annotations
 #              (brand/cert/domain) instead of raw issue-count. This prevents
 #              DV-like certificate signals (free_ca/no_org) alone from
 #              artificially inflating the contextual score and causing FP.
+# - 2026-01-12: Added low-signal phishing detection based on Handoff analysis.
+#              Low-signal phishing has: low ML, short validity cert, low SAN count.
+#              Added benign_indicators check to avoid FP on legitimate sites.
 # ---------------------------------------------------------------------
 from typing import Any, Dict, List, Optional
 
@@ -78,12 +81,22 @@ RISK_SIGNAL_MIN_TOOL_RISK: float = 0.30  # avg_tool_risk >= 0.3 → one signal
 #                   それ単体で Paradox(ML≪0だが非MLが強い) を強判定すると
 #                   Let's Encrypt 等の一般サイトでFPが増えやすい。
 #                   Paradox 用のシグナルには *より強い* タグのみを使う。
+# NOTE(2026-01-14): dangerous_tld は FP の主要因であることが判明。
+#                   STRONG_NON_ML_TAGS から除外し、より厳密なシグナルのみを使用。
+#                   dangerous_tld は引き続き考慮されるが、単独では強シグナルとしない。
 STRONG_NON_ML_TAGS: tuple = (
-    "dangerous_tld",
     "brand_detected",
-    "wildcard",
     "self_signed",
+    "idn_homograph",
+    "very_high_entropy",
 )
+
+# 高危険TLD: フィッシングに特に多用され、正規利用が少ないTLD（llm_final_decision.py と同期）
+HIGH_DANGER_TLDS_CTX = frozenset([
+    'tk', 'ml', 'ga', 'cf', 'gq',  # 無料TLD（フィッシング頻出）
+    'icu', 'cfd', 'sbs', 'rest', 'cyou',  # フィッシング特化
+    'pw', 'buzz', 'lat',  # 高フィッシング率
+])
 
 # ただし free_ca/no_org 自体は risk 要因としては引き続き有効（スコア寄与は残す）。
 WEAK_IDENTITY_TAGS: tuple = (
@@ -394,6 +407,16 @@ def contextual_risk_assessment(
     # 4-3b. "DV weak identity" + suspicious domain combo boost
     # This targets the common FN pattern: brand absent, cert looks DV-ish (free_ca/no_org)
     # and the domain has strong structural signals (dangerous_tld / random / entropy).
+    # NOTE(2026-01-14): dangerous_tld だけでスコア底上げするとFPが多発するため、
+    #   - 高危険TLDの場合のみ 0.42 に底上げ
+    #   - 中危険TLDの場合は 0.35 に底上げ（控えめ）
+    #   - random_pattern/high_entropy 等は従来通り 0.42
+    _tld_suffix_ctx = ""
+    try:
+        _tld_suffix_ctx = et.suffix.lower().strip(".") if hasattr(et, "suffix") else ""
+    except Exception:
+        pass
+
     if (
         ("free_ca_no_org" in issue_set or ("free_ca" in issue_set and "no_org" in issue_set))
         and (
@@ -405,8 +428,64 @@ def contextual_risk_assessment(
         )
     ):
         issues.append("dv_suspicious_combo")
-        score = max(score, 0.42)
-        score_components["dv_suspicious_combo"] = True
+        # TLD危険度に応じてスコア底上げ幅を調整
+        if "dangerous_tld" in issue_set and _tld_suffix_ctx not in HIGH_DANGER_TLDS_CTX:
+            # 中危険TLDの場合は控えめに
+            if (
+                "random_pattern" not in issue_set
+                and "high_entropy" not in issue_set
+                and "short_random_combo" not in issue_set
+                and "random_with_high_tld_stat" not in issue_set
+            ):
+                score = max(score, 0.35)  # 控えめな底上げ
+                score_components["dv_suspicious_combo"] = "medium_tld"
+            else:
+                score = max(score, 0.42)
+                score_components["dv_suspicious_combo"] = True
+        else:
+            score = max(score, 0.42)
+            score_components["dv_suspicious_combo"] = True
+
+    # 4-3c. Low-Signal Phishing Detection (2026-01-12)
+    # Handoff分析から判明した低シグナルフィッシングのパターンを検出
+    # 特徴: 低ML(<0.30) + 短期証明書(≤90日) + 低SAN数(≤5) + benign_indicatorsなし
+    #
+    # FP防止: benign_indicators (CRL, OV/EV, wildcard, high_san) がある場合はスキップ
+    low_signal_phishing_detected = False
+    low_signal_signals: List[str] = []
+    cert_details = cert_data.get("details", {}) or {}
+    cert_benign_indicators = set(cert_details.get("benign_indicators", []) or [])
+
+    # benign_indicatorsがある場合は低シグナルフィッシング検出をスキップ
+    if not cert_benign_indicators and p < 0.30:
+        # 短期証明書（90日以下）
+        valid_days = cert_details.get("valid_days", 0) or 0
+        if valid_days > 0 and valid_days <= 90:
+            low_signal_signals.append("short_validity_cert")
+
+        # 低SAN数（5以下）
+        san_count = cert_details.get("san_count", 0) or 0
+        if san_count > 0 and san_count <= 5:
+            low_signal_signals.append("low_san_count")
+
+        # free_ca/no_org の組み合わせ
+        if "free_ca" in issue_set and "no_org" in issue_set:
+            low_signal_signals.append("dv_cert")
+
+        # ブランド偽装の兆候（brand_detected がなくても potential_brands がある場合）
+        brand_details = brand_data.get("details", {}) or {}
+        potential_brands = brand_details.get("detected_brands", []) or brand_details.get("potential_brands", []) or []
+        if potential_brands:
+            low_signal_signals.append("potential_brand_match")
+
+        # 2つ以上のシグナルがあれば低シグナルフィッシングとして検出
+        if len(low_signal_signals) >= 2:
+            low_signal_phishing_detected = True
+            issues.append("low_signal_phishing")
+            # スコアを少し底上げ（強制的な反転はしない）
+            score = max(score, 0.38 + 0.03 * len(low_signal_signals))
+            score_components["low_signal_phishing"] = True
+            score_components["low_signal_signals"] = low_signal_signals
 
     # 4-4. 既知ドメイン緩和（減点）
     # NOTE: apply mitigation ONLY for strict legitimate allowlist matches.
@@ -510,6 +589,8 @@ def contextual_risk_assessment(
         reasoning_bits.append("整合性")
     if "low_ml_safety_cap" in issues:
         reasoning_bits.append("低MLセーフティキャップ適用")
+    if "low_signal_phishing" in issues:
+        reasoning_bits.append(f"低シグナルフィッシング検出({','.join(low_signal_signals)})")
 
     # finalize score breakdown for logging
     try:

@@ -70,7 +70,22 @@ except Exception:
 
 
 # ------------------------- phase6 meta -------------------------
-PHASE6_POLICY_VERSION = "v1.4.8-mlparadox-tld"
+PHASE6_POLICY_VERSION = "v1.6.0-fp-reduction-tuning"
+
+# ------------------------- TLD classification (2026-01-14) -------------------------
+# 高危険TLD: フィッシングに特に多用され、正規利用が少ないTLD
+HIGH_DANGER_TLDS = frozenset([
+    'tk', 'ml', 'ga', 'cf', 'gq',  # 無料TLD（フィッシング頻出）
+    'icu', 'cfd', 'sbs', 'rest', 'cyou',  # フィッシング特化
+    'pw', 'buzz', 'lat',  # 高フィッシング率
+])
+
+# 中危険TLD: フィッシングにも使われるが、正規ECサイト等でも使用されるTLD
+MEDIUM_DANGER_TLDS = frozenset([
+    'top', 'shop', 'xyz', 'cc', 'online', 'site', 'website',
+    'club', 'vip', 'asia', 'one', 'link', 'click', 'live',
+    'cn', 'tokyo', 'dev', 'me', 'pe', 'ar', 'cl', 'mw', 'ci',
+])
 # ------------------------- small utils -------------------------
 def _json_dumps(obj: Any) -> str:
     return json.dumps(obj, ensure_ascii=False, separators=(",", ":"))
@@ -107,6 +122,326 @@ def _summarize_tool_signals(tool_results: Dict[str, Any]) -> Dict[str, Any]:
     }
     out["baseline_risk"] = max(out["contextual"]["risk_score"], out["brand"]["risk_score"], out["cert"]["risk_score"], out["domain"]["risk_score"])
     return out
+
+
+# ---------------------- benign certificate gate (2026-01-12) ---------------------
+def _apply_benign_cert_gate(
+    asmt: PhishingAssessment,
+    tool_summary: Dict[str, Any],
+    *,
+    ml_probability: Optional[float] = None,
+    precheck: Optional[Dict[str, Any]] = None,
+    trace: Optional[List[Dict[str, Any]]] = None,
+) -> PhishingAssessment:
+    """
+    証明書の正規性シグナル（benign_indicators）に基づくゲート。
+    Stage2で有効性が確認された証明書特徴量をStage3でも活用し、FPを削減。
+
+    Gate B1: OV/EV証明書 + ctx < 0.50 → BENIGN強制
+    Gate B2: CRL保有 + ml < 0.30 + ctx < 0.45 → BENIGN強制
+    Gate B3: ワイルドカード + 非危険TLD + ctx < 0.40 → BENIGN強制
+    Gate B4: 高SAN数 + 非危険TLD + ctx < 0.45 → BENIGN強制
+    """
+    tr = trace if isinstance(trace, list) else []
+    ip = bool(getattr(asmt, "is_phishing", False))
+
+    # Benignなら何もしない
+    if not ip:
+        return asmt
+
+    tsum = tool_summary or {}
+    cert_data = tsum.get("cert") or {}
+    cert_details = cert_data.get("details") or {}
+
+    # benign_indicators を取得（certificate_analysis.py で追加されたフィールド）
+    benign_indicators = set(cert_details.get("benign_indicators", []) or [])
+    if not benign_indicators:
+        # 後方互換: benign_indicators がない場合は個別フラグをチェック
+        if cert_details.get("has_org") or cert_details.get("has_ov_ev_like_identity"):
+            benign_indicators.add("ov_ev_cert")
+        if cert_details.get("has_crl_dp"):
+            benign_indicators.add("has_crl_dp")
+        if cert_details.get("is_wildcard") and not cert_details.get("is_dangerous_tld"):
+            benign_indicators.add("wildcard_cert")
+        if cert_details.get("is_long_validity"):
+            benign_indicators.add("long_validity")
+        if cert_details.get("is_high_san") and not cert_details.get("is_dangerous_tld"):
+            benign_indicators.add("high_san_count")
+
+    if not benign_indicators:
+        return asmt
+
+    ml = float(ml_probability or 0.0)
+    pre = dict(precheck or {})
+    tld_cat = pre.get("tld_category", "unknown")
+
+    ctx = tsum.get("contextual") or {}
+    ctx_score = float(ctx.get("risk_score", 0.0) or 0.0)
+
+    # 強いリスクシグナルがある場合はゲートを適用しない
+    # (brand_detected, self_signed, idn_homograph など)
+    cert_issues = set(cert_data.get("issues", []) or [])
+    brand_data = tsum.get("brand") or {}
+    brand_detected = ("brand_detected" in set(brand_data.get("issues", []) or []))
+    domain_issues = set((tsum.get("domain") or {}).get("issues", []) or [])
+
+    # 強いリスクシグナルがあればゲートをスキップ
+    strong_risk_signals = {
+        "self_signed", "brand_detected", "idn_homograph",
+        "high_entropy", "very_high_entropy", "random_with_high_tld_stat",
+    }
+    if (cert_issues | domain_issues) & strong_risk_signals:
+        tr.append({
+            "rule": "BENIGN_CERT_GATE_SKIP",
+            "reason": "strong_risk_signals_present",
+            "signals": list((cert_issues | domain_issues) & strong_risk_signals),
+        })
+        return asmt
+    if brand_detected:
+        tr.append({"rule": "BENIGN_CERT_GATE_SKIP", "reason": "brand_detected"})
+        return asmt
+
+    # 危険TLDの場合もゲートをスキップ（ワイルドカード/高SANのbenign効果を無効化）
+    is_dangerous_tld = (tld_cat == "dangerous") or cert_details.get("is_dangerous_tld", False)
+
+    c = clip_confidence(getattr(asmt, "confidence", 0.0))
+    rl = getattr(asmt, "risk_level", "low") or "low"
+    rf = list(getattr(asmt, "risk_factors", []) or [])
+    reasoning = str(getattr(asmt, "reasoning", "") or "")
+
+    gate_fired = None
+
+    # Gate B1: OV/EV証明書
+    # OV/EV証明書は発行に組織確認が必要 → フィッシングではまず使われない
+    if "ov_ev_cert" in benign_indicators and ctx_score < 0.50:
+        gate_fired = "B1_OV_EV"
+        tr.append({
+            "rule": "BENIGN_CERT_GATE_B1",
+            "action": "force_benign",
+            "indicator": "ov_ev_cert",
+            "ctx_score": round(ctx_score, 4),
+            "threshold": 0.50,
+        })
+
+    # Gate B2: CRL + 低リスク
+    # CRL配布ポイントを持つ証明書は正規CAの厳格な発行プロセスを経ている
+    elif "has_crl_dp" in benign_indicators and ml < 0.30 and ctx_score < 0.45:
+        gate_fired = "B2_CRL"
+        tr.append({
+            "rule": "BENIGN_CERT_GATE_B2",
+            "action": "force_benign",
+            "indicator": "has_crl_dp",
+            "ml": round(ml, 4),
+            "ctx_score": round(ctx_score, 4),
+            "thresholds": {"ml": 0.30, "ctx": 0.45},
+        })
+
+    # Gate B3: ワイルドカード + 非危険TLD
+    # ワイルドカード証明書は正規運用（CDN、サブドメイン多数）で使用
+    elif "wildcard_cert" in benign_indicators and not is_dangerous_tld and ctx_score < 0.40:
+        gate_fired = "B3_WILDCARD"
+        tr.append({
+            "rule": "BENIGN_CERT_GATE_B3",
+            "action": "force_benign",
+            "indicator": "wildcard_cert",
+            "tld_category": tld_cat,
+            "ctx_score": round(ctx_score, 4),
+            "threshold": 0.40,
+        })
+
+    # Gate B4: 多数のSAN + 非危険TLD
+    # SAN数が多い証明書は正規の大規模サービス（CDN、SaaS）で使用
+    # Handoff分析: FP Riskケースは平均SAN 13.2、低シグナルフィッシングは4.3
+    elif "high_san_count" in benign_indicators and not is_dangerous_tld and ctx_score < 0.45:
+        gate_fired = "B4_HIGH_SAN"
+        tr.append({
+            "rule": "BENIGN_CERT_GATE_B4",
+            "action": "force_benign",
+            "indicator": "high_san_count",
+            "san_count": cert_details.get("san_count", 0),
+            "tld_category": tld_cat,
+            "ctx_score": round(ctx_score, 4),
+            "threshold": 0.45,
+        })
+
+    # ゲートが発火した場合、BENIGNに強制
+    if gate_fired:
+        rf.append(f"benign_cert_gate:{gate_fired}")
+        reasoning += f" | Benign Cert Gate {gate_fired}: protected by certificate indicators"
+
+        return PhishingAssessment(
+            is_phishing=False,
+            confidence=max(0.75, c * 0.8),  # 高めの confidence で benign
+            risk_level="low",
+            detected_brands=list(getattr(asmt, "detected_brands", []) or []),
+            risk_factors=rf,
+            reasoning=reasoning,
+        )
+
+    return asmt
+
+
+def _apply_low_signal_phishing_gate(
+    asmt: PhishingAssessment,
+    tool_summary: Dict[str, Any],
+    *,
+    ml_probability: Optional[float] = None,
+    precheck: Optional[Dict[str, Any]] = None,
+    trace: Optional[List[Dict[str, Any]]] = None,
+) -> PhishingAssessment:
+    """
+    低シグナルフィッシング検出ゲート。
+    Stage2で見逃されやすい低MLフィッシングを検出する。
+
+    Gate P1: ブランド検出 + 短期証明書 + 低ML → PHISHING強制
+    Gate P2: ブランド疑い + 短期証明書 + 低SAN + 低ML → PHISHING強制
+    Gate P3: 危険TLD + 短期証明書 + 低SAN + 低ML + benign無し → risk bump
+    """
+    tr = trace if isinstance(trace, list) else []
+    ip = bool(getattr(asmt, "is_phishing", False))
+
+    # 既にPhishingなら何もしない
+    if ip:
+        return asmt
+
+    tsum = tool_summary or {}
+    pre = dict(precheck or {})
+    ml = float(ml_probability or 0.0)
+
+    # --- ブランド情報の取得 ---
+    brand_data = tsum.get("brand") or {}
+    brand_issues = set(brand_data.get("issues", []) or [])
+    brand_details = brand_data.get("details") or {}
+
+    brand_detected = "brand_detected" in brand_issues
+    brand_suspected = "brand_suspected" in brand_issues or brand_details.get("brand_suspected", False)
+
+    # --- 証明書情報の取得 ---
+    cert_data = tsum.get("cert") or {}
+    cert_details = cert_data.get("details") or {}
+    cert_issues = set(cert_data.get("issues", []) or [])
+
+    valid_days = int(cert_details.get("valid_days", 0) or 0)
+    san_count = int(cert_details.get("san_count", 0) or 0)
+    benign_indicators = set(cert_details.get("benign_indicators", []) or [])
+
+    # 証明書情報がない場合はスキップ
+    if valid_days <= 0:
+        return asmt
+
+    # --- TLD情報の取得 ---
+    tld_cat = pre.get("tld_category", "unknown")
+    domain_issues = set((tsum.get("domain") or {}).get("issues", []) or [])
+    ctx_issues = set((tsum.get("contextual") or {}).get("issues", []) or [])
+
+    is_dangerous_tld = (
+        tld_cat == "dangerous"
+        or "dangerous_tld" in domain_issues
+        or "dangerous_tld" in ctx_issues
+        or cert_details.get("is_dangerous_tld", False)
+    )
+
+    # --- benign_indicatorsがある場合はゲートをスキップ（FP防止） ---
+    # ただしGate P1（強いブランド検出）は例外
+    has_strong_benign = bool(benign_indicators & {"ov_ev_cert", "has_crl_dp"})
+
+    c = clip_confidence(getattr(asmt, "confidence", 0.0))
+    rl = getattr(asmt, "risk_level", "low") or "low"
+    rf = list(getattr(asmt, "risk_factors", []) or [])
+    reasoning = str(getattr(asmt, "reasoning", "") or "")
+
+    gate_fired = None
+
+    # Gate P1: ブランド検出 + 短期証明書（90日以下） + 低ML（<0.30）
+    # 正規サイトがブランド名を含む場合、通常は長期証明書を使用
+    # 低シグナルフィッシングの97.7%が短期証明書
+    if (
+        brand_detected
+        and valid_days <= 90
+        and ml < 0.30
+        and not has_strong_benign  # OV/EV or CRL保有なら除外
+    ):
+        gate_fired = "P1_BRAND_SHORT_CERT"
+        tr.append({
+            "rule": "LOW_SIGNAL_PHISHING_GATE_P1",
+            "action": "force_phishing",
+            "brand_detected": True,
+            "valid_days": valid_days,
+            "ml": round(ml, 4),
+            "thresholds": {"valid_days": 90, "ml": 0.30},
+        })
+
+    # Gate P2: ブランド疑い + 短期証明書 + 低SAN + 低ML
+    # LLMで疑わしいと判定されたケースに証明書リスクを組み合わせ
+    elif (
+        brand_suspected
+        and not brand_detected  # P1で処理済みでない
+        and valid_days <= 90
+        and san_count <= 5
+        and ml < 0.25
+        and not benign_indicators  # benign indicatorsがあればスキップ
+    ):
+        gate_fired = "P2_SUSPECTED_COMPOUND"
+        tr.append({
+            "rule": "LOW_SIGNAL_PHISHING_GATE_P2",
+            "action": "force_phishing",
+            "brand_suspected": True,
+            "valid_days": valid_days,
+            "san_count": san_count,
+            "ml": round(ml, 4),
+            "thresholds": {"valid_days": 90, "san_count": 5, "ml": 0.25},
+        })
+
+    # Gate P3: 危険TLD + 短期証明書 + 低SAN + 低ML + benign無し
+    # ブランドがなくても危険TLD + 証明書特徴で疑いを高める
+    elif (
+        is_dangerous_tld
+        and valid_days <= 90
+        and san_count <= 3
+        and ml < 0.20
+        and not benign_indicators
+    ):
+        gate_fired = "P3_DANGEROUS_TLD_CERT"
+        # P3はPHISHINGに強制せず、risk_levelをbumpするのみ
+        tr.append({
+            "rule": "LOW_SIGNAL_PHISHING_GATE_P3",
+            "action": "risk_bump",
+            "is_dangerous_tld": True,
+            "valid_days": valid_days,
+            "san_count": san_count,
+            "ml": round(ml, 4),
+            "thresholds": {"valid_days": 90, "san_count": 3, "ml": 0.20},
+        })
+        # P3はis_phishingを変えずにrisk_levelだけ上げる
+        rl = _priority_bump(rl, "medium")
+        rf.append(f"low_signal_phishing_gate:{gate_fired}")
+        reasoning += f" | Low Signal Phishing Gate {gate_fired}: dangerous TLD + short cert + low SAN"
+
+        return PhishingAssessment(
+            is_phishing=False,  # P3はBenignのまま
+            confidence=c,
+            risk_level=rl,
+            detected_brands=list(getattr(asmt, "detected_brands", []) or []),
+            risk_factors=rf,
+            reasoning=reasoning,
+        )
+
+    # P1またはP2が発火した場合、PHISHINGに強制
+    if gate_fired and gate_fired.startswith("P1") or gate_fired and gate_fired.startswith("P2"):
+        rf.append(f"low_signal_phishing_gate:{gate_fired}")
+        reasoning += f" | Low Signal Phishing Gate {gate_fired}: brand + short cert indicates phishing"
+
+        return PhishingAssessment(
+            is_phishing=True,
+            confidence=max(0.70, c),
+            risk_level=_priority_bump(rl, "medium-high"),
+            detected_brands=list(getattr(asmt, "detected_brands", []) or []),
+            risk_factors=rf,
+            reasoning=reasoning,
+        )
+
+    return asmt
+
 
 def _priority_bump(current: str, minimum: str) -> str:
     order = ["low","medium","medium-high","high","critical"]
@@ -373,9 +708,13 @@ def _apply_policy_adjustments(
             c = max(c, ctx_score, 0.55)
             tr.append({"rule":"R6_ML_PARADOX_TLD","ml":ml,"ctx":ctx_score})
 
-    # ---- Over-mitigation guard (FN-safe) ----
+    # ---- Over-mitigation guard (FN-safe, updated 2026-01-14) ----
     # NOTE(2026-01-02): When ML is already in the phishing range (>=0.50),
     # do NOT flip to benign unless the domain is strongly allowlisted.
+    # NOTE(2026-01-14): FP削減のため、以下の条件を緩和:
+    #   - ml >= 0.60 に閾値を引き上げ（0.50-0.60帯のFPを削減）
+    #   - 証明書のbenign indicatorsがある場合は強制しない
+    #   - 非危険TLDで contextual score < 0.45 の場合は強制しない
     is_allowlisted = False
     try:
         dom_details = dict((tsum.get("domain") or {}).get("details", {}) or {})
@@ -384,31 +723,104 @@ def _apply_policy_adjustments(
     except Exception:
         is_allowlisted = False
 
-    if (ml >= 0.50) and (not ip) and (not is_allowlisted):
+    # 証明書のbenign indicatorsをチェック
+    cert_benign_indicators = set()
+    try:
+        cert_details = (tsum.get("cert") or {}).get("details", {}) or {}
+        cert_benign_indicators = set(cert_details.get("benign_indicators", []) or [])
+    except Exception:
+        pass
+    has_strong_benign_cert = bool(cert_benign_indicators & {"ov_ev_cert", "has_crl_dp"})
+
+    # TLD suffix を取得（POST_LLM_FLIP_GATE と共通）
+    try:
+        tld_suffix_for_ml_guard = pre.get("etld1", {}).get("suffix", "") or ""
+        tld_suffix_for_ml_guard = tld_suffix_for_ml_guard.lower().strip(".")
+    except Exception:
+        tld_suffix_for_ml_guard = ""
+
+    is_non_dangerous_tld = (
+        tld_suffix_for_ml_guard not in HIGH_DANGER_TLDS
+        and tld_suffix_for_ml_guard not in MEDIUM_DANGER_TLDS
+        and tld_cat != "dangerous"
+    )
+
+    # 強制PHISHINGの条件（2026-01-15再調整）
+    # NOTE: 0.60に引き上げたことで0.50-0.60帯のフィッシングが見逃された
+    # → 0.50に戻しつつ、証明書benign indicatorsのみで緩和
+    ML_FORCE_PHISHING_TH = 0.50  # 0.60 → 0.50 に戻す
+    should_force_phishing = (
+        (ml >= ML_FORCE_PHISHING_TH)
+        and (not ip)
+        and (not is_allowlisted)
+        and (not has_strong_benign_cert)  # OV/EV/CRL証明書は除外
+    )
+    # 非危険TLDで contextual score が非常に低い場合のみスキップ
+    if should_force_phishing and is_non_dangerous_tld and ctx_score < 0.30:
+        should_force_phishing = False
+        tr.append({
+            "rule": "ml_ge_0.50_skipped",
+            "reason": "non_dangerous_tld_very_low_ctx",
+            "ml": round(ml, 4),
+            "ctx_score": round(ctx_score, 4),
+            "tld_suffix": tld_suffix_for_ml_guard,
+        })
+
+    if should_force_phishing:
         ip = True
         rl = _priority_bump(rl, "medium-high")
         c = max(c, ml, 0.55)
-        tr.append({"rule":"ml_ge_0.50_no_mitigation","ml":ml,"allowlisted":False})
+        tr.append({"rule":"ml_ge_0.50_no_mitigation","ml":ml,"allowlisted":False,"has_strong_benign_cert":has_strong_benign_cert})
 
-    # Post-LLM Flip Gate (2026-01-03):
-    # - LLM が is_phishing=true を返しても、ML が強く benign（<0.25）で
-    #   かつ dangerous TLD でない場合は、弱い根拠(DV/NoOrg + 軽いドメイン特徴)での反転を抑止する。
-    #   ※Stage2 handoff での FP 多発を止血する目的。
-    # - 2026-01-11: domain_issues / ctx_issues に dangerous_tld がある場合もゲートを通過させる
-    #   (precheck の tld_category リストと各ツールのリストが異なるため、全てチェックする)
-    LOW_ML_FLIP_GATE_TH = 0.25
+    # Post-LLM Flip Gate (2026-01-03, updated 2026-01-14):
+    # - LLM が is_phishing=true を返しても、ML が低い場合は弱い根拠での反転を抑止する。
+    # - 2026-01-14: TLDを「高危険」「中危険」に分類し、中危険TLDでもFPを削減できるよう改善
+    #   - 高危険TLD (tk, ml, ga, cf, gq等): ゲートをバイパス（従来通り）
+    #   - 中危険TLD (top, shop, xyz等): ml < 0.20 の場合のみブロック
+    #   - 非危険TLD: ml < 0.35 の場合ブロック（閾値引き上げ）
+
+    # TLD suffix を取得
+    try:
+        tld_suffix = pre.get("etld1", {}).get("suffix", "") or ""
+        tld_suffix = tld_suffix.lower().strip(".")
+    except Exception:
+        tld_suffix = ""
+
+    # TLD危険度を判定
+    is_high_danger_tld = (tld_suffix in HIGH_DANGER_TLDS)
+    is_medium_danger_tld = (tld_suffix in MEDIUM_DANGER_TLDS)
     has_dangerous_tld_signal = (
         ("dangerous_tld" in domain_issues)
         or ("dangerous_tld" in ctx_issues)
         or (tld_cat == "dangerous")
     )
-    if ip and (ml < LOW_ML_FLIP_GATE_TH) and (not has_dangerous_tld_signal):
+
+    # 閾値の決定（TLD危険度に応じて）
+    # NOTE(2026-01-15): 3000件評価の結果を受けて閾値を再調整
+    #   - 高危険TLD: ゲート無効化（フィッシング検出を最優先）
+    #   - 中危険TLD: 0.04（バランス重視）
+    #   - 非危険TLD: 0.15（Recall重視、FP削減は控えめに）
+    # 前回の問題: 非危険TLD 0.25 が厳しすぎて .com フィッシングを見逃し
+    if is_high_danger_tld:
+        LOW_ML_FLIP_GATE_TH = 0.0  # 高危険TLDはゲート無効化
+    elif is_medium_danger_tld:
+        LOW_ML_FLIP_GATE_TH = 0.04  # 中危険TLDはバランス重視
+    else:
+        LOW_ML_FLIP_GATE_TH = 0.15  # 非危険TLDはRecall重視
+
+    # ゲート適用判定
+    should_block = ip and (ml < LOW_ML_FLIP_GATE_TH)
+    # 高危険TLDの場合は従来通りの判定（has_dangerous_tld_signal でバイパス）
+    if is_high_danger_tld and has_dangerous_tld_signal:
+        should_block = False
+
+    if should_block:
         ip = False
         # 反転ブロック時は「安全」だが警戒は残す（confidence を過大にしない）
         c = max(min(c, 0.70), 0.55)
         rl = "medium"
         try:
-            reasoning_text = (reasoning_text + f" | Phase6 gate: blocked low-ML flip (ml={ml:.3f} < {LOW_ML_FLIP_GATE_TH}, tld_category={tld_cat})")
+            reasoning_text = (reasoning_text + f" | Phase6 gate: blocked low-ML flip (ml={ml:.3f} < {LOW_ML_FLIP_GATE_TH}, tld={tld_suffix}, danger_level={'high' if is_high_danger_tld else 'medium' if is_medium_danger_tld else 'low'})")
         except Exception:
             pass
         tr.append({
@@ -416,6 +828,8 @@ def _apply_policy_adjustments(
             "action": "block_low_ml_llm_phishing",
             "ml": round(ml, 4),
             "tld_category": tld_cat,
+            "tld_suffix": tld_suffix,
+            "tld_danger_level": "high" if is_high_danger_tld else "medium" if is_medium_danger_tld else "low",
             "has_dangerous_tld_signal": has_dangerous_tld_signal,
             "threshold": LOW_ML_FLIP_GATE_TH,
         })
@@ -687,6 +1101,26 @@ def final_decision(
                 reasoning=asmt2.reasoning,
             )
 
+        # 5b) Benign Certificate Gate (2026-01-12)
+        # 証明書の正規性シグナルに基づいてFPを防止
+        asmt2 = _apply_benign_cert_gate(
+            asmt2,
+            tsum,
+            ml_probability=ml,
+            precheck=pre,
+            trace=trace,
+        )
+
+        # 5c) Low Signal Phishing Gate (2026-01-12)
+        # 低シグナルフィッシング（ブランド偽装 + 短期証明書）を検出
+        asmt2 = _apply_low_signal_phishing_gate(
+            asmt2,
+            tsum,
+            ml_probability=ml,
+            precheck=pre,
+            trace=trace,
+        )
+
         # 6) graph_state へのトレース保存
         try:
             if isinstance(graph_state, dict):
@@ -710,6 +1144,30 @@ def final_decision(
                             break
                     if gate:
                         graph_state["phase6_gate"] = gate
+                except Exception:
+                    pass
+
+                # Benign Certificate Gate info stamp (2026-01-12)
+                try:
+                    benign_gate = None
+                    for t in trace:
+                        if isinstance(t, dict) and str(t.get("rule", "")).startswith("BENIGN_CERT_GATE_B"):
+                            benign_gate = dict(t)
+                            break
+                    if benign_gate:
+                        graph_state["benign_cert_gate"] = benign_gate
+                except Exception:
+                    pass
+
+                # Low Signal Phishing Gate info stamp (2026-01-12)
+                try:
+                    low_signal_gate = None
+                    for t in trace:
+                        if isinstance(t, dict) and str(t.get("rule", "")).startswith("LOW_SIGNAL_PHISHING_GATE"):
+                            low_signal_gate = dict(t)
+                            break
+                    if low_signal_gate:
+                        graph_state["low_signal_phishing_gate"] = low_signal_gate
                 except Exception:
                     pass
 
