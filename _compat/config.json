@@ -45,8 +45,8 @@
   "brand_keywords": {
     "dynamic_extraction": true,
     "min_count": 2,
-    "max_brands": 100,
-    "default_list": []
+    "max_brands": 0,
+    "default_list": ["orange", "nets", "intesasanpaolo", "jcbcard"]
   },
   "paths": {
     "models_dir": "models",

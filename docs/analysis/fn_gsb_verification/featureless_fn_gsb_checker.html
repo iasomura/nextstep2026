@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Featureless FN - GSB Check</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #4CAF50; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .ml-very-low { background-color: #ffcccc; }
+        .ml-low { background-color: #ffe6cc; }
+        .ml-medium { background-color: #ffffcc; }
+        .ml-high { background-color: #ccffcc; }
+        a { color: #0066cc; }
+        .check-col { width: 100px; }
+        input[type="text"] { width: 80px; }
+        .instructions { background: #f0f0f0; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Featureless FN - Google Safe Browsing Check</h1>
+    
+    <div class="instructions">
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Click "GSB Check" to open Google Transparency Report</li>
+            <li>Record the result: <b>unsafe</b>, <b>safe</b>, or <b>unknown</b></li>
+            <li>Focus on "very_low" ML probability first (most confident FN)</li>
+        </ol>
+        <p><b>Total domains:</b> 160</p>
+    </div>
+    
+    <table>
+        <tr>
+            <th>#</th>
+            <th>Domain</th>
+            <th>ML Prob</th>
+            <th>ML Bin</th>
+            <th>Source</th>
+            <th>GSB Check</th>
+            <th class="check-col">Result</th>
+        </tr>
+        <tr class="ml-very-low">
+            <td>1</td>
+            <td><code>transfer-team.ru</code></td>
+            <td>0.0012</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Ftransfer-team.ru%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>2</td>
+            <td><code>juniperwoodworks.com</code></td>
+            <td>0.0026</td>
+            <td>very_low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fjuniperwoodworks.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>3</td>
+            <td><code>pixya.net</code></td>
+            <td>0.0027</td>
+            <td>very_low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fpixya.net%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>4</td>
+            <td><code>keishitanaka.com</code></td>
+            <td>0.0027</td>
+            <td>very_low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fkeishitanaka.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>5</td>
+            <td><code>nbfaguozhan.com</code></td>
+            <td>0.0059</td>
+            <td>very_low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fnbfaguozhan.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>6</td>
+            <td><code>tianxiqianhe.com</code></td>
+            <td>0.0086</td>
+            <td>very_low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Ftianxiqianhe.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>7</td>
+            <td><code>sunpasstollsbill.com</code></td>
+            <td>0.0088</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fsunpasstollsbill.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>8</td>
+            <td><code>vipfbtools.com</code></td>
+            <td>0.0089</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fvipfbtools.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>9</td>
+            <td><code>suivi-livraison-relay.com</code></td>
+            <td>0.0090</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fsuivi-livraison-relay.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>10</td>
+            <td><code>ytsantong.com</code></td>
+            <td>0.0122</td>
+            <td>very_low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fytsantong.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>11</td>
+            <td><code>nkgw.net</code></td>
+            <td>0.0173</td>
+            <td>very_low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fnkgw.net%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>12</td>
+            <td><code>mccampbellsgiftemporiumblog.com</code></td>
+            <td>0.0178</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fmccampbellsgiftemporiumblog.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>13</td>
+            <td><code>esypark-dk.com</code></td>
+            <td>0.0189</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fesypark-dk.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>14</td>
+            <td><code>skinomonkey.org</code></td>
+            <td>0.0191</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fskinomonkey.org%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>15</td>
+            <td><code>empiregrp.net</code></td>
+            <td>0.0210</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fempiregrp.net%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>16</td>
+            <td><code>sensoriumpsychologists.com</code></td>
+            <td>0.0211</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fsensoriumpsychologists.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>17</td>
+            <td><code>ksatnam.com</code></td>
+            <td>0.0214</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fksatnam.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>18</td>
+            <td><code>starfallrp.com</code></td>
+            <td>0.0223</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fstarfallrp.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>19</td>
+            <td><code>baccaratguide.jp</code></td>
+            <td>0.0248</td>
+            <td>very_low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fbaccaratguide.jp%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>20</td>
+            <td><code>padangbaycity.com</code></td>
+            <td>0.0249</td>
+            <td>very_low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fpadangbaycity.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>21</td>
+            <td><code>ostracontech.com</code></td>
+            <td>0.0259</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fostracontech.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>22</td>
+            <td><code>aashahospital.org</code></td>
+            <td>0.0265</td>
+            <td>very_low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Faashahospital.org%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>23</td>
+            <td><code>foxwilmar.com</code></td>
+            <td>0.0298</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Ffoxwilmar.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>24</td>
+            <td><code>sbiatecojp.com</code></td>
+            <td>0.0313</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fsbiatecojp.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>25</td>
+            <td><code>drclareallen.com</code></td>
+            <td>0.0325</td>
+            <td>very_low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fdrclareallen.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>26</td>
+            <td><code>forumkahvesi.com</code></td>
+            <td>0.0327</td>
+            <td>very_low</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fforumkahvesi.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>27</td>
+            <td><code>lickhers.com</code></td>
+            <td>0.0336</td>
+            <td>very_low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Flickhers.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>28</td>
+            <td><code>ladamicopizza.com</code></td>
+            <td>0.0367</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fladamicopizza.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>29</td>
+            <td><code>abv2.net.au</code></td>
+            <td>0.0372</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fabv2.net.au%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>30</td>
+            <td><code>garittooberu.com</code></td>
+            <td>0.0382</td>
+            <td>very_low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fgarittooberu.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>31</td>
+            <td><code>bashline.jp</code></td>
+            <td>0.0382</td>
+            <td>very_low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fbashline.jp%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>32</td>
+            <td><code>ezpassix.com</code></td>
+            <td>0.0402</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fezpassix.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>33</td>
+            <td><code>inexs.jp</code></td>
+            <td>0.0414</td>
+            <td>very_low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Finexs.jp%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>34</td>
+            <td><code>babblingwithbrooke.com</code></td>
+            <td>0.0430</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fbabblingwithbrooke.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>35</td>
+            <td><code>serviceautoroutes.com</code></td>
+            <td>0.0444</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fserviceautoroutes.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>36</td>
+            <td><code>legomania.net</code></td>
+            <td>0.0454</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Flegomania.net%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>37</td>
+            <td><code>exodusalert.com</code></td>
+            <td>0.0455</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fexodusalert.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>38</td>
+            <td><code>riverwalkvisitorsguide.org</code></td>
+            <td>0.0483</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Friverwalkvisitorsguide.org%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>39</td>
+            <td><code>asesoriasenbadajoz.com</code></td>
+            <td>0.0485</td>
+            <td>very_low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fasesoriasenbadajoz.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-very-low">
+            <td>40</td>
+            <td><code>flownergy.com</code></td>
+            <td>0.0500</td>
+            <td>very_low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fflownergy.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>41</td>
+            <td><code>zlaysjme.com</code></td>
+            <td>0.0509</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fzlaysjme.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>42</td>
+            <td><code>skxsh.com</code></td>
+            <td>0.0513</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fskxsh.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>43</td>
+            <td><code>dappbuilder.org</code></td>
+            <td>0.0538</td>
+            <td>low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fdappbuilder.org%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>44</td>
+            <td><code>ht-nail.de</code></td>
+            <td>0.0549</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fht-nail.de%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>45</td>
+            <td><code>do77plus.com</code></td>
+            <td>0.0568</td>
+            <td>low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fdo77plus.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>46</td>
+            <td><code>integrateprojectus.com</code></td>
+            <td>0.0584</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fintegrateprojectus.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>47</td>
+            <td><code>shiners-uae.com</code></td>
+            <td>0.0600</td>
+            <td>low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fshiners-uae.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>48</td>
+            <td><code>czqby.com</code></td>
+            <td>0.0625</td>
+            <td>low</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fczqby.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>49</td>
+            <td><code>sb1-sec-arpente.com</code></td>
+            <td>0.0643</td>
+            <td>low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fsb1-sec-arpente.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>50</td>
+            <td><code>americaexpre.com</code></td>
+            <td>0.0649</td>
+            <td>low</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Famericaexpre.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>51</td>
+            <td><code>beiduxww.com</code></td>
+            <td>0.0667</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fbeiduxww.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>52</td>
+            <td><code>jazmin-services.com</code></td>
+            <td>0.0687</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fjazmin-services.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>53</td>
+            <td><code>kamaulaw.com</code></td>
+            <td>0.0692</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fkamaulaw.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>54</td>
+            <td><code>data-okinawa.com</code></td>
+            <td>0.0693</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fdata-okinawa.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>55</td>
+            <td><code>aicolumns.com</code></td>
+            <td>0.0767</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Faicolumns.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>56</td>
+            <td><code>affordableescorts.com.au</code></td>
+            <td>0.0775</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Faffordableescorts.com.au%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>57</td>
+            <td><code>ssgjdnews.com</code></td>
+            <td>0.0782</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fssgjdnews.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>58</td>
+            <td><code>alswlj.com</code></td>
+            <td>0.0806</td>
+            <td>low</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Falswlj.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>59</td>
+            <td><code>macxel.com</code></td>
+            <td>0.0836</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fmacxel.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>60</td>
+            <td><code>nina-life.com</code></td>
+            <td>0.0848</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fnina-life.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>61</td>
+            <td><code>kuronekoyamata.com</code></td>
+            <td>0.0872</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fkuronekoyamata.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>62</td>
+            <td><code>samedayme.com</code></td>
+            <td>0.0875</td>
+            <td>low</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fsamedayme.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>63</td>
+            <td><code>womenclubmeripehchan.com</code></td>
+            <td>0.0877</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fwomenclubmeripehchan.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>64</td>
+            <td><code>cres-support.com</code></td>
+            <td>0.0878</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fcres-support.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>65</td>
+            <td><code>antelys.com</code></td>
+            <td>0.0939</td>
+            <td>low</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fantelys.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>66</td>
+            <td><code>bbz668.com</code></td>
+            <td>0.0953</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fbbz668.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>67</td>
+            <td><code>us-consulting.co.jp</code></td>
+            <td>0.0974</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fus-consulting.co.jp%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>68</td>
+            <td><code>hiddenkissstudio.com</code></td>
+            <td>0.1038</td>
+            <td>low</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fhiddenkissstudio.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>69</td>
+            <td><code>ahhrdc.com</code></td>
+            <td>0.1078</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fahhrdc.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>70</td>
+            <td><code>ton-epo.org</code></td>
+            <td>0.1086</td>
+            <td>low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fton-epo.org%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>71</td>
+            <td><code>ea-quality.com</code></td>
+            <td>0.1104</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fea-quality.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>72</td>
+            <td><code>ua-logistics.com</code></td>
+            <td>0.1149</td>
+            <td>low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fua-logistics.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>73</td>
+            <td><code>choix-creneau-mondialrelay.com</code></td>
+            <td>0.1220</td>
+            <td>low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fchoix-creneau-mondialrelay.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>74</td>
+            <td><code>kikiacai.com.br</code></td>
+            <td>0.1235</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fkikiacai.com.br%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>75</td>
+            <td><code>sb1seclive5.com</code></td>
+            <td>0.1260</td>
+            <td>low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fsb1seclive5.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>76</td>
+            <td><code>ulys-info.com</code></td>
+            <td>0.1342</td>
+            <td>low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fulys-info.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>77</td>
+            <td><code>net-helps-gate.com</code></td>
+            <td>0.1358</td>
+            <td>low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fnet-helps-gate.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>78</td>
+            <td><code>www.domaine-dubost.fr</code></td>
+            <td>0.1394</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fwww.domaine-dubost.fr%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>79</td>
+            <td><code>nn-zakon.ru</code></td>
+            <td>0.1449</td>
+            <td>low</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fnn-zakon.ru%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-low">
+            <td>80</td>
+            <td><code>nozominosato-nagashima.com</code></td>
+            <td>0.1470</td>
+            <td>low</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fnozominosato-nagashima.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>81</td>
+            <td><code>cf-brands.com</code></td>
+            <td>0.1572</td>
+            <td>medium</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fcf-brands.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>82</td>
+            <td><code>paypay-co.jp</code></td>
+            <td>0.1592</td>
+            <td>medium</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fpaypay-co.jp%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>83</td>
+            <td><code>saltekomakine.com</code></td>
+            <td>0.1601</td>
+            <td>medium</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fsaltekomakine.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>84</td>
+            <td><code>52976.net</code></td>
+            <td>0.1620</td>
+            <td>medium</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2F52976.net%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>85</td>
+            <td><code>family-officebell.com</code></td>
+            <td>0.1648</td>
+            <td>medium</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Ffamily-officebell.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>86</td>
+            <td><code>solde-ulys.com</code></td>
+            <td>0.1662</td>
+            <td>medium</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fsolde-ulys.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>87</td>
+            <td><code>netbka.net</code></td>
+            <td>0.1697</td>
+            <td>medium</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fnetbka.net%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>88</td>
+            <td><code>jucreditzc.com</code></td>
+            <td>0.1748</td>
+            <td>medium</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fjucreditzc.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>89</td>
+            <td><code>inkaqkanjsha.com</code></td>
+            <td>0.1751</td>
+            <td>medium</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Finkaqkanjsha.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>90</td>
+            <td><code>seiteabosportalsuisseltd.com</code></td>
+            <td>0.1756</td>
+            <td>medium</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fseiteabosportalsuisseltd.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>91</td>
+            <td><code>dhjmsb.com</code></td>
+            <td>0.1772</td>
+            <td>medium</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fdhjmsb.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>92</td>
+            <td><code>mesco-group.com</code></td>
+            <td>0.1792</td>
+            <td>medium</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fmesco-group.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>93</td>
+            <td><code>mizuha-bask.com</code></td>
+            <td>0.1799</td>
+            <td>medium</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fmizuha-bask.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>94</td>
+            <td><code>ashleytevatia.com</code></td>
+            <td>0.1823</td>
+            <td>medium</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fashleytevatia.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>95</td>
+            <td><code>3q3qsq.com</code></td>
+            <td>0.1897</td>
+            <td>medium</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2F3q3qsq.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>96</td>
+            <td><code>pathalive.com</code></td>
+            <td>0.1936</td>
+            <td>medium</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fpathalive.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>97</td>
+            <td><code>trajet-uiys.com</code></td>
+            <td>0.1949</td>
+            <td>medium</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Ftrajet-uiys.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>98</td>
+            <td><code>bdxhdl.com</code></td>
+            <td>0.1995</td>
+            <td>medium</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fbdxhdl.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>99</td>
+            <td><code>incident-reception.com</code></td>
+            <td>0.2036</td>
+            <td>medium</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fincident-reception.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>100</td>
+            <td><code>quakelatam.com</code></td>
+            <td>0.2040</td>
+            <td>medium</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fquakelatam.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>101</td>
+            <td><code>cntuopu.com</code></td>
+            <td>0.2095</td>
+            <td>medium</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fcntuopu.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>102</td>
+            <td><code>xserver-ne-jp.com</code></td>
+            <td>0.2349</td>
+            <td>medium</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fxserver-ne-jp.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>103</td>
+            <td><code>penglipur.com</code></td>
+            <td>0.2444</td>
+            <td>medium</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fpenglipur.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>104</td>
+            <td><code>honeystuck.com</code></td>
+            <td>0.2469</td>
+            <td>medium</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fhoneystuck.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>105</td>
+            <td><code>depot-tentative.com</code></td>
+            <td>0.2478</td>
+            <td>medium</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fdepot-tentative.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>106</td>
+            <td><code>paleoftmc.com</code></td>
+            <td>0.2501</td>
+            <td>medium</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fpaleoftmc.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>107</td>
+            <td><code>alafq.com</code></td>
+            <td>0.2502</td>
+            <td>medium</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Falafq.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>108</td>
+            <td><code>mondiai-retard.com</code></td>
+            <td>0.2567</td>
+            <td>medium</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fmondiai-retard.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>109</td>
+            <td><code>szdsib.com</code></td>
+            <td>0.2588</td>
+            <td>medium</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fszdsib.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>110</td>
+            <td><code>eurobajar.com</code></td>
+            <td>0.2590</td>
+            <td>medium</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Feurobajar.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>111</td>
+            <td><code>buffycam.com</code></td>
+            <td>0.2645</td>
+            <td>medium</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fbuffycam.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>112</td>
+            <td><code>re-amendes-gouv.com</code></td>
+            <td>0.2648</td>
+            <td>medium</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fre-amendes-gouv.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>113</td>
+            <td><code>generalgaming.ca</code></td>
+            <td>0.2667</td>
+            <td>medium</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fgeneralgaming.ca%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>114</td>
+            <td><code>ancien-bfor-espace.com</code></td>
+            <td>0.2673</td>
+            <td>medium</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fancien-bfor-espace.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>115</td>
+            <td><code>nbjfdiwefkd.com</code></td>
+            <td>0.2679</td>
+            <td>medium</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fnbjfdiwefkd.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>116</td>
+            <td><code>exaccenture.com</code></td>
+            <td>0.2717</td>
+            <td>medium</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fexaccenture.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>117</td>
+            <td><code>hlcoins.com</code></td>
+            <td>0.2797</td>
+            <td>medium</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fhlcoins.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>118</td>
+            <td><code>mondialrelay-programmer.com</code></td>
+            <td>0.2799</td>
+            <td>medium</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fmondialrelay-programmer.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>119</td>
+            <td><code>bnkchiba.com</code></td>
+            <td>0.2869</td>
+            <td>medium</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fbnkchiba.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-medium">
+            <td>120</td>
+            <td><code>dolivro.com</code></td>
+            <td>0.2910</td>
+            <td>medium</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fdolivro.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>121</td>
+            <td><code>hannari.deasgarden.jp</code></td>
+            <td>0.3090</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fhannari.deasgarden.jp%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>122</td>
+            <td><code>iaestudy.com</code></td>
+            <td>0.3171</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fiaestudy.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>123</td>
+            <td><code>7starsdata.com</code></td>
+            <td>0.3178</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2F7starsdata.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>124</td>
+            <td><code>meinkonto.telekom-dienste.de</code></td>
+            <td>0.3225</td>
+            <td>high</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fmeinkonto.telekom-dienste.de%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>125</td>
+            <td><code>tongkhorobot.com</code></td>
+            <td>0.3240</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Ftongkhorobot.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>126</td>
+            <td><code>osnakjsing.com</code></td>
+            <td>0.3312</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fosnakjsing.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>127</td>
+            <td><code>tracybloom.co.uk</code></td>
+            <td>0.3348</td>
+            <td>high</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Ftracybloom.co.uk%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>128</td>
+            <td><code>uspsspostoffice.com</code></td>
+            <td>0.3364</td>
+            <td>high</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fuspsspostoffice.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>129</td>
+            <td><code>weddingcufflinksuk.com</code></td>
+            <td>0.3438</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fweddingcufflinksuk.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>130</td>
+            <td><code>kontakqq.com</code></td>
+            <td>0.3463</td>
+            <td>high</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fkontakqq.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>131</td>
+            <td><code>khachsanmayho.com</code></td>
+            <td>0.3478</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fkhachsanmayho.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>132</td>
+            <td><code>boerdz.com</code></td>
+            <td>0.3492</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fboerdz.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>133</td>
+            <td><code>navitiot.com</code></td>
+            <td>0.3499</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fnavitiot.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>134</td>
+            <td><code>sologamingstudio.com</code></td>
+            <td>0.3543</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fsologamingstudio.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>135</td>
+            <td><code>oframakeup.com</code></td>
+            <td>0.3551</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Foframakeup.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>136</td>
+            <td><code>seodometer.com</code></td>
+            <td>0.3602</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fseodometer.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>137</td>
+            <td><code>0371lingte.com</code></td>
+            <td>0.3696</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2F0371lingte.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>138</td>
+            <td><code>besthuo.com</code></td>
+            <td>0.3746</td>
+            <td>high</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fbesthuo.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>139</td>
+            <td><code>jianlimuye.com</code></td>
+            <td>0.3769</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fjianlimuye.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>140</td>
+            <td><code>cunpinjx.com</code></td>
+            <td>0.3827</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fcunpinjx.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>141</td>
+            <td><code>appuwei.com</code></td>
+            <td>0.3854</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fappuwei.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>142</td>
+            <td><code>apatagore.com</code></td>
+            <td>0.3863</td>
+            <td>high</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fapatagore.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>143</td>
+            <td><code>linktoparis.com</code></td>
+            <td>0.3867</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Flinktoparis.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>144</td>
+            <td><code>jurimer.com</code></td>
+            <td>0.3924</td>
+            <td>high</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fjurimer.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>145</td>
+            <td><code>imsandecpa.com</code></td>
+            <td>0.3962</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fimsandecpa.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>146</td>
+            <td><code>hkjnx.com</code></td>
+            <td>0.3963</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fhkjnx.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>147</td>
+            <td><code>spiritedladies.com</code></td>
+            <td>0.4110</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fspiritedladies.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>148</td>
+            <td><code>uiys-mobiiites.com</code></td>
+            <td>0.4168</td>
+            <td>high</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fuiys-mobiiites.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>149</td>
+            <td><code>xanderleneave.com</code></td>
+            <td>0.4241</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fxanderleneave.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>150</td>
+            <td><code>youngsert.com</code></td>
+            <td>0.4360</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fyoungsert.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>151</td>
+            <td><code>iunkxaqinfl.com</code></td>
+            <td>0.4367</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fiunkxaqinfl.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>152</td>
+            <td><code>szxgny.com</code></td>
+            <td>0.4414</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fszxgny.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>153</td>
+            <td><code>insjaghsama.com</code></td>
+            <td>0.4416</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Finsjaghsama.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>154</td>
+            <td><code>fifabeat.com</code></td>
+            <td>0.4499</td>
+            <td>high</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Ffifabeat.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>155</td>
+            <td><code>jdongaz.com</code></td>
+            <td>0.4535</td>
+            <td>high</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fjdongaz.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>156</td>
+            <td><code>13wealth.com</code></td>
+            <td>0.4685</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2F13wealth.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>157</td>
+            <td><code>gotgtek.com</code></td>
+            <td>0.4795</td>
+            <td>high</td>
+            <td>jpcert</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fgotgtek.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>158</td>
+            <td><code>verify-sfe.com</code></td>
+            <td>0.4817</td>
+            <td>high</td>
+            <td>phishtank</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fverify-sfe.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>159</td>
+            <td><code>uofor.com</code></td>
+            <td>0.4853</td>
+            <td>high</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fuofor.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+        <tr class="ml-high">
+            <td>160</td>
+            <td><code>dahanjt.com</code></td>
+            <td>0.4939</td>
+            <td>high</td>
+            <td>certificates</td>
+            <td><a href="https://transparencyreport.google.com/safe-browsing/search?url=https%3A%2F%2Fdahanjt.com%2F" target="_blank">GSB Check</a></td>
+            <td><input type="text" placeholder="safe/unsafe"></td>
+        </tr>
+    </table>
+    
+    <h2>Summary by ML Bin</h2>
+    <ul>
+        <li><b>very_low</b>: 40 domains</li>
+        <li><b>low</b>: 40 domains</li>
+        <li><b>medium</b>: 40 domains</li>
+        <li><b>high</b>: 40 domains</li>
+    </ul>
+</body>
+</html>

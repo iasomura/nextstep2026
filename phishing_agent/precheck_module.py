@@ -171,6 +171,69 @@ def _extract_cert_info(meta: Dict[str, Any]) -> Dict[str, Any]:
         "valid_days": int(meta.get("valid_days") or 0),
         "is_free_ca": bool(meta.get("is_free_ca") or False),
         "is_self_signed": bool(meta.get("is_self_signed") or False),
+        # 新規: benign indicators 用 (2026-01-12)
+        "has_crl_dp": bool(meta.get("has_crl_dp") or meta.get("has_crl") or False),
+        "has_org": bool(meta.get("has_org") or meta.get("has_organization") or False),
+        "is_wildcard": bool(meta.get("is_wildcard") or False),
+    }
+
+
+def _calc_cert_benign_score(cert_info: Dict[str, Any]) -> float:
+    """証明書の正規性スコア（0.0-1.0）
+
+    Stage2/Stage3で有効性が確認された証明書特徴量をスコア化。
+    高いスコア = 正規サイトの可能性が高い。
+    """
+    score = 0.0
+    if cert_info.get("has_crl_dp", False):
+        score += 0.30  # CRL: 正規81.7% vs フィッシング1.6%
+    if cert_info.get("has_org", False):
+        score += 0.35  # OV/EV: 強い正規シグナル
+    if cert_info.get("is_wildcard", False):
+        score += 0.10  # ワイルドカード: 正規55.1%
+    validity_days = cert_info.get("valid_days", 0) or 0
+    if validity_days > 180:
+        score += 0.10  # 長期有効期間
+    san_count = cert_info.get("san_count", 0) or 0
+    if san_count >= 10:
+        score += 0.15  # 高SAN数
+    return min(1.0, score)
+
+
+def _generate_cert_summary(cert_info: Dict[str, Any]) -> Dict[str, Any]:
+    """証明書サマリを生成（precheck_hints用）
+
+    Stage3のGate B1-B4で使用するbenign indicatorsを事前に計算。
+    """
+    validity_days = cert_info.get("valid_days", 0) or 0
+    san_count = cert_info.get("san_count", 0) or 0
+    has_org = cert_info.get("has_org", False)
+    has_crl_dp = cert_info.get("has_crl_dp", False)
+    is_wildcard = cert_info.get("is_wildcard", False)
+
+    # benign_indicators リストを構築
+    benign_indicators: List[str] = []
+    if has_crl_dp:
+        benign_indicators.append("has_crl_dp")
+    if has_org:
+        benign_indicators.append("ov_ev_cert")
+    if is_wildcard:
+        benign_indicators.append("wildcard_cert")
+    if validity_days > 180:
+        benign_indicators.append("long_validity")
+    if san_count >= 10:
+        benign_indicators.append("high_san_count")
+
+    return {
+        "has_crl_dp": has_crl_dp,
+        "is_ov_ev": has_org,
+        "is_wildcard": is_wildcard,
+        "validity_days": validity_days,
+        "is_long_validity": validity_days > 180,
+        "san_count": san_count,
+        "is_high_san": san_count >= 10,
+        "benign_score": round(_calc_cert_benign_score(cert_info), 3),
+        "benign_indicators": benign_indicators,
     }
 
 # ---- 仕様準拠: generate_precheck_hints ----------------------------------------
@@ -265,6 +328,28 @@ def generate_precheck_hints(
         if hr_hits > 0 or ml_paradox:
             rec.append("contextual_risk_assessment")
 
+        # 証明書情報の抽出とサマリ生成 (2026-01-12)
+        # cert_full_info_map からドメインに対応する証明書情報を取得
+        cert_info: Dict[str, Any] = {}
+        if cert_full_info_map:
+            rd = et.registered_domain or ""
+            for key in [domain, domain.lower(), rd, rd.lower(), f"www.{rd}"]:
+                if key and key in cert_full_info_map:
+                    cert_info = _extract_cert_info(cert_full_info_map[key])
+                    break
+
+        cert_summary = _generate_cert_summary(cert_info) if cert_info else {
+            "has_crl_dp": False,
+            "is_ov_ev": False,
+            "is_wildcard": False,
+            "validity_days": 0,
+            "is_long_validity": False,
+            "san_count": 0,
+            "is_high_san": False,
+            "benign_score": 0.0,
+            "benign_indicators": [],
+        }
+
         return {
             "ml_category": ml_category,
             "ml_paradox": ml_paradox,
@@ -284,6 +369,8 @@ def generate_precheck_hints(
                 "phishing_tld_weight": round(stat_w, 3),
                 "high_risk_hits": hr_hits,
             },
+            # 新規: 証明書サマリ (2026-01-12)
+            "cert_summary": cert_summary,
         }
     except Exception as e:
         if strict_mode:

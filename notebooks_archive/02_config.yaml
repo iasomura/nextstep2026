@@ -1,0 +1,90 @@
+# ============================================================
+# 02系 Notebook Configuration
+# ============================================================
+# CHANGELOG (2026-01-10): Phase 1 - Externalize configuration to YAML
+#   - Extracted all settings from ipynb cells 0-2
+#   - Fixed: seg_include_brand set to true (was false, causing brand_hit=0 issue)
+#   - Unified GATEV2 and default settings
+# ============================================================
+
+# --- Experiment / Visualization knobs ---
+experiment:
+  viz_max_k: 40000
+  viz_k_step: 500
+  viz_fn_cost: 3.0
+
+  # Evaluation-only imbalance simulation (TEST split only)
+  eval_imbalance: false
+  eval_pos_rate: 0.001
+  eval_min_pos: 200
+  eval_seed: 42
+
+# --- XGBoost Stage1 hyperparameters ---
+xgboost:
+  n_estimators: 300
+  max_depth: 8
+  learning_rate: 0.1
+  objective: "binary:logistic"
+  eval_metric: "logloss"
+  subsample: 0.8
+  colsample_bytree: 0.8
+  random_state: 42
+  verbosity: 1
+  early_stopping_rounds: 20
+
+  # Training split
+  val_size: 0.10  # validation fraction within train split for early stopping
+
+  # GPU settings (auto-detected in notebook)
+  # tree_method: "hist" or "gpu_hist" (set dynamically based on gpu_available)
+  # device: "cuda" or "cpu" (set dynamically)
+
+# --- Route1 automatic threshold selection ---
+route1:
+  t_mode: "auto_from_val"
+  risk_max_auto_benign: 0.001   # 0.1% risk for AUTO_BENIGN
+  risk_max_auto_phish: 0.0002   # 0.02% risk for AUTO_PHISH
+  min_auto_samples: 200
+  risk_use_upper: true           # Wilson score one-sided upper bound
+  risk_alpha: 0.05
+
+# --- Stage2 Gate v2 (segment_priority) ---
+stage2:
+  select_mode: "segment_priority"
+  max_budget: 5000
+
+  # Thresholds
+  tau: 0.40              # gray threshold (raise to shrink handoff)
+  override_tau: 0.60     # rescue confident-mistake threshold
+  phi_phish: 0.99        # clear-phish extreme
+  phi_benign: 0.01       # clear-benign extreme
+
+  # Segment gate settings
+  seg_only_benign: false     # false = rescue both sides (GATEV2 setting)
+  seg_optional: true         # true = include unknown TLD optional pool (GATEV2 setting)
+  seg_include_idn: true      # include IDN in priority pool
+  seg_include_brand: true    # ⚠️ FIXED: was false, now true to enable brand feature
+  seg_min_p1: 0.00           # minimum ML probability for segment gate (GATEV2: 0.00, default: 0.20)
+  seg_tau_priority: null     # null = use tau
+  seg_tau_optional: null     # null = use tau
+
+  # Other Stage2 settings
+  oof_folds: 5
+  cert_extra: true           # keep cert_data-derived extra features
+
+# --- Brand keyword extraction ---
+brand_keywords:
+  min_count: 2
+  max_brands: 100
+  dynamic: true
+
+# --- Input/Output paths ---
+io:
+  run_id_env: "RUN_ID"       # environment variable name for RUN_ID
+  artifacts_base: "artifacts"
+
+  # Output structure: artifacts/<RUN_ID>/
+  #   - models/
+  #   - results/
+  #   - processed/
+  #   - handoff/

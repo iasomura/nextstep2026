@@ -1,0 +1,55 @@
+あなたはサイバーセキュリティ研究者兼データエンジニアです。nextstep / phishing_agent の Stage1（XGBoost）, Stage2（Gate/LR）, Stage3（agent）の結果を用い、まず Stage3 と Google Safe Browsing による照合で Stage1 の見逃し（FN）を切り分け、論文で説明できる材料を作ってください。
+
+目的（論文で説明したいこと）
+- 観測可能情報の制約により、検知できなくても仕方ないデータが一定割合存在することを、定量と代表例で示す
+- データ誤り（ラベル誤り、時間差、無害化、誤登録など）がある場合、正しく検知できないことを、定量と代表例で示す
+
+入力
+- Stage1 評価データ（必須列: domain または url, y_true, stage1_pred もしくは stage1_decision, 任意で ml_probability）
+- Stage2 判定結果（必須列: domain または url, stage2_decision）
+- Stage3 判定結果（必須列: domain または url, ai_is_phishing, ai_confidence, final_pred など）
+- 可能なら artifacts/<RUN_ID>/ 配下のファイルパス。無い場合は手元の CSV パス
+
+作業
+1. Stage1 の FN を全件抽出
+- 定義: y_true=1 かつ stage1_pred=0（または benign 相当）
+- 重複（同一 domain または同一 url）はユニーク件数も出す
+
+2. Stage1 FN を Stage2 と Stage3 に突合
+- domain/url をキーにして突合し、突合不能は missing_reason で分類
+
+3. Stage1 FN を Google Safe Browsing で外部照合
+- Transparency Report の Safe Browsing 検索（url パラメータ）または利用可能な Safe Browsing 手段で、
+  各 domain/url の外部判定を取得して記録する
+- 出力は少なくとも次の形式に正規化する
+  - input_type（domain/url）, input_value, checked_at, sb_verdict（unsafe/safe/unknown/error）, sb_detail（取得できた範囲）
+
+4. 論文化のための切り分け（分類ルールは再現可能な列条件で定義）
+- 分類A: sb_verdict=unsafe かつ Stage3 が phishing 高確信
+  - 解釈: 真に悪性で、Stage1 の観測情報では取りこぼした可能性が高い
+- 分類B: sb_verdict=unsafe だが Stage3 が不確実または benign 寄り
+  - 解釈: 観測情報が不足しやすい難例、または Stage3 の限界候補
+- 分類C: sb_verdict=safe または unknown かつ Stage3 が benign 高確信
+  - 解釈: データ誤り（ラベルノイズ、時間差、無害化など）の疑いが相対的に高い
+- 分類D: 突合不能やエラー
+
+出力
+1. 集計サマリー
+- Stage1 FN 総数、ユニーク件数
+- sb_verdict 内訳
+- 分類AからDの件数と比率
+- Stage2 決定内訳、Stage3 到達率と回収率（全体と到達集合内の両方）
+
+2. 代表例リスト
+- 各分類から数件ずつ
+- domain/url, stage1 指標（可能なら ml_probability）, stage2_decision, stage3 final_pred と ai_confidence, sb_verdict, 短い根拠メモ
+
+3. 論文用の説明文案（日本語）
+- 主張1: 観測可能情報の制約により検知困難な群が存在すること（分類B中心、必要ならAも補助）
+- 主張2: データ誤りがあると正しく検知できないこと（分類C中心）
+- 数値と代表例を参照しながら、断定ではなく観測に基づく合理的な説明として記述
+
+成果物ファイル
+- stage1_fn_with_stage2_stage3_safebrowsing.csv
+- paper_ready_summary.md
+

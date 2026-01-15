@@ -1,0 +1,161 @@
+domain,tld,ml_probability,source,is_featureless,domain_length,entropy,contains_brand,cert_is_lets_encrypt,cert_subject_has_org,is_dangerous_tld,is_legitimate_tld,ml_bin,gsb_status,gsb_detail,gsb_checked_at,created,age_days,registrar,whois_status
+riverwalkvisitorsguide.org,org,0.04833966,phishtank,True,26.0,3.7004397181410913,0.0,1.0,0.0,False,True,very_low,unknown,Status element not found,2026-01-11T17:26:37.194807,2020-04-29,2083,"GoDaddy.com, LLC",found
+juniperwoodworks.com,com,0.0025582293,jpcert,True,20.0,3.721928094887362,0.0,0.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:26:49.890000,2024-11-22,415,Tucows Domains Inc.,found
+sbiatecojp.com,com,0.031304967,phishtank,True,14.0,3.521640636343319,0.0,1.0,0.0,False,True,very_low,unknown,Status element not found,2026-01-11T17:26:57.488403,2025-06-03,222,Dominet (HK) Limited,found
+bashline.jp,jp,0.03823813,jpcert,True,11.0,3.459431618637298,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:27:09.128989,2013-06-07,4601,,found
+legomania.net,net,0.04543609,phishtank,True,13.0,3.238901256602631,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:27:16.225085,2024-11-29,408,Gname.com Pte. Ltd.,found
+ksatnam.com,com,0.021376992,phishtank,True,11.0,3.095795255000934,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:27:23.305163,2021-11-25,1508,One.com A/S,found
+vipfbtools.com,com,0.008907868,phishtank,True,14.0,3.4677201004745006,0.0,0.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:27:29.926555,,-1,,deleted
+ytsantong.com,com,0.012190945,jpcert,True,13.0,3.238901256602631,0.0,0.0,0.0,False,True,very_low,unknown,Status element not found,2026-01-11T17:27:36.557586,2021-06-25,1661,Gname.com Pte. Ltd.,found
+empiregrp.net,net,0.021019736,phishtank,True,13.0,3.026986833359288,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:27:48.569946,2025-08-10,154,Squarespace Domains II LLC,found
+abv2.net.au,au,0.03715214,phishtank,True,11.0,3.0957952550009344,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:27:55.198058,,-1,Web Address Registration Pty Ltd,no_date
+flownergy.com,com,0.04995068,jpcert,True,13.0,3.5465935642949384,0.0,0.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:28:01.823678,2025-03-16,301,"GoDaddy.com, LLC",found
+inexs.jp,jp,0.041416936,jpcert,True,8.0,3.0,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:28:08.906258,2014-07-01,4212,,found
+keishitanaka.com,com,0.0027389626,jpcert,True,16.0,3.452819531114783,0.0,0.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:28:15.979561,2011-09-16,5231,"GMO Internet, Inc.",found
+ostracontech.com,com,0.025938233,phishtank,True,16.0,3.2806390622295662,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:28:23.055223,2008-09-19,6323,"Wild West Domains, LLC",found
+sunpasstollsbill.com,com,0.008778179,phishtank,True,20.0,3.4219280948873623,0.0,0.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:28:30.159078,2024-06-30,560,"NICENIC INTERNATIONAL GROUP CO., LIMITED",found
+tianxiqianhe.com,com,0.008609436,jpcert,True,16.0,3.452819531114783,0.0,0.0,0.0,False,True,very_low,unsafe,Some pages unsafe,2026-01-11T17:28:37.288293,2025-09-20,113,Unstoppable Domains,found
+drclareallen.com,com,0.032471262,jpcert,True,16.0,3.202819531114783,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:28:44.354162,2025-03-28,289,"GoDaddy.com, LLC",found
+transfer-team.ru,ru,0.0011665158,phishtank,True,16.0,3.327819531114783,0.0,0.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:28:51.473086,2024-04-23,627,TIMEWEB-RU,found
+lickhers.com,com,0.033631466,jpcert,True,12.0,3.418295834054489,0.0,0.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:28:58.576364,2024-03-08,674,"GoDaddy.com, LLC",found
+asesoriasenbadajoz.com,com,0.0484788,phishtank,True,22.0,3.5726236638951625,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:29:05.203041,2021-09-27,1566,Name SRS AB,found
+nkgw.net,net,0.017310945,jpcert,True,8.0,2.75,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:29:11.842391,2000-03-24,9424,"Japan Registry Services Co.,Ltd.(JPRS)",found
+exodusalert.com,com,0.04551837,phishtank,True,15.0,3.640223928941851,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:29:18.459980,2024-06-10,579,"NameSilo, LLC",found
+ezpassix.com,com,0.040222194,phishtank,True,12.0,3.418295834054489,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:29:25.092488,2025-04-10,276,Dominet (HK) Limited,found
+ladamicopizza.com,com,0.036683567,phishtank,True,17.0,3.219528282299548,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:29:32.162829,,-1,,deleted
+serviceautoroutes.com,com,0.044418402,phishtank,True,21.0,3.463280517810811,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:29:39.275037,2025-06-24,201,"Wild West Domains, LLC",found
+starfallrp.com,com,0.022254461,phishtank,True,14.0,3.3787834934861767,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:29:46.376024,2025-03-17,300,Domain Science Kutatasi Szolgaltato,found
+mccampbellsgiftemporiumblog.com,com,0.017845102,phishtank,True,31.0,3.796960730356964,0.0,1.0,0.0,False,True,very_low,unknown,Status element not found,2026-01-11T17:29:53.011268,2011-04-28,5371,"Wild West Domains, LLC",found
+padangbaycity.com,com,0.024891876,jpcert,True,17.0,3.572469458770136,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:30:05.080225,2023-03-13,1035,"NameCheap, Inc.",found
+aashahospital.org,org,0.026510302,jpcert,True,17.0,3.2639334294856344,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:30:12.204741,2021-04-26,1721,PDR Ltd. d/b/a PublicDomainRegistry.com,found
+foxwilmar.com,com,0.02983156,phishtank,True,13.0,3.3927474104487847,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:30:19.290125,2002-03-22,8696,"TUCOWS DOMAINS, INC.",found
+skinomonkey.org,org,0.019057116,phishtank,True,15.0,3.32323142879762,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:30:25.914134,2025-03-01,316,Web Commerce Communications Limited dba WebNic.cc,found
+garittooberu.com,com,0.038167585,jpcert,True,16.0,3.452819531114783,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:30:32.546953,2020-07-26,1995,"XServer, Inc.",found
+baccaratguide.jp,jp,0.024805004,jpcert,True,16.0,3.577819531114783,0.0,1.0,0.0,False,True,very_low,unknown,Status element not found,2026-01-11T17:30:39.169180,2020-05-26,2056,,found
+esypark-dk.com,com,0.018872242,phishtank,True,14.0,3.6644977792004623,0.0,0.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:30:51.167201,2025-05-22,233,"Name.com, Inc.",found
+babblingwithbrooke.com,com,0.042969853,phishtank,True,22.0,3.788754913993502,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:30:58.269829,2018-01-27,2905,Bluehost Inc.,found
+nbfaguozhan.com,com,0.0059430664,jpcert,True,15.0,3.5068905956085183,0.0,0.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:31:05.359668,2018-03-20,2854,Gname.com Pte. Ltd.,found
+suivi-livraison-relay.com,com,0.008966748,phishtank,True,25.0,3.763856189774724,0.0,0.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:31:12.005556,2024-11-28,409,"NICENIC INTERNATIONAL GROUP CO., LIMITED",found
+forumkahvesi.com,com,0.032707453,certificates,True,16.0,3.75,0.0,1.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:31:18.638746,2025-11-23,49,Squarespace Domains II LLC,found
+sensoriumpsychologists.com,com,0.021115812,phishtank,True,26.0,3.715453546047368,0.0,1.0,0.0,False,True,very_low,unknown,Status element not found,2026-01-11T17:31:25.257330,2020-12-18,1850,PDR Ltd. d/b/a PublicDomainRegistry.com,found
+pixya.net,net,0.0026919355,jpcert,True,9.0,3.169925001442312,0.0,0.0,0.0,False,True,very_low,safe,No unsafe content found,2026-01-11T17:31:37.210363,,-1,,deleted
+ahhrdc.com,com,0.107751794,jpcert,True,10.0,2.9219280948873623,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:31:43.583374,2023-04-04,1013,Gname.com Pte. Ltd.,found
+jazmin-services.com,com,0.068688296,jpcert,True,19.0,3.7216117239699007,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:31:50.687595,,-1,,deleted
+ea-quality.com,com,0.11036574,jpcert,True,14.0,3.6644977792004623,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:31:57.316259,2019-06-29,2388,"XServer, Inc.",found
+skxsh.com,com,0.051332563,jpcert,True,9.0,2.94770277922009,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:32:03.952052,2025-05-10,246,Gname.com Pte. Ltd.,found
+sb1-sec-arpente.com,com,0.06429328,phishtank,True,19.0,3.681880802803401,0.0,1.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:32:10.571637,2025-06-16,209,Aceville Pte. Ltd.,found
+hiddenkissstudio.com,com,0.10376372,certificates,True,20.0,3.5086949695628413,0.0,0.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:32:22.223614,,-1,,deleted
+sb1seclive5.com,com,0.1260009,phishtank,True,15.0,3.506890595608518,0.0,1.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:32:29.318034,2025-06-16,208,Aceville Pte. Ltd.,found
+antelys.com,com,0.093853556,certificates,True,11.0,3.459431618637298,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:32:41.430938,2025-02-05,339,DropCatch.com 906 LLC,found
+bbz668.com,com,0.095299274,jpcert,True,10.0,2.9219280948873623,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:32:48.048950,2025-09-18,115,Gname 029 Inc,found
+beiduxww.com,com,0.066728234,jpcert,True,12.0,3.4182958340544896,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:32:54.438236,2024-09-07,491,Gname.com Pte. Ltd.,found
+cres-support.com,com,0.08784018,jpcert,True,16.0,3.375,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:33:00.817125,2012-06-30,4943,"GMO Internet, Inc.",found
+ua-logistics.com,com,0.11490884,phishtank,True,16.0,3.5,0.0,1.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:33:07.944628,2024-01-22,720,"GoDaddy.com, LLC",found
+nn-zakon.ru,ru,0.14492643,phishtank,True,11.0,3.027169118440619,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:33:20.037900,2021-04-19,1728,BEGET-RU,found
+aicolumns.com,com,0.07674322,jpcert,True,13.0,3.238901256602631,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:33:26.965671,2023-01-28,1079,"TurnCommerce, Inc. DBA NameBright.com",found
+nozominosato-nagashima.com,com,0.14695187,jpcert,True,26.0,3.426616045880948,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:33:33.736896,2018-05-08,2805,"GMO Internet, Inc.",found
+alswlj.com,com,0.08059545,certificates,True,10.0,3.121928094887362,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:33:40.025186,2024-09-05,493,Gname.com Pte. Ltd.,found
+ssgjdnews.com,com,0.078178376,jpcert,True,13.0,3.334679141051595,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:33:46.441513,,-1,,deleted
+affordableescorts.com.au,au,0.07750161,jpcert,True,24.0,3.688721875540868,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:33:52.855085,,-1,Web Address Registration Pty Ltd,no_date
+dappbuilder.org,org,0.0538346,phishtank,True,15.0,3.5068905956085183,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:33:59.256476,2020-04-10,2102,"Cloudflare, Inc.",found
+zlaysjme.com,com,0.05089632,jpcert,True,12.0,3.4182958340544896,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:34:06.351173,2025-01-16,360,NameMart Pte. Ltd.,found
+czqby.com,com,0.06254919,certificates,True,9.0,2.94770277922009,0.0,1.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:34:13.467531,2024-08-15,514,Gname.com Pte. Ltd.,found
+womenclubmeripehchan.com,com,0.0877407,jpcert,True,24.0,3.740601562950723,0.0,0.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:34:24.843372,,-1,,deleted
+do77plus.com,com,0.056758694,phishtank,True,12.0,3.2516291673878226,0.0,1.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:34:37.315151,,-1,,deleted
+kikiacai.com.br,br,0.12353879,jpcert,True,15.0,3.0565647621309533,0.0,1.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:34:49.816488,,-1,,deleted
+americaexpre.com,com,0.06491884,certificates,True,16.0,3.202819531114783,0.0,0.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:35:02.265353,,-1,,deleted
+www.domaine-dubost.fr,fr,0.13944873,jpcert,True,21.0,3.880179922675737,0.0,0.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:35:13.810819,,-1,,deleted
+kamaulaw.com,com,0.069205746,jpcert,True,12.0,3.0220552088742,0.0,1.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:35:25.598022,2024-11-30,407,Netregistry Wholesale Pty Ltd,found
+data-okinawa.com,com,0.06934911,jpcert,True,16.0,3.375,0.0,1.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:35:38.001857,2010-11-16,5535,"GMO Internet, Inc.",found
+shiners-uae.com,com,0.060040727,phishtank,True,15.0,3.640223928941851,0.0,1.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:35:50.460824,2020-08-20,1970,"HOSTINGER operations, UAB",found
+choix-creneau-mondialrelay.com,com,0.12203654,phishtank,True,30.0,3.872905595320056,0.0,1.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:36:02.818776,2025-03-05,312,1API GmbH,found
+ton-epo.org,org,0.10863114,phishtank,True,11.0,3.027169118440619,0.0,1.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:36:15.263866,2023-04-05,1012,"GoDaddy.com, LLC",found
+us-consulting.co.jp,jp,0.0973765,jpcert,True,19.0,3.616348566075164,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:36:27.549045,2019-04-17,2461,,found
+net-helps-gate.com,com,0.13577631,phishtank,True,18.0,3.68354236243323,0.0,1.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:36:34.647567,2025-06-20,205,Hosting Concepts B.V. d/b/a Registrar.eu,found
+samedayme.com,com,0.08753192,certificates,True,13.0,3.026986833359288,0.0,1.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:36:46.064804,2012-06-14,4959,"GoDaddy.com, LLC",found
+ulys-info.com,com,0.134155,phishtank,True,13.0,3.546593564294939,0.0,1.0,0.0,False,True,low,unknown,Status element not found,2026-01-11T17:36:58.438875,2025-06-08,217,DYNADOT LLC,found
+kuronekoyamata.com,com,0.0872182,jpcert,True,18.0,3.419381945646371,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:37:09.816097,,-1,,deleted
+integrateprojectus.com,com,0.058399633,jpcert,True,22.0,3.7544418457133446,0.0,0.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:37:16.924243,,-1,,deleted
+ht-nail.de,de,0.054859124,jpcert,True,10.0,3.321928094887362,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:37:24.167447,,-1,,no_date
+macxel.com,com,0.08360548,jpcert,True,10.0,2.9219280948873623,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:37:30.566457,2025-02-28,317,"NameCheap, Inc.",found
+nina-life.com,com,0.08475382,jpcert,True,13.0,3.3927474104487847,0.0,1.0,0.0,False,True,low,safe,No unsafe content found,2026-01-11T17:37:36.966536,2017-12-18,2945,"GMO Internet, Inc.",found
+mondialrelay-programmer.com,com,0.27994442,phishtank,True,27.0,3.661932872373583,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:37:43.367336,2025-02-07,338,PDR Ltd. d/b/a PublicDomainRegistry.com,found
+exaccenture.com,com,0.27168205,phishtank,True,15.0,3.272905595320056,0.0,1.0,0.0,False,True,medium,unknown,Status element not found,2026-01-11T17:37:49.771939,,-1,,deleted
+xserver-ne-jp.com,com,0.23488548,jpcert,True,17.0,3.572469458770136,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:38:02.178486,,-1,,deleted
+szdsib.com,com,0.25883812,jpcert,True,10.0,3.121928094887362,0.0,0.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:38:09.306001,2021-03-18,1760,Gname.com Pte. Ltd.,found
+ancien-bfor-espace.com,com,0.26734725,phishtank,True,22.0,3.663532754804253,0.0,1.0,0.0,False,True,medium,unknown,Status element not found,2026-01-11T17:38:16.423596,2025-05-06,250,"OwnRegistrar, Inc.",found
+re-amendes-gouv.com,com,0.26479277,phishtank,True,19.0,3.6818808028034016,0.0,1.0,0.0,False,True,medium,unknown,Status element not found,2026-01-11T17:38:28.161413,2025-06-24,201,Hosting Concepts B.V. d/b/a Registrar.eu,found
+mizuha-bask.com,com,0.17986043,certificates,True,15.0,3.640223928941851,0.0,0.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:38:39.565141,,-1,,deleted
+saltekomakine.com,com,0.16010478,phishtank,True,17.0,3.499227547132693,0.0,1.0,0.0,False,True,medium,unsafe,Some pages unsafe,2026-01-11T17:38:46.637470,,-1,,deleted
+mondiai-retard.com,com,0.25670153,phishtank,True,18.0,3.5032583347756456,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:38:53.001657,2025-04-03,283,"OwnRegistrar, Inc.",found
+incident-reception.com,com,0.20360439,phishtank,True,22.0,3.4130884364257565,0.0,1.0,0.0,False,True,medium,unknown,Status element not found,2026-01-11T17:38:59.390745,2025-05-25,230,DYNADOT LLC,found
+honeystuck.com,com,0.24691032,certificates,True,14.0,3.521640636343319,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:39:11.465636,2025-05-10,245,"Sav.com, LLC - 18",found
+bdxhdl.com,com,0.19950768,certificates,True,10.0,3.121928094887362,0.0,0.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:39:18.575142,2020-02-03,2168,Gname.com Pte. Ltd.,found
+ashleytevatia.com,com,0.18230785,jpcert,True,17.0,3.572469458770136,0.0,0.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:39:25.710127,,-1,,deleted
+3q3qsq.com,com,0.18971401,jpcert,True,10.0,2.646439344671016,0.0,1.0,0.0,False,True,medium,unknown,Status element not found,2026-01-11T17:39:32.110316,2025-07-16,179,Cloud Yuqu LLC,found
+seiteabosportalsuisseltd.com,com,0.1756413,phishtank,True,28.0,3.6689869584530608,0.0,0.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:39:43.542442,,-1,,deleted
+cf-brands.com,com,0.15721771,jpcert,True,13.0,3.5465935642949384,0.0,0.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:39:50.650886,2025-06-18,207,"GoDaddy.com, LLC",found
+depot-tentative.com,com,0.24784027,phishtank,True,19.0,3.471354487013928,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:39:57.757410,2025-05-24,232,Hosting Concepts B.V. d/b/a Registrar.eu,found
+pathalive.com,com,0.19356233,jpcert,True,13.0,3.5465935642949384,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:40:04.145560,2025-09-05,128,Unstoppable Domains,found
+netbka.net,net,0.16970636,certificates,True,10.0,2.721928094887362,0.0,0.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:40:10.570009,,-1,,deleted
+hlcoins.com,com,0.2796959,jpcert,True,11.0,3.095795255000934,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:40:16.975125,,-1,,deleted
+buffycam.com,com,0.26447526,jpcert,True,12.0,3.084962500721156,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:40:23.368803,2025-01-27,348,DropCatch.com 877 LLC,found
+dolivro.com,com,0.29097858,jpcert,True,11.0,3.027169118440619,0.0,1.0,0.0,False,True,medium,unknown,Status element not found,2026-01-11T17:40:30.456054,,-1,,deleted
+eurobajar.com,com,0.25901327,jpcert,True,13.0,3.238901256602631,0.0,0.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:40:42.549217,,-1,,deleted
+jucreditzc.com,com,0.17483358,jpcert,True,14.0,3.4677201004745006,0.0,1.0,0.0,False,True,medium,unknown,Status element not found,2026-01-11T17:40:49.688406,2024-08-18,511,Gname.com Pte. Ltd.,found
+trajet-uiys.com,com,0.19486098,phishtank,True,15.0,3.773557262275185,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:41:01.802703,2025-05-31,224,Hosting Concepts B.V. d/b/a Registrar.eu,found
+mesco-group.com,com,0.17919917,phishtank,True,15.0,3.32323142879762,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:41:08.225093,2002-05-05,8652,"GoDaddy.com, LLC",found
+penglipur.com,com,0.24443047,jpcert,True,13.0,3.5465935642949384,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:41:14.614317,,-1,,deleted
+solde-ulys.com,com,0.16623437,phishtank,True,14.0,3.3787834934861767,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:41:21.002024,2025-06-25,200,Hosting Concepts B.V. d/b/a Registrar.eu,found
+52976.net,net,0.16197175,phishtank,True,9.0,3.169925001442312,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:41:27.349825,2025-02-15,330,Gname.com Pte. Ltd.,found
+cntuopu.com,com,0.2095031,certificates,True,11.0,2.9139770731827523,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:41:34.505411,2024-12-12,394,Gname.com Pte. Ltd.,found
+inkaqkanjsha.com,com,0.17509973,jpcert,True,16.0,3.452819531114783,0.0,1.0,0.0,False,True,medium,unknown,Status element not found,2026-01-11T17:41:41.596248,2024-12-16,391,Aceville Pte. Ltd.,found
+family-officebell.com,com,0.16476458,phishtank,True,21.0,3.463280517810811,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:41:53.044915,,-1,,deleted
+paypay-co.jp,jp,0.15924734,certificates,True,12.0,2.8553885422075336,0.0,0.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:42:00.196967,,-1,,deleted
+quakelatam.com,com,0.20395474,phishtank,True,14.0,3.3248629576173574,0.0,1.0,0.0,False,True,medium,unknown,Status element not found,2026-01-11T17:42:07.298757,2020-09-24,1935,"GoDaddy.com, LLC",found
+paleoftmc.com,com,0.250129,jpcert,True,13.0,3.238901256602631,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:42:18.712897,,-1,,deleted
+alafq.com,com,0.25023645,certificates,True,9.0,2.94770277922009,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:42:25.109853,2025-01-22,353,"Spaceship, Inc.",found
+nbjfdiwefkd.com,com,0.26786694,jpcert,True,15.0,3.640223928941851,0.0,1.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:42:31.516039,2025-03-24,293,Aceville Pte. Ltd.,found
+bnkchiba.com,com,0.28691646,jpcert,True,12.0,3.2516291673878226,0.0,0.0,0.0,False,True,medium,safe,No unsafe content found,2026-01-11T17:42:38.593017,,-1,,deleted
+dhjmsb.com,com,0.17724472,certificates,True,10.0,3.121928094887362,0.0,1.0,0.0,False,True,medium,unknown,Status element not found,2026-01-11T17:42:45.674116,2011-07-30,5279,Gname.com Pte. Ltd.,found
+generalgaming.ca,ca,0.26670048,phishtank,True,16.0,3.1556390622295662,0.0,1.0,0.0,False,True,medium,unsafe,Some pages unsafe,2026-01-11T17:42:57.759021,,-1,,deleted
+tongkhorobot.com,com,0.32398552,jpcert,True,16.0,3.149397470347699,0.0,0.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:43:04.895156,2025-08-28,136,"GMO Internet, Inc.",found
+hkjnx.com,com,0.3963156,jpcert,True,9.0,3.169925001442312,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:43:12.011655,2024-12-09,398,PDR Ltd. d/b/a PublicDomainRegistry.com,found
+13wealth.com,com,0.46845025,jpcert,True,12.0,3.584962500721156,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:43:18.408625,2025-06-06,219,DropCatch.com 664 LLC,found
+gotgtek.com,com,0.47952878,jpcert,True,11.0,2.9139770731827523,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:43:24.844047,2025-05-12,244,"Vantage of Convergence (Chengdu) Technology Co., L",found
+seodometer.com,com,0.36019585,jpcert,True,14.0,2.9852281360342525,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:43:31.243229,,-1,,deleted
+hannari.deasgarden.jp,jp,0.30896905,jpcert,True,21.0,3.4039894464852614,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:43:37.670671,2003-01-21,8391,,found
+jurimer.com,com,0.39241955,phishtank,True,11.0,3.095795255000934,0.0,1.0,0.0,False,True,high,unknown,Status element not found,2026-01-11T17:43:44.056572,,-1,,deleted
+xanderleneave.com,com,0.42413792,jpcert,True,17.0,3.381580488309164,0.0,1.0,0.0,False,True,high,unknown,Status element not found,2026-01-11T17:43:55.467395,2018-08-09,2712,"GoDaddy.com, LLC",found
+apatagore.com,com,0.3862605,certificates,True,13.0,3.180832987205441,0.0,0.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:44:07.588358,,-1,,deleted
+imsandecpa.com,com,0.39615288,jpcert,True,14.0,3.378783493486176,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:44:14.697184,,-1,,deleted
+cunpinjx.com,com,0.38272905,jpcert,True,12.0,3.2516291673878226,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:44:21.796514,2024-10-10,458,Gname.com Pte. Ltd.,found
+oframakeup.com,com,0.3550832,jpcert,True,14.0,3.3787834934861767,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:44:28.918471,2025-10-06,97,"Name.com, Inc.",found
+fifabeat.com,com,0.44989818,certificates,True,12.0,3.2516291673878226,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:44:35.996548,,-1,,deleted
+youngsert.com,com,0.43604484,jpcert,True,13.0,3.5465935642949384,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:44:43.120300,,-1,,deleted
+osnakjsing.com,com,0.331155,jpcert,True,14.0,3.3787834934861767,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:44:49.532609,2025-02-14,331,Aceville Pte. Ltd.,found
+dahanjt.com,com,0.4939396,certificates,True,11.0,3.2776134368191165,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:44:56.682894,2025-08-09,155,Domainipr Limited,found
+kontakqq.com,com,0.3462775,certificates,True,12.0,3.084962500721156,0.0,1.0,0.0,False,True,high,unknown,Status element not found,2026-01-11T17:45:03.793682,,-1,,deleted
+sologamingstudio.com,com,0.35434377,jpcert,True,20.0,3.5219280948873624,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:45:15.211494,2025-03-27,290,Gname 103 Inc,found
+besthuo.com,com,0.37457764,certificates,True,11.0,3.277613436819116,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:45:21.624635,2017-10-07,3018,"Name.com, Inc.",found
+appuwei.com,com,0.38540572,jpcert,True,11.0,3.2776134368191165,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:45:28.025980,2024-10-12,456,July Name Limited,found
+verify-sfe.com,com,0.48170596,phishtank,True,14.0,3.521640636343319,0.0,1.0,0.0,False,True,high,unknown,Status element not found,2026-01-11T17:45:34.433754,,-1,,deleted
+uiys-mobiiites.com,com,0.4168305,phishtank,True,18.0,3.3921472236645345,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:45:45.858650,2025-06-03,221,Hosting Concepts B.V. d/b/a Registrar.eu,found
+linktoparis.com,com,0.38672262,jpcert,True,15.0,3.640223928941851,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:45:53.032182,,-1,,deleted
+uofor.com,com,0.48525125,certificates,True,9.0,2.6416041678685933,0.0,0.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:46:00.171965,2025-01-11,364,"Nom Infinitum, Incorporated",found
+uspsspostoffice.com,com,0.33642223,phishtank,True,19.0,3.2608281712244547,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:46:06.574692,,-1,,deleted
+navitiot.com,com,0.3499297,jpcert,True,12.0,3.084962500721156,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:46:13.005125,2025-03-28,289,Gname.com Pte. Ltd.,found
+khachsanmayho.com,com,0.347788,jpcert,True,17.0,3.175123135113461,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:46:19.438394,2015-05-12,3897,P.A. Viet Nam Company Limited,found
+boerdz.com,com,0.3491892,jpcert,True,10.0,3.121928094887362,0.0,1.0,0.0,False,True,high,unknown,Status element not found,2026-01-11T17:46:25.859788,,-1,,deleted
+szxgny.com,com,0.4413926,jpcert,True,10.0,3.321928094887362,0.0,0.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:46:37.934515,2025-03-15,302,Gname.com Pte. Ltd.,found
+spiritedladies.com,com,0.41102687,jpcert,True,18.0,3.5724312513221195,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:46:45.063555,2025-01-07,368,"Register.com - Network Solutions, LLC",found
+tracybloom.co.uk,uk,0.33477676,phishtank,True,16.0,3.452819531114783,0.0,0.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:46:52.151150,2009-10-12,5935,123-Reg Limited t/a 123-reg [Tag = 123-REG],found
+0371lingte.com,com,0.36963293,jpcert,True,14.0,3.8073549220576055,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:46:58.598017,2025-06-30,195,Key-Systems GmbH,found
+weddingcufflinksuk.com,com,0.34377295,jpcert,True,22.0,3.82306798227366,0.0,1.0,0.0,False,True,high,unknown,Status element not found,2026-01-11T17:47:05.048752,2024-12-20,386,"SNAPNAMES 46, LLC",found
+insjaghsama.com,com,0.44158015,jpcert,True,15.0,3.323231428797621,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:47:16.449976,2025-01-15,361,Aceville Pte. Ltd.,found
+jianlimuye.com,com,0.3768789,jpcert,True,14.0,3.521640636343319,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:47:23.536963,2022-07-16,1275,Gname.com Pte. Ltd.,found
+meinkonto.telekom-dienste.de,de,0.32252762,phishtank,True,28.0,3.3868392966712704,0.0,0.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:47:29.924467,,-1,,no_date
+iaestudy.com,com,0.31705463,jpcert,True,12.0,3.584962500721156,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:47:36.309697,,-1,,deleted
+7starsdata.com,com,0.31783447,jpcert,True,14.0,3.182005814760214,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:47:42.689077,2024-08-20,509,Gname.com Pte. Ltd.,found
+jdongaz.com,com,0.45346257,certificates,True,11.0,3.277613436819116,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:47:49.801866,,-1,,deleted
+iunkxaqinfl.com,com,0.43669277,jpcert,True,15.0,3.640223928941851,0.0,1.0,0.0,False,True,high,safe,No unsafe content found,2026-01-11T17:47:56.897856,2025-02-06,339,Aceville Pte. Ltd.,found

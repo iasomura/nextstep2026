@@ -93,6 +93,17 @@ def _load_cert_config() -> Dict[str, Any]:
         "short_term_days": 90,
         # SAN の数がこの閾値以上なら many_san とみなす
         "many_san_threshold": 10,
+        # 長期有効とみなす閾値（日数）
+        "long_validity_days": 180,
+        # 高SAN数とみなす閾値（Stage3 benign indicator用）
+        "high_san_threshold": 10,
+        # 危険TLD（benign indicatorの判定で使用）
+        "dangerous_tlds": [
+            "tk", "ml", "ga", "cf", "gq",  # Freenom TLDs
+            "xyz", "top", "work", "click", "link", "online",
+            "site", "club", "icu", "buzz", "monster",
+            "cfd", "sbs", "rest",
+        ],
     }
 
 
@@ -119,7 +130,54 @@ def _adapt_cert_meta(cert_meta: Dict[str, Any]) -> Dict[str, Any]:
     if "has_org" not in adapted and "has_organization" in adapted:
         adapted["has_org"] = adapted["has_organization"]
 
+    # not_before / not_after から valid_days を計算
+    if "valid_days" not in adapted or not adapted.get("valid_days"):
+        not_before = adapted.get("not_before")
+        not_after = adapted.get("not_after")
+        if not_before and not_after:
+            try:
+                from datetime import datetime
+                # 文字列の場合はパース
+                if isinstance(not_before, str):
+                    # ISO format or common date formats
+                    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"):
+                        try:
+                            not_before = datetime.strptime(not_before.split(".")[0], fmt)
+                            break
+                        except ValueError:
+                            continue
+                if isinstance(not_after, str):
+                    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"):
+                        try:
+                            not_after = datetime.strptime(not_after.split(".")[0], fmt)
+                            break
+                        except ValueError:
+                            continue
+                # datetime オブジェクトの場合
+                if hasattr(not_before, 'timestamp') and hasattr(not_after, 'timestamp'):
+                    delta = not_after - not_before
+                    adapted["valid_days"] = max(0, delta.days)
+            except Exception:
+                pass  # パース失敗時はvalid_days=0のまま
+
     return adapted
+
+
+def _extract_tld(domain: str) -> str:
+    """ドメインからTLDを抽出"""
+    if not domain:
+        return ""
+    parts = domain.lower().strip().split(".")
+    if len(parts) >= 1:
+        return parts[-1]
+    return ""
+
+
+def _is_dangerous_tld(domain: str, config: Dict[str, Any]) -> bool:
+    """危険TLDかどうかを判定"""
+    tld = _extract_tld(domain)
+    dangerous_tlds = config.get("dangerous_tlds", [])
+    return tld in dangerous_tlds
 
 
 def _mitigate_score_for_legit_domain(
@@ -181,10 +239,14 @@ def _mitigate_score_for_legit_domain(
 # ------------------------------------------------------------
 def _analyze_certificate_core(domain: str, cert_meta: Optional[Dict[str, Any]], config: Dict[str, Any]) -> Dict[str, Any]:
     detected_issues: List[str] = []
+    benign_indicators: List[str] = []  # 新規: 正規性シグナル
     risk_score: float = 0.0
 
     short_term_days = int(config.get("short_term_days") or 90)
     many_san_threshold = int(config.get("many_san_threshold") or 10)
+    long_validity_days = int(config.get("long_validity_days") or 180)
+    high_san_threshold = int(config.get("high_san_threshold") or 10)
+    is_dangerous_tld = _is_dangerous_tld(domain, config)
 
     details: Dict[str, Any] = {
         "has_cert": False,
@@ -203,6 +265,12 @@ def _analyze_certificate_core(domain: str, cert_meta: Optional[Dict[str, Any]], 
         "validation_level": None,
         "identity_level": None,
         "has_ov_ev_like_identity": False,
+        # 新規: benign indicators 関連
+        "has_crl_dp": False,
+        "is_long_validity": False,
+        "is_high_san": False,
+        "is_dangerous_tld": is_dangerous_tld,
+        "tld": _extract_tld(domain),
     }
 
     # --- 1. 証明書メタデータが無い場合（no_cert） --------------------------
@@ -217,6 +285,7 @@ def _analyze_certificate_core(domain: str, cert_meta: Optional[Dict[str, Any]], 
         return {
             "tool_name": "certificate_analysis",
             "detected_issues": detected_issues,
+            "benign_indicators": benign_indicators,  # 新規追加
             "risk_score": min(1.0, risk_score),
             "details": details,
             "reasoning": "Certificate metadata not available (treated as low signal, not high risk)",
@@ -310,6 +379,44 @@ def _analyze_certificate_core(domain: str, cert_meta: Optional[Dict[str, Any]], 
     is_wildcard = bool(meta.get("is_wildcard") or False)
     details["is_wildcard"] = is_wildcard
 
+    # 2-8. 新規: CRL Distribution Points（正規サイトの81.7%が保有）
+    has_crl_dp = bool(meta.get("has_crl_dp") or meta.get("has_crl") or False)
+    details["has_crl_dp"] = has_crl_dp
+
+    # 2-9. 新規: 長期有効期間（180日超 = 正規サイトの27%）
+    is_long_validity = bool(valid_days > long_validity_days)
+    details["is_long_validity"] = is_long_validity
+
+    # 2-10. 新規: 高SAN数（10以上 = 正規サイトの可能性高）
+    # Handoff分析: FP Riskは平均SAN 13.2、低シグナルフィッシングは4.3
+    is_high_san = bool(san_count >= high_san_threshold)
+    details["is_high_san"] = is_high_san
+
+    # --- 2-B. Benign Indicators 収集 -----------------------------------------
+    # Stage2と同じ証明書特徴量をStage3でも活用
+
+    # B1. CRL Distribution Points（正規81.7%が保有、フィッシング1.6%）
+    if has_crl_dp:
+        benign_indicators.append("has_crl_dp")
+
+    # B2. OV/EV証明書（Subject Organization有り）
+    if has_org:
+        benign_indicators.append("ov_ev_cert")
+
+    # B3. ワイルドカード証明書（正規55.1%、フィッシング1.5%）
+    # 危険TLD以外の場合のみbenign indicator
+    if is_wildcard and not is_dangerous_tld:
+        benign_indicators.append("wildcard_cert")
+
+    # B4. 長期有効期間（180日超 = 正規27%、フィッシング1%）
+    if is_long_validity:
+        benign_indicators.append("long_validity")
+
+    # B5. 多数のSAN（10以上 = CDN、大規模サービスで使用）
+    # 危険TLD以外の場合のみbenign indicator
+    if is_high_san and not is_dangerous_tld:
+        benign_indicators.append("high_san_count")
+
     # --- 3. スコアリング ---------------------------------------------------
     # 3-1. 単体シグナルのベース重み（単独では中〜低）
     if is_self_signed:
@@ -332,11 +439,13 @@ def _analyze_certificate_core(domain: str, cert_meta: Optional[Dict[str, Any]], 
         detected_issues.append("short_term")
         risk_score += 0.06
 
-    if is_many_san:
+    # many_san と wildcard は危険TLDの場合のみリスクとして扱う
+    # 非危険TLDでは benign_indicators として扱われる（上記 2-B セクション参照）
+    if is_many_san and is_dangerous_tld:
         detected_issues.append("many_san")
         risk_score += 0.04
 
-    if is_wildcard:
+    if is_wildcard and is_dangerous_tld:
         detected_issues.append("wildcard")
         risk_score += 0.05
 
@@ -366,6 +475,32 @@ def _analyze_certificate_core(domain: str, cert_meta: Optional[Dict[str, Any]], 
     # 上限クリップ
     risk_score = min(1.0, risk_score)
 
+    # --- 3-3. 新規: Benign Indicators による減算 ----------------------------
+    # 正規性シグナルがある場合、リスクスコアを減算
+    # 自己署名の場合は減算しない（強いリスクシグナル）
+    if not is_self_signed and benign_indicators:
+        benign_reduction = 0.0
+
+        if "has_crl_dp" in benign_indicators:
+            benign_reduction += 0.15  # CRL: 最大効果（正規81.7% vs フィッシング1.6%）
+        if "ov_ev_cert" in benign_indicators:
+            benign_reduction += 0.20  # OV/EV: 強い正規シグナル
+        if "wildcard_cert" in benign_indicators:
+            benign_reduction += 0.10  # ワイルドカード（非危険TLD）
+        if "long_validity" in benign_indicators:
+            benign_reduction += 0.08  # 長期有効期間
+        if "high_san_count" in benign_indicators:
+            benign_reduction += 0.12  # 高SAN数（非危険TLD）
+
+        if benign_reduction > 0:
+            original_score = risk_score
+            risk_score = max(0.0, risk_score - benign_reduction)
+            # benign reductionが適用されたことを記録
+            if risk_score < original_score:
+                detected_issues.append("benign_cert_mitigation")
+                details["benign_reduction"] = benign_reduction
+                details["original_risk_score"] = original_score
+
     # --- 4. 正規ドメインホワイトリストによる緩和 ---------------------------
     risk_score = _mitigate_score_for_legit_domain(domain, detected_issues, risk_score, details)
 
@@ -382,23 +517,48 @@ def _analyze_certificate_core(domain: str, cert_meta: Optional[Dict[str, Any]], 
         reason_bits.append("No SAN entries")
     if is_short_term:
         reason_bits.append(f"Short validity period ({valid_days} days ≤ {short_term_days})")
-    if is_many_san:
-        reason_bits.append(f"Many SAN entries (san_count={san_count} ≥ {many_san_threshold})")
-    if is_wildcard:
-        reason_bits.append("Wildcard certificate")
+    if "many_san" in detected_issues:
+        reason_bits.append(f"Many SAN entries on dangerous TLD (san_count={san_count})")
+    if "wildcard" in detected_issues:
+        reason_bits.append("Wildcard certificate on dangerous TLD")
     if "legitimate_domain_mitigation" in detected_issues:
         reason_bits.append("Domain is in legitimate whitelist; certificate risk mitigated")
 
-    if not reason_bits:
+    # 新規: Benign indicators の reasoning
+    benign_bits: List[str] = []
+    if "has_crl_dp" in benign_indicators:
+        benign_bits.append("Has CRL Distribution Points")
+    if "ov_ev_cert" in benign_indicators:
+        benign_bits.append("OV/EV certificate (has Organization)")
+    if "wildcard_cert" in benign_indicators:
+        benign_bits.append("Wildcard cert (non-dangerous TLD)")
+    if "long_validity" in benign_indicators:
+        benign_bits.append(f"Long validity ({valid_days} days)")
+    if "high_san_count" in benign_indicators:
+        benign_bits.append(f"High SAN count ({san_count}, non-dangerous TLD)")
+    if "benign_cert_mitigation" in detected_issues:
+        benign_bits.append("Certificate risk mitigated by benign indicators")
+
+    if not reason_bits and not benign_bits:
         reason_bits.append("No significant certificate risk indicators found")
 
-    reasoning = " / ".join(reason_bits)
+    reasoning = " / ".join(reason_bits) if reason_bits else ""
+    if benign_bits:
+        benign_str = " / ".join(benign_bits)
+        if reasoning:
+            reasoning += f" | BENIGN: {benign_str}"
+        else:
+            reasoning = f"BENIGN: {benign_str}"
     if issuer:
         reasoning += f" / Issuer: {issuer}"
+
+    # details に benign_indicators を追加
+    details["benign_indicators"] = benign_indicators
 
     return {
         "tool_name": "certificate_analysis",
         "detected_issues": detected_issues,
+        "benign_indicators": benign_indicators,  # 新規追加
         "risk_score": risk_score,
         "details": details,
         "reasoning": reasoning,

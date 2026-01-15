@@ -1,0 +1,79 @@
+（Public Suffix相当）」を扱っている箇所は、主に phishing_agent 配下に集約されています。TLD分析をやっている（またはTLDカテゴリを算出・利用している）プログラムは以下です。
+
+TLDの抽出・カテゴリ判定（中核）
+
+phishing_agent/precheck_module.py
+
+ドメインから suffix（TLD）を抽出し、dangerous/legitimate/neutral/unknown の tld_category を作る中核ロジック。
+
+併せて「common TLD を dangerous 扱いしない」ためのガードや、TLD統計（phishing_tld_stats）の型ゆらぎ吸収もここにあります。
+
+phishing_agent/tools_module.py
+
+上記と同種の TLD safety guard や、TLD統計ウェイト計算などを含む共通モジュール（precheck系と同じ思想の頑健化ロジックを持っています）。
+
+TLDを使った構造リスク評価（ツール）
+
+phishing_agent/tools/short_domain_analysis.py
+
+ドメイン長、エントロピー、サブドメイン深さ等に加えて、TLDカテゴリ（dangerous/neutral/…）と TLD統計ウェイトを組み合わせてリスク評価する「TLDを明示的に使う」ツールです。
+
+eTLD+1（Public Suffix相当）・正規ドメイン正規化
+
+phishing_agent/tools/legitimate_domains.py
+
+.co.jp などマルチレベルTLDを考慮して registered domain（eTLD+1相当）を推定し、正規ブランドドメイン照合に使うための正規化を行います。
+
+「TLD分析」というより、TLDを前提にした“正規ドメイン同定”のロジックです。
+
+TLDカテゴリを判定ロジックに取り込む（利用側）
+
+phishing_agent/llm_final_decision.py
+
+precheck で作られた tld_category を、最終判定（Phase6 gate 等）の閾値調整・反転抑止に使用しています（dangerous か否かで扱いを変える）。
+
+phishing_agent/tools/brand_impersonation_check.py
+
+ブランド偽装検知の中で、tld_category をリスク強化要因として参照（ブランド一致 × 危険/不自然TLD など）。
+
+設定・データロード（TLD集合/統計の取り込み）
+
+phishing_agent/init.py
+
+dangerous_tlds / legitimate_tlds / neutral_tlds といった「TLD集合」や、tld_statistics（TLD_STATS）をロードして保持する箇所です。
+
+補助（トレース・ログ出力）
+
+phishing_agent/langgraph_module.py（および langgraph_module-Copy1.py）
+
+precheck の tld_category をトレース出力や状態に載せる用途（分析の“実行”というより、結果の伝搬・可観測性）。
+
+実務上「どれがTLD分析の本体か」
+
+本体は phishing_agent/precheck_module.py と phishing_agent/tools/short_domain_analysis.py です。
+
+前者が tld_category を決める「分類器」
+
+後者が tld_category と統計を使って「リスク評価」する実装
+
+
+###その他
+03系ノートブックを横断すると、以下の整理になります。
+
+03_ai_agent_analysis_part1.ipynb
+
+TLD関連キーワードの参照は見当たりませんでした。
+
+03の評価・可視化が主で、TLD分類や統計計算の本体は持っていないです。
+
+03_ai_agent_analysis_part2_full_HardFail_patched.ipynb
+
+同様に、TLD分析ロジックを直接回す形の記述は見当たりませんでした。
+
+03_ai_agent_analysis_part3_config_api.ipynb
+
+ここだけは例外で、dangerous_tlds や phishing_tld_stats 等の「TLD関連設定・統計」を扱うセルがあります。
+
+ただし、これは「Stage3の判定器としてTLD分析を実行する」というより、設定値・統計（tld_statistics.json など）を生成・整理するための分析/設定用ノート、という性格です。
+
+したがって、あなたの理解のとおり「03系では（運用判定としての）TLD分析は基本やっていない」で概ね合っています。TLDの分類・統計利用の本体は、前に挙げた precheck_module.py と short_domain_analysis.py（および周辺の tools_module.py / legitimate_domains.py）側です。

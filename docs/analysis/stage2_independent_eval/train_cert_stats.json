@@ -1,0 +1,32 @@
+{
+  "sample_size": 76800,
+  "phishing_count": 38400,
+  "benign_count": 38400,
+  "features": {
+    "CRL": {
+      "phishing_rate": 0.08205729166666667,
+      "benign_rate": 0.9167708333333333,
+      "discrimination": 0.8347135416666667
+    },
+    "OV_EV": {
+      "phishing_rate": 0.001796875,
+      "benign_rate": 0.060703125,
+      "discrimination": 0.05890624999999999
+    },
+    "Wildcard": {
+      "phishing_rate": 0.005104166666666667,
+      "benign_rate": 0.11528645833333333,
+      "discrimination": 0.11018229166666665
+    },
+    "Long_Validity": {
+      "phishing_rate": 0.024375,
+      "benign_rate": 0.21807291666666667,
+      "discrimination": 0.19369791666666666
+    },
+    "Lets_Encrypt": {
+      "phishing_rate": 0.9304947916666667,
+      "benign_rate": 0.39348958333333334,
+      "discrimination": 0.5370052083333334
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "sample_size": 51200,
+  "rules": {
+    "CRL": {
+      "hit_count": 25546,
+      "hit_rate": 0.4989453125,
+      "true_negative": 23417,
+      "false_negative": 2129,
+      "precision": 0.9166601424880607,
+      "fn_rate": 0.0831640625
+    },
+    "OV_EV": {
+      "hit_count": 1623,
+      "hit_rate": 0.03169921875,
+      "true_negative": 1574,
+      "false_negative": 49,
+      "precision": 0.9698089956869994,
+      "fn_rate": 0.0019140625
+    },
+    "Wildcard": {
+      "hit_count": 3065,
+      "hit_rate": 0.05986328125,
+      "true_negative": 2944,
+      "false_negative": 121,
+      "precision": 0.9605220228384992,
+      "fn_rate": 0.0047265625
+    },
+    "Long_Validity": {
+      "hit_count": 6230,
+      "hit_rate": 0.1216796875,
+      "true_negative": 5657,
+      "false_negative": 573,
+      "precision": 0.9080256821829855,
+      "fn_rate": 0.0223828125
+    },
+    "All_Rules_OR": {
+      "hit_count": 27266,
+      "hit_rate": 0.5325390625,
+      "true_negative": 24733,
+      "false_negative": 2533,
+      "precision": 0.9071004181031321,
+      "fn_rate": 0.0989453125
+    }
+  }
+}

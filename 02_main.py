@@ -110,6 +110,46 @@ def get_default_config():
         'stage2_safe_benign_p1_max': 0.15,
         'stage2_safe_benign_defer_max': 0.40,
 
+        # Scenario 6: Certificate-based early termination rules
+        # These rules use certificate features to make early decisions
+        'stage2_cert_rules_enabled': True,
+        # Safe BENIGN rules (skip Stage3, mark as BENIGN)
+        'stage2_cert_benign_crl_enabled': True,       # CRL保有 → 正規寄り
+        'stage2_cert_benign_crl_p1_max': 0.30,        # CRLルールのp1閾値
+        'stage2_cert_benign_ov_ev_enabled': True,     # OV/EV証明書 → 確実に正規
+        'stage2_cert_benign_wildcard_enabled': True,  # ワイルドカード → 正規寄り
+        'stage2_cert_benign_long_validity_enabled': True,  # 長期有効期間 → 正規寄り
+        'stage2_cert_benign_long_validity_days': 180,
+        'stage2_cert_benign_long_validity_p1_max': 0.25,
+        # Safe PHISHING rules (skip Stage3, mark as PHISHING)
+        'stage2_cert_phish_tier1_tld_enabled': True,  # Tier1危険TLD + LE → フィッシング
+        'stage2_cert_phish_tier1_tlds': ['gq', 'ga', 'ci', 'cfd', 'tk'],
+        'stage2_cert_phish_dynamic_dns_enabled': True,  # 動的DNS + 大量SAN
+        'stage2_cert_phish_dynamic_dns_san_min': 20,
+
+        # Scenario 7: TLD-based filtering (証明書ルールのFN削減)
+        # TLDの信頼性に基づいて証明書ルールの適用を制限
+        'stage2_tld_filtering_enabled': True,
+        # 安全なTLD: 政府・教育機関、先進国ccTLD（フィッシング率 < 2%）
+        'stage2_tld_safe': [
+            'gov', 'edu', 'fi', 'ie', 'tv', 'at', 'nl', 'se', 'be',
+            'uk', 'de', 'fr', 'au', 'jp', 'nz', 'ca', 'ch', 'it', 'es'
+        ],
+        # 危険なTLD: フィッシング率が高い（>15%）または無料/格安で悪用されやすい
+        'stage2_tld_dangerous': [
+            # 超危険（>90%）
+            'mw', 'ci', 'cfd', 'icu', 'cn', 'buzz', 'dev', 'pw',
+            'cyou', 'tokyo', 'xyz', 'club', 'top', 'shop', 'sbs',
+            'vip', 'asia', 'cc', 'one', 'rest', 'link', 'click',
+            # 高危険（>50%）
+            'lat', 'gq', 'ga', 'tk', 'ml', 'cf',
+            # 中危険（>15%）- FN分析から追加
+            'online', 'site', 'website', 'me', 'pe', 'ar', 'cl',
+        ],
+        # 中立TLD: 証明書ルール適用には低MLが必要
+        'stage2_tld_neutral': ['com', 'net', 'org', 'info', 'biz'],
+        'stage2_tld_neutral_p1_max': 0.03,  # 中立TLDでの証明書ルール適用閾値
+
         # Dangerous TLDs
         'dangerous_tlds': [
             'icu', 'top', 'xyz', 'buzz', 'cfd', 'cyou', 'rest',
@@ -768,6 +808,39 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
         gray = (~clear) & (defer_score >= tau)
 
         # ============================================================
+        # Scenario 7: TLD-based filtering (証明書ルールのFN削減)
+        # TLDの信頼性に基づいて証明書ルールの適用を制限
+        # NOTE: TLD classification must be done FIRST so it can be used
+        #       in both Scenario 5 and Scenario 6
+        # ============================================================
+        tld_filtering_enabled = cfg.get('stage2_tld_filtering_enabled', False)
+        safe_tlds = set(cfg.get('stage2_tld_safe', []))
+        dangerous_tlds_s7 = set(cfg.get('stage2_tld_dangerous', []))
+        neutral_tlds = set(cfg.get('stage2_tld_neutral', []))
+        neutral_p1_max = float(cfg.get('stage2_tld_neutral_p1_max', 0.03))
+
+        # Classify TLDs
+        tld_lower_arr = np.array([str(t).lower() for t in tlds_defer])
+        is_safe_tld = np.isin(tld_lower_arr, list(safe_tlds))
+        is_dangerous_tld_s7 = np.isin(tld_lower_arr, list(dangerous_tlds_s7))
+        is_neutral_tld = np.isin(tld_lower_arr, list(neutral_tlds))
+        is_other_tld = ~(is_safe_tld | is_dangerous_tld_s7 | is_neutral_tld)
+
+        # TLD filtering stats
+        tld_filter_stats = {
+            'enabled': tld_filtering_enabled,
+            'safe_tld_count': int(is_safe_tld.sum()),
+            'dangerous_tld_count': int(is_dangerous_tld_s7.sum()),
+            'neutral_tld_count': int(is_neutral_tld.sum()),
+            'other_tld_count': int(is_other_tld.sum()),
+            'neutral_p1_max': neutral_p1_max,
+            'cert_rule_blocked_dangerous': 0,
+            'cert_rule_blocked_neutral': 0,
+            's5_blocked_dangerous': 0,
+            's5_blocked_neutral': 0,
+        }
+
+        # ============================================================
         # Scenario 5: Safe BENIGN filter
         # Cases with low p1 AND low defer_score are auto-BENIGN
         # ============================================================
@@ -776,14 +849,173 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
         safe_benign_defer_max = float(cfg.get('stage2_safe_benign_defer_max', 0.40))
 
         if safe_benign_enabled:
-            safe_benign = (p1_defer < safe_benign_p1_max) & (defer_score < safe_benign_defer_max)
+            safe_benign_base = (p1_defer < safe_benign_p1_max) & (defer_score < safe_benign_defer_max)
+
+            # Apply TLD filtering to Scenario 5
+            if tld_filtering_enabled:
+                # Safe TLDs: Apply S5 normally
+                # Dangerous TLDs: Block S5 (send to Stage3)
+                # Neutral TLDs: Apply S5 only if ML < neutral_p1_max
+                # Other TLDs: Apply S5 only if ML < neutral_p1_max (treat as neutral)
+                tld_allowed_s5 = is_safe_tld | ((is_neutral_tld | is_other_tld) & (p1_defer < neutral_p1_max))
+                blocked_dangerous_s5 = safe_benign_base & is_dangerous_tld_s7
+                blocked_neutral_s5 = safe_benign_base & (is_neutral_tld | is_other_tld) & (p1_defer >= neutral_p1_max)
+                tld_filter_stats['s5_blocked_dangerous'] = int(blocked_dangerous_s5.sum())
+                tld_filter_stats['s5_blocked_neutral'] = int(blocked_neutral_s5.sum())
+                safe_benign = safe_benign_base & tld_allowed_s5
+            else:
+                safe_benign = safe_benign_base
+
             n_safe_benign = int(safe_benign.sum())
         else:
             safe_benign = np.zeros(n_defer, dtype=bool)
             n_safe_benign = 0
 
-        # Exclude safe_benign from selection (they go to PENDING as auto-BENIGN)
-        picked = (override | gray) & (~safe_benign)
+        # ============================================================
+        # Scenario 6: Certificate-based early termination rules
+        # Uses certificate features to make confident early decisions
+        # ============================================================
+        cert_rules_enabled = cfg.get('stage2_cert_rules_enabled', False)
+
+        # Feature indices (from FEATURE_ORDER in features.py)
+        IDX_VALIDITY = 15    # cert_validity_days
+        IDX_WILDCARD = 16    # cert_is_wildcard
+        IDX_SAN_COUNT = 17   # cert_san_count
+        IDX_HAS_ORG = 21     # cert_subject_has_org (OV/EV indicator)
+        IDX_HAS_CRL = 29     # cert_has_crl_dp
+        IDX_IS_LE = 34       # cert_is_lets_encrypt
+
+        # Initialize certificate-based masks
+        safe_benign_cert = np.zeros(n_defer, dtype=bool)
+        safe_phishing_cert = np.zeros(n_defer, dtype=bool)
+        cert_rule_stats = {
+            'enabled': cert_rules_enabled,
+            'benign_crl_hits': 0,
+            'benign_ov_ev_hits': 0,
+            'benign_wildcard_hits': 0,
+            'benign_long_validity_hits': 0,
+            'phishing_tier1_tld_hits': 0,
+            'phishing_dynamic_dns_hits': 0,
+        }
+
+        if cert_rules_enabled:
+            # ---- Safe BENIGN rules ----
+            # Rule 1: CRL Distribution Points (正規サイトの81.7%が保有)
+            if cfg.get('stage2_cert_benign_crl_enabled', False):
+                crl_p1_max = float(cfg.get('stage2_cert_benign_crl_p1_max', 0.30))
+                # Binary feature: scaled value > 0.5 means original was 1
+                has_crl = X_defer[:, IDX_HAS_CRL] > 0.5
+                crl_mask = has_crl & (p1_defer < crl_p1_max)
+
+                # Scenario 7: TLD-based filtering
+                if tld_filtering_enabled:
+                    # Safe TLDs: Apply normally
+                    # Dangerous TLDs: Block cert rule (send to Stage3)
+                    # Neutral TLDs: Apply only if ML < neutral_p1_max
+                    # Other TLDs: Apply only if ML < neutral_p1_max (treat as neutral)
+                    tld_allowed = is_safe_tld | ((is_neutral_tld | is_other_tld) & (p1_defer < neutral_p1_max))
+                    blocked_dangerous = crl_mask & is_dangerous_tld_s7
+                    blocked_neutral = crl_mask & (is_neutral_tld | is_other_tld) & (p1_defer >= neutral_p1_max)
+                    tld_filter_stats['cert_rule_blocked_dangerous'] += int(blocked_dangerous.sum())
+                    tld_filter_stats['cert_rule_blocked_neutral'] += int(blocked_neutral.sum())
+                    crl_mask = crl_mask & tld_allowed
+
+                safe_benign_cert |= crl_mask
+                cert_rule_stats['benign_crl_hits'] = int(crl_mask.sum())
+
+            # Rule 2: OV/EV Certificate (Subject Organizationあり)
+            if cfg.get('stage2_cert_benign_ov_ev_enabled', False):
+                has_org = X_defer[:, IDX_HAS_ORG] > 0.5
+                ov_ev_mask = has_org.copy()
+
+                # Scenario 7: TLD-based filtering (OV/EVは信頼性が高いのでdangerousのみブロック)
+                if tld_filtering_enabled:
+                    blocked_dangerous = ov_ev_mask & is_dangerous_tld_s7
+                    tld_filter_stats['cert_rule_blocked_dangerous'] += int(blocked_dangerous.sum())
+                    ov_ev_mask = ov_ev_mask & (~is_dangerous_tld_s7)
+
+                safe_benign_cert |= ov_ev_mask
+                cert_rule_stats['benign_ov_ev_hits'] = int(ov_ev_mask.sum())
+
+            # Rule 3: Wildcard Certificate (正規サイトの55.1%が使用)
+            if cfg.get('stage2_cert_benign_wildcard_enabled', False):
+                is_wildcard = X_defer[:, IDX_WILDCARD] > 0.5
+                # Exclude dangerous TLDs (既存ロジック)
+                dangerous_tlds = set(cfg.get('dangerous_tlds', []))
+                is_dangerous = np.array([str(t).lower() in dangerous_tlds for t in tlds_defer])
+                wildcard_mask = is_wildcard & (~is_dangerous)
+
+                # Scenario 7: TLD-based filtering
+                if tld_filtering_enabled:
+                    tld_allowed = is_safe_tld | ((is_neutral_tld | is_other_tld) & (p1_defer < neutral_p1_max))
+                    blocked_dangerous = wildcard_mask & is_dangerous_tld_s7
+                    blocked_neutral = wildcard_mask & (is_neutral_tld | is_other_tld) & (p1_defer >= neutral_p1_max)
+                    tld_filter_stats['cert_rule_blocked_dangerous'] += int(blocked_dangerous.sum())
+                    tld_filter_stats['cert_rule_blocked_neutral'] += int(blocked_neutral.sum())
+                    wildcard_mask = wildcard_mask & tld_allowed
+
+                safe_benign_cert |= wildcard_mask
+                cert_rule_stats['benign_wildcard_hits'] = int(wildcard_mask.sum())
+
+            # Rule 4: Long Validity Period (180日超 = 正規寄り)
+            # Note: cert_validity_days is scaled, need to use df_defer for raw value
+            if cfg.get('stage2_cert_benign_long_validity_enabled', False):
+                validity_days_min = int(cfg.get('stage2_cert_benign_long_validity_days', 180))
+                validity_p1_max = float(cfg.get('stage2_cert_benign_long_validity_p1_max', 0.25))
+                # Get raw validity from df_defer if available
+                if 'cert_validity_days' in df_defer.columns:
+                    raw_validity = df_defer['cert_validity_days'].values
+                    long_validity = (raw_validity > validity_days_min) & (p1_defer < validity_p1_max)
+
+                    # Scenario 7: TLD-based filtering
+                    if tld_filtering_enabled:
+                        tld_allowed = is_safe_tld | ((is_neutral_tld | is_other_tld) & (p1_defer < neutral_p1_max))
+                        blocked_dangerous = long_validity & is_dangerous_tld_s7
+                        blocked_neutral = long_validity & (is_neutral_tld | is_other_tld) & (p1_defer >= neutral_p1_max)
+                        tld_filter_stats['cert_rule_blocked_dangerous'] += int(blocked_dangerous.sum())
+                        tld_filter_stats['cert_rule_blocked_neutral'] += int(blocked_neutral.sum())
+                        long_validity = long_validity & tld_allowed
+
+                    safe_benign_cert |= long_validity
+                    cert_rule_stats['benign_long_validity_hits'] = int(long_validity.sum())
+
+            # ---- Safe PHISHING rules ----
+            # Rule 5: Tier1 Dangerous TLD + Let's Encrypt
+            if cfg.get('stage2_cert_phish_tier1_tld_enabled', False):
+                tier1_tlds = set(cfg.get('stage2_cert_phish_tier1_tlds', ['gq', 'ga', 'ci', 'cfd', 'tk']))
+                is_tier1 = np.array([str(t).lower() in tier1_tlds for t in tlds_defer])
+                is_le = X_defer[:, IDX_IS_LE] > 0.5
+                tier1_mask = is_tier1 & is_le
+                safe_phishing_cert |= tier1_mask
+                cert_rule_stats['phishing_tier1_tld_hits'] = int(tier1_mask.sum())
+
+            # Rule 6: Dynamic DNS + Large SAN count
+            if cfg.get('stage2_cert_phish_dynamic_dns_enabled', False):
+                dyn_suffixes = ['duckdns.org', 'no-ip.com', 'ddns.net', 'dynu.com',
+                               'hopto.org', 'zapto.org', 'sytes.net']
+                san_min = int(cfg.get('stage2_cert_phish_dynamic_dns_san_min', 20))
+                is_dynamic = np.array([
+                    any(str(d).lower().endswith(s) for s in dyn_suffixes)
+                    for d in domains_defer
+                ])
+                # Get raw SAN count from df_defer
+                if 'cert_san_count' in df_defer.columns:
+                    raw_san_count = df_defer['cert_san_count'].values
+                    dyn_dns_mask = is_dynamic & (raw_san_count >= san_min)
+                    safe_phishing_cert |= dyn_dns_mask
+                    cert_rule_stats['phishing_dynamic_dns_hits'] = int(dyn_dns_mask.sum())
+
+        # Combine with Scenario 5 safe_benign
+        safe_benign_combined = safe_benign | safe_benign_cert
+        n_safe_benign_combined = int(safe_benign_combined.sum())
+        n_safe_benign_cert = int(safe_benign_cert.sum())
+        n_safe_phishing_cert = int(safe_phishing_cert.sum())
+
+        # Exclude safe_benign AND safe_phishing_cert from selection
+        # - safe_benign_combined: auto-classified as BENIGN (skip Stage3)
+        # - safe_phishing_cert: auto-classified as PHISHING (skip Stage3)
+        auto_decided = safe_benign_combined | safe_phishing_cert
+        picked = (override | gray) & (~auto_decided)
         selected_idx = np.where(picked)[0]
 
         tau_final = tau
@@ -797,8 +1029,8 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
             for _ in range(2000):
                 _tau = min(0.999999, _tau + tau_step)
                 gray = (~clear) & (~override) & (defer_score >= _tau)
-                # Keep safe_benign exclusion during budget adjustment
-                selected_idx = np.where((override | gray) & (~safe_benign))[0]
+                # Keep auto_decided exclusion during budget adjustment
+                selected_idx = np.where((override | gray) & (~auto_decided))[0]
                 if len(selected_idx) <= max_budget or _tau >= 0.999999:
                     tau_final = _tau
                     break
@@ -821,6 +1053,13 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
             'safe_benign_p1_max': safe_benign_p1_max,
             'safe_benign_defer_max': safe_benign_defer_max,
             'safe_benign_filtered': n_safe_benign,
+            # Scenario 6 stats (certificate-based rules)
+            'cert_rules': cert_rule_stats,
+            'safe_benign_cert_filtered': n_safe_benign_cert,
+            'safe_phishing_cert_filtered': n_safe_phishing_cert,
+            'safe_benign_combined_filtered': n_safe_benign_combined,
+            # Scenario 7 stats (TLD-based filtering)
+            'tld_filtering': tld_filter_stats,
         }
 
     # ================================================================
@@ -875,9 +1114,24 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
     is_legitimate_tld = np.isin(tld_lower, list(legitimate_tlds))
     pool_optional = ~is_dangerous & ~is_legitimate_tld
 
-    # safe_benign is only defined in threshold_cap mode
+    # safe_benign and cert-related vars are only defined in threshold_cap mode
     if 'safe_benign' not in dir():
         safe_benign = np.zeros(n_defer, dtype=bool)
+    if 'safe_benign_combined' not in dir():
+        safe_benign_combined = safe_benign.copy()
+    if 'safe_benign_cert' not in dir():
+        safe_benign_cert = np.zeros(n_defer, dtype=bool)
+    if 'safe_phishing_cert' not in dir():
+        safe_phishing_cert = np.zeros(n_defer, dtype=bool)
+    # TLD category vars (Scenario 7) - only defined in threshold_cap mode
+    if 'is_safe_tld' not in dir():
+        is_safe_tld = np.zeros(n_defer, dtype=bool)
+    if 'is_dangerous_tld_s7' not in dir():
+        is_dangerous_tld_s7 = np.zeros(n_defer, dtype=bool)
+    if 'is_neutral_tld' not in dir():
+        is_neutral_tld = np.zeros(n_defer, dtype=bool)
+    if 'is_other_tld' not in dir():
+        is_other_tld = np.zeros(n_defer, dtype=bool)
 
     gate_trace = pd.DataFrame({
         'idx': np.arange(n_defer),
@@ -898,6 +1152,14 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
         'selected_priority': (pool_priority & selected_mask).astype(int),
         'selected_optional': (pool_optional & selected_mask & ~pool_priority).astype(int),
         'safe_benign': safe_benign.astype(int),  # Scenario 5: auto-BENIGN filter
+        'safe_benign_cert': safe_benign_cert.astype(int),  # Scenario 6: cert-based auto-BENIGN
+        'safe_phishing_cert': safe_phishing_cert.astype(int),  # Scenario 6: cert-based auto-PHISHING
+        'safe_benign_combined': safe_benign_combined.astype(int),  # Combined (Scenario 5 + 6)
+        # Scenario 7: TLD categories
+        'tld_safe': is_safe_tld.astype(int),
+        'tld_dangerous': is_dangerous_tld_s7.astype(int),
+        'tld_neutral': is_neutral_tld.astype(int),
+        'tld_other': is_other_tld.astype(int),
     })
 
     return selected_mask, gate_trace, stage2_select_stats
@@ -1186,6 +1448,9 @@ def run_pipeline(run_id, cfg):
         'ml_probability': p_test,
         'stage1_decision': stage1_decision,
         'y_true': y_test.astype(int),
+        # Add raw certificate features for Stage2 cert rules
+        'cert_validity_days': X_test[:, 15],    # FEATURE_ORDER index 15
+        'cert_san_count': X_test[:, 17],         # FEATURE_ORDER index 17
     })
 
     # Save stage1_decisions_latest.csv
@@ -1245,6 +1510,19 @@ def run_pipeline(run_id, cfg):
         print(f"   Priority pool: {stage2_stats['priority_pool']:,}")
     if stage2_stats.get('safe_benign_enabled', False):
         print(f"   Safe BENIGN:   {stage2_stats['safe_benign_filtered']:,} (p1<{stage2_stats['safe_benign_p1_max']}, defer<{stage2_stats['safe_benign_defer_max']})")
+    # Scenario 6: Certificate-based rules
+    if stage2_stats.get('cert_rules', {}).get('enabled', False):
+        cert_stats = stage2_stats['cert_rules']
+        print(f"   Cert BENIGN:   {stage2_stats['safe_benign_cert_filtered']:,} (CRL:{cert_stats['benign_crl_hits']}, OV/EV:{cert_stats['benign_ov_ev_hits']}, Wildcard:{cert_stats['benign_wildcard_hits']}, Long:{cert_stats['benign_long_validity_hits']})")
+    # Scenario 7: TLD-based filtering
+    if stage2_stats.get('tld_filtering', {}).get('enabled', False):
+        tld_stats = stage2_stats['tld_filtering']
+        blocked_s5 = tld_stats.get('s5_blocked_dangerous', 0) + tld_stats.get('s5_blocked_neutral', 0)
+        blocked_s6 = tld_stats['cert_rule_blocked_dangerous'] + tld_stats['cert_rule_blocked_neutral']
+        blocked_total = blocked_s5 + blocked_s6
+        print(f"   TLD Filtering: blocked {blocked_total:,} (S5:{blocked_s5}, S6:{blocked_s6})")
+        print(f"     S5: dangerous={tld_stats.get('s5_blocked_dangerous', 0)}, neutral(p1>={tld_stats['neutral_p1_max']})={tld_stats.get('s5_blocked_neutral', 0)}")
+        print(f"     S6: dangerous={tld_stats['cert_rule_blocked_dangerous']}, neutral={tld_stats['cert_rule_blocked_neutral']}")
     print(f"   Selected:      {stage2_stats['selected_final']:,}")
 
     # Save gate trace
