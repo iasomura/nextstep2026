@@ -227,7 +227,80 @@ def get_run_id(specified_run_id=None):
 # - Batch processing with _validate_batch_brands()
 # - Proper JSON parsing with fallback (_safe_parse_json_or_python)
 # - Guards against placeholder words like 'canonicalname'
+# CHANGELOG (2026-01-16):
+# - Added JPCERT description as brand candidate source
+# - Added Japanese brand name mapping table
+# - Merged PhishTank and JPCERT candidates
 # ============================================================
+
+# Japanese brand name to English keyword mapping
+# These are common Japanese phishing targets that need explicit mapping
+JAPANESE_BRAND_MAPPING = {
+    # Banks
+    '三井住友カード': 'smbc',
+    '三井住友銀行': 'smbc',
+    '三菱UFJニコス': 'mufg',
+    '三菱UFJ銀行': 'mufg',
+    'みずほ銀行': 'mizuho',
+    'りそな銀行': 'resona',
+    'イオン銀行': 'aeonbank',
+    'PayPay銀行': 'paypaybank',
+    'GMOあおぞらネット銀行': 'gmoaozora',
+    # Cards
+    'イオンカード': 'aeoncard',
+    'エポスカード': 'eposcard',
+    '楽天カード': 'rakutencard',
+    'クレディセゾン': 'saison',
+    'JCB': 'jcb',
+    'ビューカード': 'viewcard',
+    'Viewcard': 'viewcard',
+    'TS CUBIC CARD': 'tscubiccard',
+    'MICARD': 'micard',
+    'JACCS': 'jaccs',
+    'Orico': 'orico',
+    # Telecoms
+    'NTT docomo': 'docomo',
+    'ドコモ': 'docomo',
+    'softbank': 'softbank',
+    'ソフトバンク': 'softbank',
+    'au': 'au',
+    'KDDI': 'kddi',
+    # EC/Services
+    'メルカリ': 'mercari',
+    '楽天': 'rakuten',
+    'ヤマト運輸': 'yamato',
+    '佐川急便': 'sagawa',
+    '日本郵便': 'japanpost',
+    'えきねっと': 'ekinet',
+    'ETC利用照会サービス': 'etc',
+    'ヨドバシカメラ': 'yodobashi',
+    # Government
+    '国税庁': 'nta',
+    '総務省': 'soumu',
+    # Utilities
+    'TEPCO': 'tepco',
+    '東京電力': 'tepco',
+    # Others
+    'BIGLOBE': 'biglobe',
+    'NHK': 'nhk',
+    'NHKプラス': 'nhk',
+    'LINE': 'line',
+    'PayPay': 'paypay',
+    'FamilyMart': 'familymart',
+    # International
+    'Amazon': 'amazon',
+    'Apple ID': 'apple',
+    'Apple': 'apple',
+    'Microsoft': 'microsoft',
+    'Netflix': 'netflix',
+    'PayPal': 'paypal',
+    'American Express': 'amex',
+    'DHL': 'dhl',
+    'USPS': 'usps',
+    'FedEx': 'fedex',
+    'UPS': 'ups',
+    'PostNord': 'postnord',
+}
 
 import re
 import time
@@ -360,28 +433,62 @@ def extract_brands_via_llm(cfg):
     phishtank_targets = cur.fetchall()
     print(f"   Found {len(phishtank_targets)} targets")
 
-    # Query jpcert_phishing_urls (description column)
+    # Query jpcert_phishing_urls (description column) - now with frequency
     print("\n[3/4] Querying jpcert_phishing_urls...")
     cur.execute("""
-        SELECT DISTINCT description
+        SELECT description, COUNT(*) as count
         FROM public.jpcert_phishing_urls
         WHERE description IS NOT NULL
           AND description <> ''
           AND description <> '-'
+        GROUP BY description
+        ORDER BY count DESC
         LIMIT 200
     """)
-    jpcert_descriptions = [r[0] for r in cur.fetchall()]
-    print(f"   Found {len(jpcert_descriptions)} descriptions")
+    jpcert_targets = cur.fetchall()
+    jpcert_descriptions = [r[0] for r in jpcert_targets]
+    print(f"   Found {len(jpcert_targets)} unique descriptions")
 
     cur.close()
     conn.close()
 
-    # Build pt_counts (normalized + frequency)
+    # Build pt_counts (normalized + frequency) from PhishTank
     pt_counts = {}
     for tgt, cnt in phishtank_targets:
         nt = normalize_brand_name(tgt)
         if nt:
             pt_counts[nt] = pt_counts.get(nt, 0) + int(cnt)
+
+    # Build jpcert_counts from JPCERT descriptions
+    # Use Japanese brand mapping for known brands, otherwise normalize
+    jpcert_counts = {}
+    jpcert_mapped = []
+    for desc, cnt in jpcert_targets:
+        # Check if description matches a known Japanese brand
+        if desc in JAPANESE_BRAND_MAPPING:
+            keyword = JAPANESE_BRAND_MAPPING[desc]
+            jpcert_counts[keyword] = jpcert_counts.get(keyword, 0) + int(cnt)
+            jpcert_mapped.append((desc, keyword, cnt))
+        else:
+            # Try to normalize (works for English brands)
+            nt = normalize_brand_name(desc)
+            if nt and len(nt) >= 3:
+                jpcert_counts[nt] = jpcert_counts.get(nt, 0) + int(cnt)
+
+    print(f"   Japanese brand mappings applied: {len(jpcert_mapped)}")
+    for desc, keyword, cnt in jpcert_mapped[:10]:
+        print(f"      {desc} -> {keyword} (count: {cnt})")
+
+    # Merge PhishTank and JPCERT candidates
+    all_counts = {}
+    for k, v in pt_counts.items():
+        all_counts[k] = all_counts.get(k, 0) + v
+    for k, v in jpcert_counts.items():
+        all_counts[k] = all_counts.get(k, 0) + v
+
+    print(f"   PhishTank candidates: {len(pt_counts)}")
+    print(f"   JPCERT candidates: {len(jpcert_counts)}")
+    print(f"   Merged candidates: {len(all_counts)}")
 
     # Create LLM client
     print("\n[4/4] Extracting brand keywords via LLM...")
@@ -526,23 +633,38 @@ def extract_brands_via_llm(cfg):
 
     # Process candidates
     # CHANGELOG (2026-01-10): max_brands=0 means unlimited
+    # CHANGELOG (2026-01-16): Use merged all_counts instead of pt_counts only
     MAX_BRANDS = cfg['brand_max_brands']
     if MAX_BRANDS <= 0:
         MAX_BRANDS = float('inf')  # Unlimited
     BATCH_SIZE = 5  # Same as notebook default
 
-    candidates_sorted = [cand for cand, cnt in sorted(pt_counts.items(), key=lambda x: (-x[1], x[0]))]
+    # Use merged candidates (PhishTank + JPCERT)
+    candidates_sorted = [cand for cand, cnt in sorted(all_counts.items(), key=lambda x: (-x[1], x[0]))]
+
+    # Add mapped Japanese brands directly (skip LLM validation)
+    # These are known brands from the mapping table
+    pre_validated_brands = set(JAPANESE_BRAND_MAPPING.values())
 
     BRAND_KEYWORDS = []
     _seen = set()
+
+    # First, add pre-validated brands from mapping table (no LLM needed)
+    for brand in sorted(pre_validated_brands):
+        if brand not in _seen:
+            BRAND_KEYWORDS.append(brand)
+            _seen.add(brand)
+
+    print(f"   Pre-validated brands (from mapping): {len(BRAND_KEYWORDS)}")
+
     total_candidates = len(candidates_sorted)
     processed = 0
-    found = 0
+    found = len(BRAND_KEYWORDS)
     start_ts = time.time()
 
     max_brands_display = "unlimited" if MAX_BRANDS == float('inf') else MAX_BRANDS
     print(f"   MAX_BRANDS: {max_brands_display}, BATCH_SIZE: {BATCH_SIZE}")
-    print(f"   Total candidates: {total_candidates}")
+    print(f"   Total candidates to validate: {total_candidates}")
 
     def _chunks(seq, n):
         for i in range(0, len(seq), n):
