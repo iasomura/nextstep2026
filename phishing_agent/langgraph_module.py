@@ -30,7 +30,17 @@ langgraph_module.py — Phase 4 状態管理 (spec latest v1.3, toolexec fix)
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
-import json, os, time, traceback, sys, importlib.util as _iu, types as _types
+import json, os, re, time, traceback, sys, importlib.util as _iu, types as _types
+
+# Qwen3等が出力する<think>タグを除去するパターン
+_THINK_TAG_PATTERN = re.compile(r"<think>.*?</think>", re.DOTALL)
+
+def _strip_think_tags(text: str) -> str:
+    """Qwen3等が出力する<think>タグを除去してJSONのみを抽出する。"""
+    if not text:
+        return text
+    cleaned = _THINK_TAG_PATTERN.sub("", text)
+    return cleaned.strip()
 
 try:
     from langchain_core.messages import HumanMessage, AIMessage  # type: ignore
@@ -998,11 +1008,19 @@ def _phase5__init_llm(cfg: "LLMConfig"):
         return None
     try:
         from langchain_openai import ChatOpenAI  # type: ignore
+        # 思考モード無効化後、JSONレスポンスに十分なトークン数を確保
+        # Phase6プロンプトが長いため、余裕を持って2048トークン
+        max_tokens = 2048
+
         return ChatOpenAI(
             model=cfg.model or "gpt-4o-mini",
             base_url=cfg.base_url,
             api_key=cfg.api_key or "EMPTY",
             temperature=getattr(cfg, "temperature", 0.1) or 0.1,
+            max_tokens=max_tokens,
+            # Qwen3 thinking モードを無効化
+            # vLLM OpenAI互換APIではextra_bodyで直接渡す
+            extra_body={"chat_template_kwargs": {"enable_thinking": False}},
         )
     except Exception as e:  # pragma: no cover
         # LLM初期化失敗は上位でフォールバックさせる
@@ -1052,8 +1070,9 @@ if "_SOClient" in globals():
             known_flag = bool((pre.get('known_domain_info') or {}))
             quick_risk = pre.get('quick_risk')
 
+            # Qwen3の思考モードを無効化するために /no_think プレフィックスを追加
             user_text = (
-                f"domain: {domain}\n"
+                f"/no_think domain: {domain}\n"
                 f"ml_probability: {ml_probability:.6f}\n"
                 f"tld_category: {pre.get('tld_category')}\n"
                 f"potential_brands: {potential_brands}\n"
@@ -1092,6 +1111,25 @@ if "_SOClient" in globals():
                     errors.append(f"{method}={type(e).__name__}:{e}")
                     continue
 
+            # フォールバック: 生のLLM呼び出し + <think>タグ除去 + JSON手動パース
+            try:
+                raw_response = llm_sel.invoke([{'role':'system','content':sys_text}, {'role':'user','content':user_text}])
+                raw_text = raw_response.content if hasattr(raw_response, "content") else str(raw_response)
+                cleaned_text = _strip_think_tags(raw_text)
+
+                json_start = cleaned_text.find("{")
+                json_end = cleaned_text.rfind("}") + 1
+                if json_start >= 0 and json_end > json_start:
+                    json_str = cleaned_text[json_start:json_end]
+                    parsed = json.loads(json_str)
+                    raw_tools = list(parsed.get('selected_tools', []) or [])
+                    raw_tools = [t for t in raw_tools if t in _ALLOWED_TOOLS_SO]
+                    tools = _phase5__enforce_policy(float(ml_probability or 0.0), raw_tools)
+                    reasoning = f"ToolSelection(fallback): ml={ml_probability:.3f} tld={pre.get('tld_category')}"
+                    return ToolSelectionResult(selected_tools=tools, reasoning=reasoning, confidence=0.70)
+            except Exception as e2:
+                errors.append(f"fallback={type(e2).__name__}:{e2}")
+
             raise RuntimeError('SO(select_tools) failed: ' + ' | '.join(errors))
         def final_assessment(self, domain: str, ml_probability: float, tool_results: Dict[str,Any]) -> "PhishingAssessment":
             llm = _phase5__init_llm(self.cfg)
@@ -1112,16 +1150,43 @@ if "_SOClient" in globals():
                 "Do NOT set is_phishing=true based on ml_probability alone; if you mark phishing, include at least one non-ML risk_factors from tool outputs. "
                 "Ensure confidence is in [0,1] and reasoning length>=50."
             )
+            # Qwen3の思考モードを無効化するために /no_think プレフィックスを追加
             user_text = (
-                f"domain: {domain}\n"
+                f"/no_think domain: {domain}\n"
                 f"ml_probability: {ml_probability:.6f}\n"
                 f"baseline_risk: {baseline:.6f}\n"
                 f"tool_results.keys: {list(tr.keys())}\n"
                 f"contextual_risk_assessment: {ctx}\n"
                 "Output: FinalAssessmentSO"
             )
-            chain = llm.with_structured_output(FinalAssessmentSO)  # type: ignore
-            so: FinalAssessmentSO = chain.invoke([{"role":"system","content":sys_text},{"role":"user","content":user_text}])  # type: ignore
+
+            so = None
+            errors = []
+
+            # 方法1: with_structured_output を試行
+            try:
+                chain = llm.with_structured_output(FinalAssessmentSO)  # type: ignore
+                so = chain.invoke([{"role":"system","content":sys_text},{"role":"user","content":user_text}])  # type: ignore
+            except Exception as e1:
+                errors.append(f"so={type(e1).__name__}:{e1}")
+
+                # 方法2: 生のLLM呼び出し + <think>タグ除去 + JSON手動パース
+                try:
+                    raw_response = llm.invoke([{"role":"system","content":sys_text},{"role":"user","content":user_text}])
+                    raw_text = raw_response.content if hasattr(raw_response, "content") else str(raw_response)
+                    cleaned_text = _strip_think_tags(raw_text)
+
+                    json_start = cleaned_text.find("{")
+                    json_end = cleaned_text.rfind("}") + 1
+                    if json_start >= 0 and json_end > json_start:
+                        json_str = cleaned_text[json_start:json_end]
+                        parsed = json.loads(json_str)
+                        so = FinalAssessmentSO(**parsed)
+                except Exception as e2:
+                    errors.append(f"fallback={type(e2).__name__}:{e2}")
+
+            if so is None:
+                raise RuntimeError('SO(final_assessment) failed: ' + ' | '.join(errors))
 
             # 信頼度・レンジ再検証
             conf = float(so.confidence)

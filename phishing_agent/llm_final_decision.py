@@ -48,6 +48,21 @@ llm_final_decision.py (Phase6 v1.4.7-dvguard4)
       - POST_LLM_FLIP_GATE: ctx_issues の dangerous_tld もチェックしてゲート通過を許可。
       - dv_suspicious_combo: combined_issues (domain | ctx) の dangerous_tld もチェック。
 
+  - 2026-01-18: v1.6.2-p1-tld-gate
+      - P1ゲート（low_signal_phishing_gate）を非危険TLD + ML<0.30 で無効化
+      - 問題: POST_LLM_FLIP_GATE でブロックした判定をP1が再上書きし、FPが142件発生
+      - Let's Encrypt（90日証明書）の普及により、正規サイトも短期証明書を使用
+      - 3000件評価の分析結果:
+        - F1: 0.764 → 0.812（+4.8%改善見込み）
+        - FP: 276 → 134（-142件削減見込み）
+        - TP損失: 26件（coinbase-mywallet.com等の偽装ドメイン）
+
+  - 2026-01-18: v1.6.3-fn-rescue
+      - FN救済強化（132件分析に基づく改善）
+      - P4ゲート追加: 中危険TLD + 短期証明書 + 低SAN + ML<0.05
+        - 対象: g-jp.top, jwaveyj.top 等（8件救済見込み）
+        - POST_LLM_FLIP_GATEでブロックされていたケースを救済
+
 既存方針:
   - no_org 単体で True になり得る経路は持たない（複合条件のみ）
   - decision_trace を graph_state に埋め込み、risk_factors に policyタグを追記
@@ -70,7 +85,7 @@ except Exception:
 
 
 # ------------------------- phase6 meta -------------------------
-PHASE6_POLICY_VERSION = "v1.6.0-fp-reduction-tuning"
+PHASE6_POLICY_VERSION = "v1.6.3-fn-rescue"
 
 # ------------------------- TLD classification (2026-01-14) -------------------------
 # 高危険TLD: フィッシングに特に多用され、正規利用が少ないTLD
@@ -89,6 +104,19 @@ MEDIUM_DANGER_TLDS = frozenset([
 # ------------------------- small utils -------------------------
 def _json_dumps(obj: Any) -> str:
     return json.dumps(obj, ensure_ascii=False, separators=(",", ":"))
+
+
+import re
+_THINK_TAG_PATTERN = re.compile(r"<think>.*?</think>", re.DOTALL)
+
+
+def _strip_think_tags(text: str) -> str:
+    """Qwen3等が出力する<think>タグを除去してJSONのみを抽出する。"""
+    if not text:
+        return text
+    # <think>...</think>を除去
+    cleaned = _THINK_TAG_PATTERN.sub("", text)
+    return cleaned.strip()
 
 def _rs(tr: Dict[str, Any], key: str) -> float:
     try:
@@ -296,6 +324,12 @@ def _apply_low_signal_phishing_gate(
     Gate P1: ブランド検出 + 短期証明書 + 低ML → PHISHING強制
     Gate P2: ブランド疑い + 短期証明書 + 低SAN + 低ML → PHISHING強制
     Gate P3: 危険TLD + 短期証明書 + 低SAN + 低ML + benign無し → risk bump
+
+    変更履歴:
+      - 2026-01-18: P1ゲートを非危険TLD + ML<0.30 で無効化
+        - 3000件評価の分析結果: P1がPOST_LLM_FLIP_GATEの効果を打ち消し、142件のFPを発生
+        - Let's Encrypt（90日証明書）の普及により、正規サイトも短期証明書を使用
+        - 修正によりF1: 0.764 → 0.812（+4.8%）、FP: 276 → 134（-142件）
     """
     tr = trace if isinstance(trace, list) else []
     ip = bool(getattr(asmt, "is_phishing", False))
@@ -341,6 +375,18 @@ def _apply_low_signal_phishing_gate(
         or cert_details.get("is_dangerous_tld", False)
     )
 
+    # --- TLD危険度の判定（2026-01-18追加）---
+    # P1ゲートの適用をTLD危険度に応じて制御
+    try:
+        tld_suffix = pre.get("etld1", {}).get("suffix", "") or ""
+        tld_suffix = tld_suffix.lower().strip(".")
+    except Exception:
+        tld_suffix = ""
+
+    is_high_danger_tld = (tld_suffix in HIGH_DANGER_TLDS)
+    is_medium_danger_tld = (tld_suffix in MEDIUM_DANGER_TLDS)
+    is_non_danger_tld = not (is_high_danger_tld or is_medium_danger_tld or is_dangerous_tld)
+
     # --- benign_indicatorsがある場合はゲートをスキップ（FP防止） ---
     # ただしGate P1（強いブランド検出）は例外
     has_strong_benign = bool(benign_indicators & {"ov_ev_cert", "has_crl_dp"})
@@ -355,7 +401,23 @@ def _apply_low_signal_phishing_gate(
     # Gate P1: ブランド検出 + 短期証明書（90日以下） + 低ML（<0.30）
     # 正規サイトがブランド名を含む場合、通常は長期証明書を使用
     # 低シグナルフィッシングの97.7%が短期証明書
-    if (
+    #
+    # 2026-01-18 修正: 非危険TLD + ML<0.30 の場合はP1をスキップ
+    # - 理由: POST_LLM_FLIP_GATEと整合性を確保し、FPを142件削減
+    # - Let's Encrypt（90日証明書）は正規サイトでも広く使用されている
+    # - 非危険TLDでは短期証明書のみでフィッシング判定するのはリスクが高い
+    p1_skip_for_non_danger_tld = is_non_danger_tld and ml < 0.30
+
+    if p1_skip_for_non_danger_tld:
+        tr.append({
+            "rule": "LOW_SIGNAL_PHISHING_GATE_P1_SKIPPED",
+            "reason": "non_danger_tld_low_ml",
+            "tld_suffix": tld_suffix,
+            "ml": round(ml, 4),
+            "brand_detected": brand_detected,
+            "valid_days": valid_days,
+        })
+    elif (
         brand_detected
         and valid_days <= 90
         and ml < 0.30
@@ -368,6 +430,8 @@ def _apply_low_signal_phishing_gate(
             "brand_detected": True,
             "valid_days": valid_days,
             "ml": round(ml, 4),
+            "tld_suffix": tld_suffix,
+            "tld_danger_level": "high" if is_high_danger_tld else "medium" if is_medium_danger_tld else "low",
             "thresholds": {"valid_days": 90, "ml": 0.30},
         })
 
@@ -426,14 +490,43 @@ def _apply_low_signal_phishing_gate(
             reasoning=reasoning,
         )
 
-    # P1またはP2が発火した場合、PHISHINGに強制
-    if gate_fired and gate_fired.startswith("P1") or gate_fired and gate_fired.startswith("P2"):
+    # Gate P4: 中危険TLD + 短期証明書 + 低SAN + 非常に低いML（2026-01-18追加）
+    # FN分析: g-jp.top, jwaveyj.top 等が ML < 0.04 で POST_LLM_FLIP_GATE にブロックされていた
+    # 中危険TLDでも、短期証明書 + 低SANの組み合わせはフィッシングの強い兆候
+    elif (
+        is_medium_danger_tld
+        and valid_days <= 90
+        and san_count <= 2  # P3より厳しい条件
+        and ml < 0.05       # 非常に低いML
+        and not benign_indicators
+    ):
+        gate_fired = "P4_MEDIUM_TLD_CERT"
+        tr.append({
+            "rule": "LOW_SIGNAL_PHISHING_GATE_P4",
+            "action": "force_phishing",
+            "is_medium_danger_tld": True,
+            "tld_suffix": tld_suffix,
+            "valid_days": valid_days,
+            "san_count": san_count,
+            "ml": round(ml, 4),
+            "thresholds": {"valid_days": 90, "san_count": 2, "ml": 0.05},
+        })
+
+    # P1, P2, P4 が発火した場合、PHISHINGに強制
+    if gate_fired and (
+        gate_fired.startswith("P1")
+        or gate_fired.startswith("P2")
+        or gate_fired.startswith("P4")
+    ):
         rf.append(f"low_signal_phishing_gate:{gate_fired}")
-        reasoning += f" | Low Signal Phishing Gate {gate_fired}: brand + short cert indicates phishing"
+        if gate_fired.startswith("P4"):
+            reasoning += f" | Low Signal Phishing Gate {gate_fired}: medium danger TLD + short cert + low SAN"
+        else:
+            reasoning += f" | Low Signal Phishing Gate {gate_fired}: brand + short cert indicates phishing"
 
         return PhishingAssessment(
             is_phishing=True,
-            confidence=max(0.70, c),
+            confidence=max(0.70, c) if not gate_fired.startswith("P4") else max(0.65, c),
             risk_level=_priority_bump(rl, "medium-high"),
             detected_brands=list(getattr(asmt, "detected_brands", []) or []),
             risk_factors=rf,
@@ -796,17 +889,17 @@ def _apply_policy_adjustments(
     )
 
     # 閾値の決定（TLD危険度に応じて）
-    # NOTE(2026-01-15): 3000件評価の結果を受けて閾値を再調整
+    # NOTE(2026-01-17): 3000件評価の結果を受けて閾値を再調整
     #   - 高危険TLD: ゲート無効化（フィッシング検出を最優先）
     #   - 中危険TLD: 0.04（バランス重視）
-    #   - 非危険TLD: 0.15（Recall重視、FP削減は控えめに）
-    # 前回の問題: 非危険TLD 0.25 が厳しすぎて .com フィッシングを見逃し
+    #   - 非危険TLD: 0.30（FP削減重視、シミュレーションでF1+4.81%改善）
+    # 分析結果: 非危険TLD 0.15 → FP 231件増加、0.30でFP 142件削減・TP 26件損失
     if is_high_danger_tld:
         LOW_ML_FLIP_GATE_TH = 0.0  # 高危険TLDはゲート無効化
     elif is_medium_danger_tld:
         LOW_ML_FLIP_GATE_TH = 0.04  # 中危険TLDはバランス重視
     else:
-        LOW_ML_FLIP_GATE_TH = 0.15  # 非危険TLDはRecall重視
+        LOW_ML_FLIP_GATE_TH = 0.30  # 非危険TLDはFP削減重視
 
     # ゲート適用判定
     should_block = ip and (ml < LOW_ML_FLIP_GATE_TH)
@@ -988,7 +1081,8 @@ def final_decision(
         "- detected_brands: list of detected brand names (empty if none)\n"
         "- risk_factors: risk factors that you treat as ACTIVE evidence for the final decision\n"
         "    (for example: dangerous_tld, free_ca, no_org, ml_paradox, etc.)\n"
-        "- primary_category: choose exactly one value from ReasoningCategory\n"
+        "- primary_category: one of ['safe_official_brand','safe_generic_content','safe_parked_domain',"
+        "'phishing_impersonation','phishing_credentials','suspicious_dga_domain','suspicious_tld_combo','malware_distribution']\n"
         "- mitigated_risk_factors: risk factors that you detected but decided to treat as\n"
         "    safe/acceptable in the final decision\n"
         "- reasoning: at least 50 characters explaining why you chose the value of is_phishing\n"
@@ -1043,9 +1137,12 @@ def final_decision(
         },
     }
 
+    # Qwen3の思考モードを無効化するために /no_think プレフィックスを追加
+    user_content = "/no_think " + _json_dumps(user_payload)
+
     messages = [
         {"role": "system", "content": system_text},
-        {"role": "user", "content": _json_dumps(user_payload)},
+        {"role": "user", "content": user_content},
     ]
 
     trace: list[dict[str, object]] = []
@@ -1067,159 +1164,170 @@ def final_decision(
             step="final_decision",
         )
 
+    asmt_so: Optional[PhishingAssessmentSO] = None
+
+    # 方法1: with_structured_output を試行
     try:
         chain = llm.with_structured_output(PhishingAssessmentSO)
-        asmt_so: PhishingAssessmentSO = chain.invoke(messages)
-        trace.append({
-            "step": "llm_raw_output",
-            "assessment": asmt_so.model_dump(),
-        })
+        asmt_so = chain.invoke(messages)
+    except Exception as e1:
+        trace.append({"step": "so_primary_failed", "error": str(e1)[:200]})
 
-        # 4) ポリシー補正（R1/R2/R3/R4/R5 を適用）
-        asmt2 = _apply_policy_adjustments(
-            asmt_so,
-            tsum,
-            ml_probability=ml,
-            precheck=pre,
-            trace=trace,
-        )
-
-        # 5) mitigated_risk_factors を risk_factors にタグとして反映
-        mitigated = list(getattr(asmt_so, "mitigated_risk_factors", []) or [])
-        if mitigated:
-            rf = list(getattr(asmt2, "risk_factors", []) or [])
-            for f in mitigated:
-                tag = f"mitigated:{f}"
-                if tag not in rf:
-                    rf.append(tag)
-            asmt2 = PhishingAssessment(
-                is_phishing=asmt2.is_phishing,
-                confidence=asmt2.confidence,
-                risk_level=asmt2.risk_level,
-                detected_brands=list(asmt2.detected_brands or []),
-                risk_factors=rf,
-                reasoning=asmt2.reasoning,
-            )
-
-        # 5b) Benign Certificate Gate (2026-01-12)
-        # 証明書の正規性シグナルに基づいてFPを防止
-        asmt2 = _apply_benign_cert_gate(
-            asmt2,
-            tsum,
-            ml_probability=ml,
-            precheck=pre,
-            trace=trace,
-        )
-
-        # 5c) Low Signal Phishing Gate (2026-01-12)
-        # 低シグナルフィッシング（ブランド偽装 + 短期証明書）を検出
-        asmt2 = _apply_low_signal_phishing_gate(
-            asmt2,
-            tsum,
-            ml_probability=ml,
-            precheck=pre,
-            trace=trace,
-        )
-
-        # 6) graph_state へのトレース保存
+        # 方法2: 生のLLM呼び出し + <think>タグ除去 + JSON手動パース
         try:
-            if isinstance(graph_state, dict):
-                graph_state["phase6_policy_version"] = PHASE6_POLICY_VERSION
+            raw_response = llm.invoke(messages)
+            raw_text = raw_response.content if hasattr(raw_response, "content") else str(raw_response)
+            cleaned_text = _strip_think_tags(raw_text)
 
-                # 事後分析用: 発火した policy rule をフラットに保存（CSV展開を楽にする）
-                rules_fired: list[str] = []
-                for t in trace:
-                    if isinstance(t, dict) and t.get("rule"):
-                        r = str(t.get("rule"))
-                        if r not in rules_fired:
-                            rules_fired.append(r)
-                graph_state["phase6_rules_fired"] = rules_fired
-
-                # Post-LLM gate info stamp (CSV-friendly)
-                try:
-                    gate = None
-                    for t in trace:
-                        if isinstance(t, dict) and t.get("rule") == "POST_LLM_FLIP_GATE":
-                            gate = dict(t)
-                            break
-                    if gate:
-                        graph_state["phase6_gate"] = gate
-                except Exception:
-                    pass
-
-                # Benign Certificate Gate info stamp (2026-01-12)
-                try:
-                    benign_gate = None
-                    for t in trace:
-                        if isinstance(t, dict) and str(t.get("rule", "")).startswith("BENIGN_CERT_GATE_B"):
-                            benign_gate = dict(t)
-                            break
-                    if benign_gate:
-                        graph_state["benign_cert_gate"] = benign_gate
-                except Exception:
-                    pass
-
-                # Low Signal Phishing Gate info stamp (2026-01-12)
-                try:
-                    low_signal_gate = None
-                    for t in trace:
-                        if isinstance(t, dict) and str(t.get("rule", "")).startswith("LOW_SIGNAL_PHISHING_GATE"):
-                            low_signal_gate = dict(t)
-                            break
-                    if low_signal_gate:
-                        graph_state["low_signal_phishing_gate"] = low_signal_gate
-                except Exception:
-                    pass
-
-                dt = list(graph_state.get("decision_trace", []) or [])
-                dt.append({
-                    "phase6_version": PHASE6_POLICY_VERSION,
-                    "domain": domain,
-                    "ml": ml,
-                    "ml_category": ml_category,
-                    "ctx_score": ctx_score,
-                    "tool_summary": tsum,
-                    "ml_paradox": ml_paradox,
-                    "llm_primary_category": str(getattr(asmt_so, "primary_category", "")),
-                    "llm_mitigated_risk_factors": mitigated,
-                    "llm_risk_factors": list(getattr(asmt_so, "risk_factors", []) or []),
-                    "policy_rules_fired": rules_fired,
-                    "policy_trace": trace,
-                })
-                graph_state["decision_trace"] = dt
-        except Exception:
-            # トレース保存はベストエフォート
-            pass
-
-        return asmt2
-
-    except Exception as e:
-        # 7) SO失敗時の扱い
-        if strict_mode:
-            # Strict=True の場合はそのまま例外を投げる
+            # JSONを抽出（最初の{から最後の}まで）
+            json_start = cleaned_text.find("{")
+            json_end = cleaned_text.rfind("}") + 1
+            if json_start >= 0 and json_end > json_start:
+                json_str = cleaned_text[json_start:json_end]
+                parsed = json.loads(json_str)
+                asmt_so = PhishingAssessmentSO(**parsed)
+                trace.append({"step": "so_fallback_success", "method": "strip_think_tags"})
+            else:
+                raise ValueError(f"No valid JSON found in response: {cleaned_text[:200]}")
+        except Exception as e2:
+            trace.append({"step": "so_fallback_failed", "error": str(e2)[:200]})
             raise StructuredOutputError(
-                f"Phase6 final_decision SO failed: {e}",
+                f"Phase6 final_decision SO failed: {e1}; fallback also failed: {e2}",
                 domain=domain,
                 ml_probability=ml,
                 step="final_decision",
-                original_error=str(e),
             )
 
-        # Strict=False: 安全側フォールバック（既存仕様と互換）
-        try:
-            if isinstance(graph_state, dict):
-                locs = list(graph_state.get("fallback_locations", []) or [])
-                locs.append("final_decision")
-                graph_state["fallback_locations"] = locs
-        except Exception:
-            pass
-
-        return PhishingAssessment(
-            is_phishing=False,
-            confidence=0.0,
-            risk_level="low",
-            detected_brands=[],
-            risk_factors=[],
-            reasoning="Structured Output not available; safe fallback (Phase6).",
+    if asmt_so is None:
+        raise StructuredOutputError(
+            "Phase6 final_decision SO failed: no valid response",
+            domain=domain,
+            ml_probability=ml,
+            step="final_decision",
         )
+
+    trace.append({
+        "step": "llm_raw_output",
+        "assessment": asmt_so.model_dump(),
+    })
+
+    # 4) ポリシー補正（R1/R2/R3/R4/R5 を適用）
+    asmt2 = _apply_policy_adjustments(
+        asmt_so,
+        tsum,
+        ml_probability=ml,
+        precheck=pre,
+        trace=trace,
+    )
+
+    # 5) mitigated_risk_factors を risk_factors にタグとして反映
+    mitigated = list(getattr(asmt_so, "mitigated_risk_factors", []) or [])
+    if mitigated:
+        rf = list(getattr(asmt2, "risk_factors", []) or [])
+        for f in mitigated:
+            tag = f"mitigated:{f}"
+            if tag not in rf:
+                rf.append(tag)
+        asmt2 = PhishingAssessment(
+            is_phishing=asmt2.is_phishing,
+            confidence=asmt2.confidence,
+            risk_level=asmt2.risk_level,
+            detected_brands=list(asmt2.detected_brands or []),
+            risk_factors=rf,
+            reasoning=asmt2.reasoning,
+        )
+
+    # 5b) Benign Certificate Gate (2026-01-12)
+    # 証明書の正規性シグナルに基づいてFPを防止
+    asmt2 = _apply_benign_cert_gate(
+        asmt2,
+        tsum,
+        ml_probability=ml,
+        precheck=pre,
+        trace=trace,
+    )
+
+    # 5c) Low Signal Phishing Gate (2026-01-12)
+    # 低シグナルフィッシング（ブランド偽装 + 短期証明書）を検出
+    asmt2 = _apply_low_signal_phishing_gate(
+        asmt2,
+        tsum,
+        ml_probability=ml,
+        precheck=pre,
+        trace=trace,
+    )
+
+    # 6) graph_state へのトレース保存
+    rules_fired: list[str] = []
+    try:
+        if isinstance(graph_state, dict):
+            graph_state["phase6_policy_version"] = PHASE6_POLICY_VERSION
+
+            # 事後分析用: 発火した policy rule をフラットに保存（CSV展開を楽にする）
+            for t in trace:
+                if isinstance(t, dict) and t.get("rule"):
+                    r = str(t.get("rule"))
+                    if r not in rules_fired:
+                        rules_fired.append(r)
+            graph_state["phase6_rules_fired"] = rules_fired
+
+            # Post-LLM gate info stamp (CSV-friendly)
+            try:
+                gate = None
+                for t in trace:
+                    if isinstance(t, dict) and t.get("rule") == "POST_LLM_FLIP_GATE":
+                        gate = dict(t)
+                        break
+                if gate:
+                    graph_state["phase6_gate"] = gate
+            except Exception:
+                pass
+
+            # Benign Certificate Gate info stamp (2026-01-12)
+            try:
+                benign_gate = None
+                for t in trace:
+                    if isinstance(t, dict) and str(t.get("rule", "")).startswith("BENIGN_CERT_GATE_B"):
+                        benign_gate = dict(t)
+                        break
+                if benign_gate:
+                    graph_state["benign_cert_gate"] = benign_gate
+            except Exception:
+                pass
+
+            # Low Signal Phishing Gate info stamp (2026-01-12)
+            try:
+                low_signal_gate = None
+                for t in trace:
+                    if isinstance(t, dict) and str(t.get("rule", "")).startswith("LOW_SIGNAL_PHISHING_GATE"):
+                        low_signal_gate = dict(t)
+                        break
+                if low_signal_gate:
+                    graph_state["low_signal_phishing_gate"] = low_signal_gate
+            except Exception:
+                pass
+
+            dt = list(graph_state.get("decision_trace", []) or [])
+            dt.append({
+                "phase6_version": PHASE6_POLICY_VERSION,
+                "domain": domain,
+                "ml": ml,
+                "ml_category": ml_category,
+                "ctx_score": ctx_score,
+                "tool_summary": tsum,
+                "ml_paradox": ml_paradox,
+                "llm_primary_category": str(getattr(asmt_so, "primary_category", "")),
+                "llm_mitigated_risk_factors": mitigated,
+                "llm_risk_factors": list(getattr(asmt_so, "risk_factors", []) or []),
+                "policy_rules_fired": rules_fired,
+                "policy_trace": trace,
+            })
+            graph_state["decision_trace"] = dt
+    except Exception:
+        # トレース保存はベストエフォート
+        pass
+
+    return asmt2
+
+
 
