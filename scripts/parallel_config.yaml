@@ -1,0 +1,93 @@
+# =============================================================================
+# Stage3 並列評価設定
+# =============================================================================
+#
+# 使用方法:
+#   python scripts/evaluate_e2e_parallel.py                    # デフォルト(1GPU)
+#   python scripts/evaluate_e2e_parallel.py --add-gpu 1        # GPU追加
+#   python scripts/evaluate_e2e_parallel.py --add-gpu 1,2      # 複数GPU追加
+#   python scripts/evaluate_e2e_parallel.py --check-gpus       # GPU状態確認
+#   python scripts/evaluate_e2e_parallel.py --resume           # 再開
+#
+# =============================================================================
+
+# デフォルトWorker数（1 = GPU 0のみ使用）
+num_workers: 2
+
+# Worker設定
+# typeがlocalの場合: このマシンでvLLMを起動
+# typeがremoteの場合: SSH経由でリモートマシンのvLLMを使用
+# speed_weight: 実測推論速度に基づく処理量割り当て重み
+# 変更履歴:
+#   - 2026-01-25: 帯域幅理論値(1.60/2.11/1.00)→実測値(1.59/1.77/1.00)に修正
+#   実測: Worker0=9.0dom/min, Worker1=10.0dom/min, Worker2=5.6dom/min
+workers:
+  - id: 0
+    port: 8000
+    type: local
+    gpu: 0
+    speed_weight: 1.59      # RTX 5000 Ada (実測 9.0 dom/min)
+
+  - id: 1
+    port: 8001
+    type: external          # ポートフォワード済み（外部管理のvLLM）
+    stop_on_complete: false  # 自分専用GPU (RTX 3080) のため停止不要
+    speed_weight: 1.77      # RTX 3080 (実測 10.0 dom/min)
+
+  - id: 2
+    port: 8002
+    type: external          # ポートフォワード済み + SSH起動/停止
+    start_cmd: "ssh asomura@192.168.100.70 'bash -lc \"/home/asomura/src/vllm.sh start\"'"
+    stop_cmd: "ssh asomura@192.168.100.70 'bash -lc \"/home/asomura/src/vllm.sh stop\"'"
+    speed_weight: 1.00      # RTX 4000 Ada (実測 5.6 dom/min)
+
+# vLLM設定 (Worker 0/local用。external Workerは各自のスクリプトで管理)
+# 変更履歴:
+#   - 2026-01-25: vllm.shと統一 (GPTQ-Int8モデル, max_model_len=4096, utilization=0.25)
+vllm:
+  model: "JunHowie/Qwen3-4B-Thinking-2507-GPTQ-Int8"
+  max_model_len: 4096
+  max_num_seqs: 8
+  gpu_memory_utilization: 0.25
+  dtype: auto
+
+# 評価設定
+evaluation:
+  checkpoint_interval: 100      # チェックポイント保存間隔
+  timeout_per_domain: 60        # 1ドメインのタイムアウト(秒)
+  retry_count: 2                # リトライ回数
+
+# ヘルスチェック設定
+health_check:
+  interval: 5                   # ヘルスチェック間隔(秒)
+  timeout: 10                   # タイムアウト(秒)
+  max_failures: 3               # 最大失敗回数
+
+# リトライポリシー
+retry:
+  request_retries: 3            # APIリクエストリトライ
+  request_delay: 5              # リトライ間隔(秒)
+  domain_retries: 2             # ドメイン評価リトライ
+  domain_delay: 10              # リトライ間隔(秒)
+  vllm_restarts: 3              # vLLM再起動回数
+  vllm_restart_delay: 30        # 再起動間隔(秒)
+
+# 障害時のフォールバック
+failover:
+  enabled: true
+  redistribute_on_failure: true  # 障害時に他Workerへ再分配
+  min_workers: 1                 # 最低稼働Worker数
+
+# 共有サーバー配慮設定
+shared_server:
+  enabled: true
+  check_gpu_usage_before_start: true
+  gpu_memory_threshold_mb: 1000  # これ未満なら空きと判定
+  warn_if_other_users: true
+  require_confirmation: true     # 確認プロンプト表示
+
+# ログ設定
+logging:
+  level: INFO
+  separate_worker_logs: true     # Worker毎に別ログ
+  log_dir: null                  # null=artifacts/{RUN_ID}/logs/

@@ -1,4 +1,10 @@
 # phishing_agent/tools/short_domain_analysis.py
+# 変更履歴:
+#   - 2026-01-24: ランダム文字列検出強化
+#     - 子音クラスター検出 (_count_consonant_clusters)
+#     - レアバイグラム分析 (_rare_bigram_ratio)
+#     - 短いドメイン (≤8文字) でのエントロピー閾値引き下げ (4.0→3.5)
+#     - dangerous TLD限定でのvowel_ratio閾値引き下げ (0.2→0.15)
 from __future__ import annotations
 from typing import Any, Dict, List, Optional
 import math
@@ -13,6 +19,57 @@ def _calculate_entropy(text: str) -> float:
         return 0.0
     prob = [float(text.count(c)) / len(text) for c in set(text)]
     return -sum(p * math.log(p, 2) for p in prob if p > 0)
+
+
+# ---------------------------------------------------------------------------
+# ランダム文字列検出強化 (2026-01-24追加)
+# ---------------------------------------------------------------------------
+
+# 英語で極めて稀なバイグラム (出現確率 < 0.001)
+RARE_BIGRAMS: frozenset = frozenset([
+    "qx", "qz", "zx", "xz", "jq", "qj", "vx", "xv",
+    "zq", "qk", "kq", "fq", "qf", "jx", "xj", "vq",
+    "wq", "qw", "zj", "jz", "xq", "qv", "bx", "xb",
+    "cx", "xc", "dx", "xd", "fx", "xf", "gx", "xg",
+    "hx", "xh", "jv", "vj", "kx", "xk", "mx", "xm",
+    "px", "xp", "sx", "xs", "tx", "xt", "wx", "xw",
+    "zv", "vz", "zw", "wz", "zk", "kz", "zf", "fz",
+    "zg", "gz", "zh", "hz",
+])
+
+_CONSONANTS = frozenset("bcdfghjklmnpqrstvwxyz")
+
+
+def _count_consonant_clusters(text: str) -> int:
+    """3文字以上の連続子音クラスターの数をカウント."""
+    cluster_count = 0
+    current_run = 0
+    for ch in text.lower():
+        if ch in _CONSONANTS:
+            current_run += 1
+        else:
+            if current_run >= 3:
+                cluster_count += 1
+            current_run = 0
+    if current_run >= 3:
+        cluster_count += 1
+    return cluster_count
+
+
+def _rare_bigram_ratio(text: str) -> float:
+    """テキスト中のレアバイグラムの出現率を計算."""
+    if len(text) < 4:
+        return 0.0
+    text_lower = text.lower()
+    # アルファベットのみ抽出
+    alpha_only = "".join(ch for ch in text_lower if ch.isalpha())
+    if len(alpha_only) < 4:
+        return 0.0
+    bigrams = [alpha_only[i:i+2] for i in range(len(alpha_only) - 1)]
+    if not bigrams:
+        return 0.0
+    rare_count = sum(1 for bg in bigrams if bg in RARE_BIGRAMS)
+    return rare_count / len(bigrams)
 
 
 @safe_tool_wrapper("short_domain_analysis")
@@ -78,13 +135,25 @@ def short_domain_analysis(
         score += 0.25
 
     # 3. エントロピー計算 + ランダムっぽさ判定
+    # 2026-01-24: 短いドメイン (≤8文字) ではエントロピー閾値を引き下げ (4.0→3.5)
     entropy = _calculate_entropy(base)
-    is_high_entropy = entropy > 4.0
+    entropy_threshold = 3.5 if n <= 8 else 4.0
+    is_high_entropy = entropy > entropy_threshold
     is_very_high_entropy = entropy >= 4.5  # 任意の強めフラグ
 
     vowel_ratio = (sum(1 for c in base.lower() if c in "aeiou") / len(base)) if base else 0.0
     digit_ratio = (sum(1 for c in base if c.isdigit()) / len(base)) if base else 0.0
-    is_random = (vowel_ratio < 0.2 and digit_ratio < 0.5)
+    # 2026-01-24: dangerous TLD限定でvowel_ratio閾値を引き下げ (0.2→0.15)
+    vowel_threshold = 0.15 if tld_category == "dangerous" else 0.2
+    is_random = (vowel_ratio < vowel_threshold and digit_ratio < 0.5)
+
+    # 2026-01-24: 子音クラスター検出
+    consonant_clusters = _count_consonant_clusters(base)
+    is_consonant_cluster_random = consonant_clusters >= 2
+
+    # 2026-01-24: レアバイグラム検出
+    rare_bigram_r = _rare_bigram_ratio(base)
+    is_rare_bigram_random = rare_bigram_r > 0.15
 
     if is_high_entropy:
         issues.append("high_entropy")
@@ -95,6 +164,22 @@ def short_domain_analysis(
     elif is_random:
         issues.append("random_pattern")
         score += 0.20
+
+    # 子音クラスター検出 (high_entropy/random_pattern と独立して加点)
+    if is_consonant_cluster_random:
+        issues.append("consonant_cluster_random")
+        if "high_entropy" not in issues and "random_pattern" not in issues:
+            score += 0.20  # 他のランダム検出がない場合のみフル加点
+        else:
+            score += 0.05  # 既にランダム検出されている場合は追加ボーナス
+
+    # レアバイグラム検出
+    if is_rare_bigram_random:
+        issues.append("rare_bigram_random")
+        if "high_entropy" not in issues and "random_pattern" not in issues and "consonant_cluster_random" not in issues:
+            score += 0.20  # 他のランダム検出がない場合のみフル加点
+        else:
+            score += 0.05  # 既にランダム検出されている場合は追加ボーナス
 
     # 4. TLD統計ウェイト（既存ロジック）
     stat_weight = _tld_stat_weight(suffix, phishing_tld_stats)
@@ -121,10 +206,18 @@ def short_domain_analysis(
             issues.append("very_short_dangerous_combo")
         combo_flags.append("very_short_dangerous_combo")
 
-    # 6-2. short + (high_entropy or random_pattern) + TLD が dangerous / neutral
+    # 2026-01-24: 新ランダム検出フラグも含めたヘルパー
+    _any_random = (
+        "high_entropy" in issues
+        or "random_pattern" in issues
+        or "consonant_cluster_random" in issues
+        or "rare_bigram_random" in issues
+    )
+
+    # 6-2. short + (any random flag) + TLD が dangerous / neutral
     if (
         "short" in issues
-        and (("high_entropy" in issues) or ("random_pattern" in issues))
+        and _any_random
         and (tld_category in ("dangerous", "neutral"))
     ):
         score = max(score, 0.50)
@@ -132,8 +225,8 @@ def short_domain_analysis(
             issues.append("short_random_combo")
         combo_flags.append("short_random_combo")
 
-    # 6-3. (high_entropy or random_pattern) + 高い TLD 統計
-    if (("high_entropy" in issues) or ("random_pattern" in issues)) and (stat_weight >= 0.20):
+    # 6-3. (any random flag) + 高い TLD 統計
+    if _any_random and (stat_weight >= 0.20):
         score = max(score, 0.55)
         if "random_with_high_tld_stat" not in issues:
             issues.append("random_with_high_tld_stat")
@@ -212,9 +305,13 @@ def short_domain_analysis(
         "tld": suffix,
         "tld_category": tld_category,
         "entropy": round(entropy, 2),
+        "entropy_threshold": entropy_threshold,
         "is_random_pattern": is_random,
         "vowel_ratio": round(vowel_ratio, 2),
+        "vowel_threshold": vowel_threshold,
         "digit_ratio": round(digit_ratio, 2),
+        "consonant_clusters": consonant_clusters,
+        "rare_bigram_ratio": round(rare_bigram_r, 3),
         "tld_stat": tld_stat_val,
         "tld_stat_weight": round(stat_weight, 3),
         # 追加構造情報
@@ -244,11 +341,16 @@ def short_domain_analysis(
         reasons.append(f"中立TLD({suffix})")
 
     if "high_entropy" in issues:
-        reasons.append(f"高エントロピー({entropy:.2f})")
+        reasons.append(f"高エントロピー({entropy:.2f}, 閾値={entropy_threshold})")
         if "very_high_entropy" in issues:
             reasons.append("非常に高いエントロピー")
     elif "random_pattern" in issues:
-        reasons.append("ランダム指標(母音/数字)")
+        reasons.append(f"ランダム指標(母音率={vowel_ratio:.2f}<{vowel_threshold})")
+
+    if "consonant_cluster_random" in issues:
+        reasons.append(f"子音クラスター検出({consonant_clusters}個)")
+    if "rare_bigram_random" in issues:
+        reasons.append(f"レアバイグラム検出(比率={rare_bigram_r:.3f})")
 
     if "deep_subdomain_chain" in issues:
         reasons.append(f"深いサブドメインチェーン(ラベル数={label_count})")

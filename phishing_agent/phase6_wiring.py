@@ -92,6 +92,9 @@ def _build_llm_from_cfg(cfg: Dict[str, Any]):
             base_url=base_url,
             api_key=api_key,
             temperature=float(llm_cfg.get("temperature", 0.1) or 0.1),
+            max_tokens=2048,
+            # Qwen3 thinking モードを無効化
+            extra_body={"chat_template_kwargs": {"enable_thinking": False}},
         )
     except Exception as e:  # pragma: no cover
         raise RuntimeError(f"LLM init failed: {e}")

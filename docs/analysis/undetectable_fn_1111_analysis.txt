@@ -1,0 +1,84 @@
+undetectable_fn_1111.csv を確認したところ、「欠損の可能性が高い」と判断できるものは大きく2種類あります。
+
+A. 明示的な欠損（CSV上で空欄になっているもの）
+対象件数
+29件（全1,111件中 2.61%）
+
+欠損している列
+
+* cert_issuer_org
+* cert_not_before
+* cert_not_after
+
+内訳
+
+* source=phishtank: 15件
+* source=jpcert: 10件
+* source=certificates: 4件
+
+該当ドメイン一覧（29件）
+
+* certificates
+
+  * aono.shop
+  * hongsicun.com
+  * huihuangzj.com
+  * whwangluo.com
+* jpcert
+
+  * brantsteel.com
+  * ccsq.net
+  * drclareallen.com
+  * e0728.cn
+  * fulltuning.hu
+  * huangjiagj.com
+  * huangjiagj.com
+  * login-sagaccouplely.xyz
+  * megasolucoes.pt
+  * mnssourcing.com
+  * unitekups.in
+* phishtank
+
+  * aonsell.com
+  * bioegroup.com
+  * cakesbycary.com
+  * cigarpress.com
+  * cliq-ing.com
+  * esbimetal.com
+  * jmveiculossantaluzia.com.br
+  * kaitechsolns.co.tz
+  * karachikitchen.com
+  * mass-gov-ttyi.icu
+  * news25.org
+  * poweroed.com
+  * rpcresolution.net
+  * zcs.silomanagement.gr
+  * zekiofarm.com
+
+注記
+上の一覧は domain 列に基づきます。同一ドメインが複数回登場している場合、元データ側で重複レコードが存在している可能性があります（例: huangjiagj.com が2回見えています）。
+
+具体的な理由（なぜ欠損と判断したか）
+
+1. これら29件だけ、cert_issuer_org / cert_not_before / cert_not_after が空欄（NaN）で、他の1,082件は埋まっています。欠損が局所的です。
+2. 同じ29件で cert_age_days が全て 0 になっています（それ以外の行では 0 が出ていません）。これは「証明書の開始日時が取れていないので、経過日数を0で埋めた」などの実装上の既定値である可能性が高いです。
+3. さらに同じ29件で cert_is_free_ca が全て False になっています。issuer が空欄なら CA 判定ができず、False で埋めた可能性があります。つまり欠損が下流特徴量にも波及している可能性があります。
+4. cert_validity_days や cert_san_count は値が入っているため、「証明書データが完全に無い」というより、取得やパースの一部だけが失敗している、あるいは出力時に特定フィールドが落ちている（結合漏れ、例外処理で空欄、文字列パース失敗など）ことが疑われます。
+
+B. 体系的に欠損に近い挙動（値は入っているが、実質的に情報が入っていない可能性）
+対象件数
+
+* cert_has_organization が全1,111件で False
+* cert_san_count.1 が「欠損の29件」で常に 0（列名的にも重複列の疑い）
+
+具体的な理由
+
+* cert_has_organization は本当に全件DVであれば全Falseもあり得ますが、列としては「常に同じ値」なので、抽出処理が機能していない（パース対象のDNフィールドを読めていない、O/OUの抽出ロジックが未実装、常に既定値Falseに倒れている）可能性も否定できません。
+* cert_san_count.1 は列名に .1 が付いており、データ生成過程で同名列が衝突して作られた「意図しない副産物」の可能性があります。今回の欠損29件に限って常に0で、分析特徴量としての意味が薄い可能性があります。
+
+次にやるべきこと（提案）
+
+* まずこの29件について、元の証明書取得処理（HTTPS接続、タイムアウト、SNI、リダイレクト、証明書抽出、テーブル結合、例外時の埋め値）をログで追って「取得失敗」か「パース失敗」か「結合漏れ」かを特定するのが最短です。
+* 併せて cert_has_organization と cert_san_count.1 は、02系での生成箇所を確認して「仕様として正しい固定値」か「実装不備」か切り分けるのが妥当です。
+
+

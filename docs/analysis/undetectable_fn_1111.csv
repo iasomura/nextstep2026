@@ -1,0 +1,1112 @@
+domain,source,tld,ml_probability,uncertainty,defer_score,tld_dangerous,tld_safe,brand_hit,cert_in_map,cert_age_days,cert_issuer_org,cert_is_free_ca,cert_san_count,cert_is_wildcard,cert_is_self_signed,cert_has_organization,cert_validity_days,cert_not_before,cert_not_after
+bncrol.sbs,phishtank,sbs,0.49848995,0.9969799,0.9710154048466988,1,0,0,True,219.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-06 19:41:34,2025-09-04 19:41:33
+rf2niu.top,phishtank,top,0.4980132,0.9960264,0.9715398330066168,1,0,0,True,196.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-30 13:51:06,2025-09-28 13:51:05
+yfd9999.com,jpcert,com,0.4969347,0.9938694,0.9451583170289304,0,0,0,True,256.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-01 11:12:52,2025-07-30 11:12:51
+dannynightingale.com,jpcert,com,0.49653333,0.99306667,0.9108402257331296,0,0,1,True,313.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-05 12:50:09,2025-06-03 12:50:08
+ikaoqamuc.com,jpcert,com,0.49557477,0.99114954,0.9309607025080584,0,0,0,True,331.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-02-15 04:58:19,2025-05-16 04:58:18
+yue-me.com,jpcert,com,0.49539274,0.9907855,0.9212357597477298,0,0,0,True,368.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-01-09 11:48:15,2025-04-09 11:48:14
+euggv.cn,jpcert,cn,0.49511915,0.9902383,0.9739961944727256,1,0,0,True,301.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-17 10:20:54,2025-06-15 10:20:53
+tiankunjs.com,jpcert,com,0.49409172,0.98818344,0.9233766463179942,0,0,0,True,350.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-01-27 16:04:04,2025-04-27 16:04:03
+eksuy.cn,jpcert,cn,0.4938843,0.9877686,0.9756897101331984,1,0,0,True,296.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-21 22:14:03,2025-06-19 22:14:02
+hkjnx.com,jpcert,com,0.49254948,0.98509896,0.9713278357001606,0,0,0,True,221.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-05 15:17:50,2025-09-03 15:17:49
+jkcjy.com,certificates,com,0.49122626,0.9824525,0.9303281497904976,0,0,0,True,362.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-01-15 00:30:39,2025-04-15 00:30:38
+etc-maisei-japan1.co,jpcert,co,0.49083778,0.98167557,0.9224036620389874,0,0,1,True,344.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-02-02 08:44:06,2025-05-03 08:44:05
+eanrs.cn,jpcert,cn,0.49045712,0.98091424,0.9753890638889144,1,0,0,True,293.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-25 11:18:29,2025-06-23 11:18:28
+mondiai-logistique.com,phishtank,com,0.48558134,0.9711627,0.9811125992970624,0,0,0,True,231.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-25 22:34:53,2025-08-23 22:34:52
+moderncufflinks.com,jpcert,com,0.48535916,0.9707183,0.9274098033616338,0,0,0,True,341.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-02-05 16:06:47,2025-05-06 16:06:46
+choisir-relais-lockers.com,phishtank,com,0.48453784,0.9690757,0.977067972022276,0,0,0,True,206.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-20 07:03:14,2025-09-18 07:03:13
+vsbd.85953.cn,jpcert,cn,0.48332053,0.96664107,0.9452685743686676,1,0,0,True,282.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-04 19:08:12,2025-07-03 19:08:11
+hk1eeg.top,phishtank,top,0.4832573,0.9665146,0.9756264710999892,1,0,0,True,197.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-29 14:48:12,2025-09-27 14:48:11
+pw0ali.top,phishtank,top,0.4818865,0.963773,0.9760021550468636,1,0,0,True,196.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-30 13:51:14,2025-09-28 13:51:13
+adoptmeow.com,jpcert,com,0.4790287,0.9580574,0.9341959504915154,0,0,0,True,363.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-01-13 18:53:13,2025-04-13 18:53:12
+kz0ohu.top,phishtank,top,0.47725782,0.95451564,0.9772223839940982,1,0,0,True,196.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-30 04:18:00,2025-09-28 04:17:59
+replanifier-creneau.com,phishtank,com,0.47578743,0.95157486,0.9819703392276172,0,0,1,True,202.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-23 22:53:54,2025-09-21 22:53:53
+wouldszuileft.com,jpcert,com,0.47327402,0.94654804,0.9339549240206312,0,0,0,True,376.0,Let's Encrypt,True,1.0,False,False,False,89.0,2024-12-31 17:19:39,2025-03-31 17:19:38
+motorsportphotoagency.com,certificates,com,0.4693397,0.9386794,0.9579932949192324,0,0,0,True,281.0,Let's Encrypt,True,90.0,False,False,False,89.0,2025-04-06 06:43:35,2025-07-05 06:43:34
+834983.club,jpcert,club,0.46814606,0.9362921,0.9523692773993988,1,0,0,True,299.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-03-19 00:59:18,2025-06-17 00:59:17
+rtdmuvlcaitm.xyz,jpcert,xyz,0.4673032,0.9346064,0.9778408807754976,1,0,0,True,303.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-15 05:37:30,2025-06-13 05:37:29
+4wnglf.lat,phishtank,lat,0.46677303,0.93354607,0.9766030448698414,1,0,0,True,227.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-05-30 12:37:43,2025-08-28 13:36:29
+uccardservsb.shop,jpcert,shop,0.4633454,0.9266908,0.9778076727254632,1,0,0,True,297.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-21 09:25:17,2025-06-19 09:25:16
+nctv83fq.lat,phishtank,lat,0.45897657,0.91795313,0.9763435749169546,1,0,0,True,214.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-12 11:24:54,2025-09-10 12:23:47
+bet63uuu.com,phishtank,com,0.4581358,0.9162716,0.9518896245859102,0,0,0,True,216.0,DigiCert Inc,True,1.0,False,False,False,364.0,2025-06-10 00:00:00,2026-06-09 23:59:59
+sworld-info.com,jpcert,com,0.45642292,0.91284585,0.9506117572619596,0,0,0,True,256.0,DigiCert Inc,True,1.0,False,False,False,365.0,2025-05-01 00:00:00,2026-05-01 23:59:59
+hlxfgj.shop,jpcert,shop,0.4556318,0.9112636,0.979094605209646,1,0,0,True,290.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-03-28 00:42:57,2025-06-26 00:42:56
+route-releve.info,phishtank,info,0.45526496,0.9105299,0.9857444055246636,0,0,0,True,209.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-16 21:37:30,2025-09-14 21:37:29
+preview.webcake.io,phishtank,io,0.45333448,0.90666896,0.953622133051612,0,0,0,True,206.0,ZeroSSL,True,1.0,False,False,False,90.0,2025-06-20 00:00:00,2025-09-18 23:59:59
+uiys-regularisation.com,phishtank,com,0.4492293,0.8984586,0.9865253474607768,0,0,0,True,221.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-04 23:42:17,2025-09-02 23:42:16
+uccardservsc.shop,jpcert,shop,0.44867858,0.89735717,0.9802562472704728,1,0,0,True,297.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-21 09:25:28,2025-06-19 09:25:27
+iunkxaqinfl.com,jpcert,com,0.4484799,0.8969598,0.9544858416393512,0,0,0,True,340.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-02-06 02:38:44,2025-05-07 02:38:43
+q8u.top,certificates,top,0.44749644,0.8949929,0.9578614463801156,1,0,0,True,325.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-02-20 18:51:36,2025-05-21 18:51:35
+lovinatravel.com,jpcert,com,0.44592825,0.8918565,0.9533982320637122,0,0,0,True,362.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-01-14 17:44:12,2025-04-14 17:44:11
+2kmb6me5.top,phishtank,top,0.44296864,0.8859373,0.9753405341544106,1,0,0,True,201.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-25 00:04:07,2025-09-23 00:04:06
+glqcyy.com,jpcert,com,0.44288483,0.88576967,0.9692042875189216,0,0,0,True,210.0,Let's Encrypt,True,84.0,False,False,False,89.0,2025-06-16 08:18:24,2025-09-14 08:18:23
+2igo8ai0.top,phishtank,top,0.44265538,0.88531077,0.9800588394434254,1,0,0,True,201.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-25 00:03:32,2025-09-23 00:03:31
+peterstrahle.com,jpcert,com,0.4411498,0.8822996,0.9489763200785484,0,0,0,True,362.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-01-14 17:47:50,2025-04-14 17:47:49
+f7e2e93e16.nxcli.io,phishtank,io,0.4374815,0.874963,0.9658053503981336,0,0,0,True,278.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-09 07:38:17,2025-07-08 07:38:16
+dlxcc.com,certificates,com,0.4349007,0.8698014,0.9830446538735916,0,0,0,True,236.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-20 23:13:09,2025-08-18 23:13:08
+1g36bqi.lat,phishtank,lat,0.43375894,0.8675179,0.977837718846044,1,0,0,True,230.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-27 04:49:06,2025-08-25 04:49:05
+iunwsoqb.com,jpcert,com,0.43354607,0.86709213,0.97327621733944,0,0,0,True,227.0,Let's Encrypt,True,98.0,False,False,False,89.0,2025-05-30 09:40:03,2025-08-28 09:40:02
+llnyc6.lat,phishtank,lat,0.43290183,0.86580366,0.9822761181305342,1,0,0,True,202.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-24 06:57:21,2025-09-22 07:54:43
+inxuakqapost.com,jpcert,com,0.42967537,0.85935074,0.9583110929005186,0,0,0,True,335.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-02-11 06:23:03,2025-05-12 06:23:02
+ob8oym.top,phishtank,top,0.42887527,0.85775054,0.9847393512280348,1,0,0,True,196.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-30 13:52:24,2025-09-28 13:52:23
+www.wargo.jp,jpcert,jp,0.42834896,0.8566979,0.9700685804890162,0,1,0,True,216.0,Google Trust Services,False,1.0,False,False,False,90.0,2025-06-10 12:41:18,2025-09-08 13:41:08
+suivre-son-lockers.com,phishtank,com,0.42805615,0.8561123,0.9862365520051138,0,0,0,True,200.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-25 23:24:40,2025-09-23 23:24:39
+pmionquapost.com,jpcert,com,0.4232446,0.8464892,0.9598363245543516,0,0,0,True,340.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-02-06 03:16:47,2025-05-07 03:16:46
+mr-logistiques-colis.com,phishtank,com,0.42206195,0.8441239,0.9866219216909524,0,0,0,True,199.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-27 05:14:56,2025-09-25 05:14:55
+mariasladybugs.com,jpcert,com,0.42106083,0.84212166,0.9576943290421076,0,0,0,True,394.0,Let's Encrypt,True,1.0,False,False,False,89.0,2024-12-14 13:36:26,2025-03-14 13:36:25
+2kje0t.top,phishtank,top,0.4166803,0.8333606,0.983146502620326,1,0,0,True,197.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-29 15:13:04,2025-09-27 15:13:03
+service-mondiai.com,phishtank,com,0.41361392,0.82722783,0.9897171832868852,0,0,0,True,220.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-06 00:34:45,2025-09-04 00:34:44
+firsthorizonswiss.com,phishtank,com,0.41138205,0.8227641,0.975301597717898,0,0,0,True,225.0,Let's Encrypt,True,88.0,False,False,False,89.0,2025-06-01 02:33:01,2025-08-30 02:33:00
+nidwf.cn,jpcert,cn,0.40734014,0.8146803,0.9885251275672416,1,0,0,True,293.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-03-24 17:17:59,2025-06-22 17:17:58
+tz-line.cc,phishtank,cc,0.40679038,0.81358075,0.9852987847177924,1,0,1,True,254.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-03 08:02:04,2025-08-01 08:02:03
+telepeage-impaye.info,phishtank,info,0.40513524,0.8102705,0.9896129511331836,0,0,0,True,203.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-23 06:55:23,2025-09-21 06:55:22
+insjaghsama.com,jpcert,com,0.40135038,0.80270076,0.9623366443779676,0,0,0,True,362.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-01-15 14:52:53,2025-04-15 14:52:52
+tarjetasbdv.site,phishtank,site,0.4003702,0.8007404,0.9781693810342376,1,0,0,True,212.0,ZeroSSL,True,1.0,False,False,False,90.0,2025-06-14 00:00:00,2025-09-12 23:59:59
+keatleyclinic.com,jpcert,com,0.39982414,0.7996483,0.9627597192153274,0,0,0,True,376.0,Let's Encrypt,True,1.0,False,False,False,89.0,2024-12-31 17:19:34,2025-03-31 17:19:33
+ecetezgel.com,jpcert,com,0.39920986,0.7984197,0.9653683689230368,0,0,0,True,320.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-02-26 16:12:08,2025-05-27 16:12:07
+maaha-dev-join.shop,phishtank,shop,0.39907837,0.79815674,0.9873859300314718,1,0,0,True,286.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-01 08:51:56,2025-06-30 08:51:55
+fjfjma.com,jpcert,com,0.39687833,0.79375666,0.9769164616631304,0,0,0,True,215.0,Let's Encrypt,True,90.0,False,False,False,89.0,2025-06-11 14:19:53,2025-09-09 14:19:52
+torujazz.com,jpcert,com,0.39439678,0.78879356,0.965955376589396,0,0,0,True,373.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-01-04 01:41:02,2025-04-04 01:41:01
+qdbkiexyyvho.xyz,jpcert,xyz,0.39407888,0.78815776,0.9860276500460854,1,0,0,True,302.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-16 15:27:51,2025-06-14 15:27:50
+pfddo.cn,jpcert,cn,0.39339033,0.78678066,0.98877012343437,1,0,0,True,280.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-04-07 11:00:40,2025-07-06 11:00:39
+allocation-trezor.com,phishtank,com,0.39240587,0.78481174,0.9905137291137448,0,0,0,True,213.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-13 09:07:03,2025-09-11 09:07:02
+zqlqsbyxgs.com,jpcert,com,0.38753077,0.77506155,0.9871214162165898,0,0,0,True,248.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-09 07:24:09,2025-08-07 07:24:08
+vkir331.com,phishtank,com,0.387255,0.77451,0.983076744826136,0,0,0,True,206.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-20 00:47:29,2025-09-18 00:47:28
+besthuo.com,certificates,com,0.3867174,0.7734348,0.9734778411275068,0,0,0,True,383.0,Let's Encrypt,True,1.0,False,False,False,89.0,2024-12-25 14:01:28,2025-03-25 14:01:27
+pay.naijafooddiet.com,phishtank,com,0.3863018,0.7726036,0.9733678609090782,0,0,0,True,203.0,Sectigo Limited,True,2.0,False,False,False,391.0,2025-06-23 00:00:00,2026-07-19 23:59:59
+sparkasse-pushtan2.com.de,phishtank,de,0.38518208,0.77036417,0.979579328303531,0,1,1,True,226.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-30 17:05:58,2025-08-28 17:05:57
+meta-accessibility.io.vn,phishtank,vn,0.38487974,0.7697595,0.9535613704709096,0,0,0,True,383.0,Let's Encrypt,True,8.0,False,False,False,89.0,2024-12-24 17:08:10,2025-03-24 17:08:09
+doctolib-indemnisation.com,phishtank,com,0.38300934,0.7660187,0.9907481437388044,0,0,0,True,248.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-09 02:03:33,2025-08-07 02:03:32
+www.da.gd,phishtank,gd,0.38138232,0.76276463,0.974617944214487,0,0,0,True,218.0,Let's Encrypt,True,8.0,False,False,False,89.0,2025-06-08 06:05:13,2025-09-06 06:05:12
+mondiai-suivis.com,phishtank,com,0.37920123,0.75840247,0.9913182163509144,0,0,0,True,233.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-23 20:34:41,2025-08-21 20:34:40
+situation-uiys.com,phishtank,com,0.37810275,0.7562055,0.9914068075574048,0,0,0,True,222.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-04 15:48:12,2025-09-02 15:48:11
+marketplace-items-65227112.zya.me,phishtank,me,0.37733966,0.7546793,0.9638961328807112,1,0,0,True,237.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-19 23:07:21,2025-08-17 23:07:20
+agnosticx.com,jpcert,com,0.37668532,0.75337064,0.9681263237855252,0,0,0,True,368.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-01-09 08:10:45,2025-04-09 08:10:44
+sbi-ul.top,phishtank,top,0.37628862,0.75257725,0.9881858451719572,1,0,1,True,196.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-30 07:06:44,2025-09-28 07:06:43
+hklst-cn.com,phishtank,com,0.37461475,0.7492295,0.9890516975927376,0,0,0,True,244.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-13 11:15:34,2025-08-11 11:15:33
+almakkahtours.com,jpcert,com,0.373924,0.747848,0.9681945410805732,0,0,0,True,329.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-02-17 15:17:53,2025-05-18 15:17:52
+iaestudy.com,jpcert,com,0.37314942,0.74629885,0.9762170291244948,0,0,0,True,397.0,Let's Encrypt,True,3.0,False,False,False,89.0,2024-12-10 21:32:07,2025-03-10 21:32:06
+us.flhsmvxk.cc,phishtank,cc,0.37314904,0.7462981,0.9851093506921308,1,0,0,True,240.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-17 10:53:39,2025-08-15 10:53:38
+x-andz.com,jpcert,com,0.36934096,0.7386819,0.971325465023608,0,0,0,True,262.0,ZeroSSL,True,3.0,False,False,False,90.0,2025-04-25 00:00:00,2025-07-24 23:59:59
+lucielamarche.com,jpcert,com,0.36758897,0.73517793,0.9750874973816024,0,0,0,True,350.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-01-27 00:35:03,2025-04-27 00:35:02
+lihi3.com,phishtank,com,0.36726412,0.73452824,0.9893444313797528,0,0,0,True,213.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-12 22:33:38,2025-09-10 22:33:37
+drppsq.com,certificates,com,0.36416867,0.72833735,0.9873422738856747,0,0,0,True,220.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-06-06 12:52:09,2025-09-04 12:52:08
+p-tan-aktualisieren.com,phishtank,com,0.3623594,0.7247188,0.9901727084766178,0,0,0,True,215.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-11 00:52:59,2025-09-09 00:52:58
+fnp66.com,phishtank,com,0.36208603,0.72417206,0.9850742086866852,0,0,0,True,207.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-19 04:25:53,2025-09-17 04:25:52
+https-www-rolblox.com,phishtank,com,0.36110905,0.7222181,0.987582112804458,0,0,0,True,208.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-17 23:33:02,2025-09-15 23:33:01
+krlu9.com,phishtank,com,0.361028,0.722056,0.9882053991232796,0,0,0,True,233.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-24 06:53:39,2025-08-22 06:53:38
+jinuanyg.com,jpcert,com,0.35976318,0.71952635,0.9754778466294266,0,0,0,True,354.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-01-22 16:42:41,2025-04-22 16:42:40
+6mwk8zf7e.top,phishtank,top,0.35861018,0.71722037,0.98295292862358,1,0,0,True,288.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-29 16:25:22,2025-06-27 16:25:21
+choisir-creneau.com,phishtank,com,0.35832006,0.7166401,0.9913586709877178,0,0,1,True,202.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-23 23:06:43,2025-09-21 23:06:42
+bigyankarki.com,jpcert,com,0.35528773,0.71057546,0.9699007796392192,0,0,0,True,320.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-02-26 14:34:52,2025-05-27 14:34:51
+short.im,phishtank,im,0.3552242,0.7104484,0.9902986137647254,0,0,0,True,264.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-23 15:40:53,2025-07-22 15:40:52
+transit-livraison.com,phishtank,com,0.3551816,0.7103632,0.9914960313894275,0,0,0,True,221.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-04 19:54:50,2025-09-02 19:54:49
+info-account-services.dedyn.io,phishtank,io,0.35446388,0.70892775,0.9861724051286844,0,0,0,True,221.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-05 15:08:09,2025-09-03 15:08:08
+h2mhf9pn.lat,phishtank,lat,0.3539821,0.7079642,0.9873119070163078,1,0,0,True,213.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-12 16:50:22,2025-09-10 17:48:44
+p2j.top,certificates,top,0.35395676,0.7079135,0.988679048223454,1,0,0,True,233.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-24 11:41:07,2025-08-22 11:41:06
+einvy.cn,jpcert,cn,0.35292923,0.70585847,0.9897308096398534,1,0,0,True,287.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-03-31 07:42:31,2025-06-29 07:42:30
+88yuming.com,jpcert,com,0.34400582,0.68801165,0.9868544702276472,0,0,1,True,195.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-30 16:59:09,2025-09-28 16:59:08
+portal-auone.com,jpcert,com,0.34389442,0.68778884,0.988515863304179,0,0,1,True,301.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-17 11:50:12,2025-06-15 11:50:11
+taohaodi.com,certificates,com,0.34219238,0.68438476,0.9733644309758308,0,0,0,True,337.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-02-09 14:16:18,2025-05-10 14:16:17
+zqy99.com,phishtank,com,0.33881703,0.67763406,0.9857926402386792,0,0,0,True,207.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-19 04:25:39,2025-09-17 04:25:38
+myjcb-no.me,jpcert,me,0.33707774,0.6741555,0.9902819264639432,1,0,1,True,218.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-07 17:28:00,2025-09-05 17:27:59
+eloomdreamsg.com,jpcert,com,0.33457065,0.6691413,0.9761379088061848,0,0,0,True,321.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-02-24 22:03:38,2025-05-25 22:03:37
+mon-coiistrack.info,phishtank,info,0.33413136,0.6682627,0.9903741506014898,0,0,0,True,288.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-29 22:51:05,2025-06-27 22:51:04
+6qbe0uu5.top,phishtank,top,0.33359134,0.6671827,0.9864979005608314,1,0,0,True,211.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-15 15:44:25,2025-09-13 15:44:24
+jira.allegrolokalnie.pk,phishtank,pk,0.3325935,0.665187,0.968444364506036,0,0,1,True,375.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-01-01 23:50:03,2025-04-01 23:50:02
+pumpoutservice.com,jpcert,com,0.33099043,0.66198087,0.9838574130548134,0,0,0,True,211.0,Let's Encrypt,True,90.0,False,False,False,89.0,2025-06-15 09:56:31,2025-09-13 09:56:30
+jiakao114.com,jpcert,com,0.3233556,0.6467112,0.9873830118173356,0,0,0,True,215.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-10 21:06:02,2025-09-08 21:06:01
+sbt90.com,jpcert,com,0.32235014,0.6447003,0.9857646196778008,0,0,0,True,201.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-25 00:09:33,2025-09-23 00:09:32
+asrksfog.click,phishtank,click,0.32081872,0.64163744,0.9778882005760936,1,0,0,True,198.0,ZeroSSL,True,2.0,False,False,False,90.0,2025-06-28 00:00:00,2025-09-26 23:59:59
+m-creativestudio.com,jpcert,com,0.31998083,0.63996166,0.9919889075683062,0,0,0,True,197.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-29 06:33:46,2025-09-27 06:33:45
+transfert-commande.info,phishtank,info,0.3186602,0.6373204,0.9906382772838044,0,0,0,True,215.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-11 09:07:14,2025-09-09 09:07:13
+pxgju.cn,phishtank,cn,0.3174774,0.6349548,0.9910237748103518,1,0,0,True,219.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-07 14:28:42,2025-09-05 15:26:12
+biolinebox.com,certificates,com,0.31469414,0.6293883,0.9826937145323144,0,0,1,True,255.0,Let's Encrypt,True,90.0,False,False,False,89.0,2025-05-02 04:48:55,2025-07-31 04:48:54
+hollywoodbychoice.com,jpcert,com,0.31415573,0.62831146,0.9728915277239176,0,0,0,True,344.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-02-02 09:45:00,2025-05-03 09:44:59
+servicosfimabcieroscl1.imprentafuentes.mx,phishtank,mx,0.31390312,0.62780625,0.9849724162318731,0,0,1,True,207.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-18 19:12:46,2025-09-16 19:12:45
+csdo967.com,phishtank,com,0.3121433,0.6242866,0.9842474433269476,0,0,0,True,206.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-20 00:46:37,2025-09-18 00:46:36
+nblfxfsb.com,jpcert,com,0.31158015,0.6231603,0.9880049984255328,0,0,0,True,261.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-04-26 04:11:26,2025-07-25 05:10:16
+gov-ape.cyou,phishtank,cyou,0.31008613,0.62017226,0.9894406932433704,1,0,0,True,220.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-05 19:36:26,2025-09-03 19:36:25
+13wealth.com,jpcert,com,0.30991957,0.61983913,0.9869871194739022,0,0,0,True,219.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-06 17:58:43,2025-09-04 17:58:42
+cyonmall.com,certificates,com,0.30973086,0.6194617,0.9695607325995288,0,0,0,True,306.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-03-12 06:35:18,2025-06-10 06:35:17
+kidsempiires.com,phishtank,com,0.30702,0.61404,0.9773157871419196,0,0,0,True,320.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-02-26 00:17:32,2025-05-27 00:17:31
+crypto-sync.tech,phishtank,tech,0.3070039,0.6140078,0.9876221025693638,0,0,0,True,219.0,Let's Encrypt,True,5.0,False,False,False,89.0,2025-06-06 19:57:45,2025-09-04 19:57:44
+usus.us03wr26b9.co,phishtank,co,0.3067022,0.6134044,0.9816072532375604,0,0,0,True,301.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-17 01:43:47,2025-06-15 01:43:46
+wnbgjj.com,certificates,com,0.30607718,0.61215436,0.9901871062531956,0,0,0,True,285.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-04-02 06:05:33,2025-07-01 06:05:32
+huilaixieyd.com,jpcert,com,0.3056273,0.6112546,0.971302933657198,0,0,0,True,336.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-02-10 12:06:17,2025-05-11 12:06:16
+myjcb-link.me,jpcert,me,0.30440482,0.60880965,0.9900553036511728,1,0,1,True,218.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-07 17:14:46,2025-09-05 17:14:45
+was2019.org,certificates,org,0.30435526,0.6087105,0.9683620875921872,0,0,0,True,287.0,Let's Encrypt,True,90.0,False,False,False,89.0,2025-03-31 08:12:49,2025-06-29 08:12:48
+bjriyi.com,certificates,com,0.30312476,0.6062495,0.9683839466681264,0,0,0,True,337.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-02-09 11:35:26,2025-05-10 11:35:25
+colemanfam.com,jpcert,com,0.30126855,0.6025371,0.97701168203248,0,0,0,True,397.0,Let's Encrypt,True,1.0,False,False,False,89.0,2024-12-10 18:55:17,2025-03-10 18:55:16
+sologamingstudio.com,jpcert,com,0.30044684,0.6008937,0.9704503304288254,0,0,1,True,385.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-12-23 13:16:25,2025-03-23 13:16:24
+banhen0871.com,jpcert,com,0.30020544,0.6004109,0.9704108532634432,0,0,0,True,245.0,Let's Encrypt,True,90.0,False,False,False,89.0,2025-05-11 23:33:41,2025-08-09 23:33:40
+gsdqsjzs.com,jpcert,com,0.29803208,0.59606415,0.98777369009077,0,0,0,True,285.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-04-02 14:53:41,2025-07-01 15:51:20
+acztd.com,jpcert,com,0.29724455,0.5944891,0.971126379248874,0,0,0,True,390.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-12-17 22:18:44,2025-03-17 22:18:43
+mondialrelais-fr-livraison.com,phishtank,com,0.29631814,0.5926363,0.9890728990989094,0,0,0,True,262.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-25 04:19:43,2025-07-24 04:19:42
+volez.cn,jpcert,cn,0.2953643,0.5907286,0.9771776267332184,1,0,0,True,318.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-02-28 13:36:29,2025-05-29 13:36:28
+6usjhy5.xyz,phishtank,xyz,0.29444748,0.58889496,0.9863782062454136,1,0,0,True,204.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-22 08:08:45,2025-09-20 09:07:00
+accoun.lifechanger.cn,certificates,cn,0.29426143,0.58852285,0.969369455765688,1,0,0,True,262.0,DigiCert Inc,True,1.0,False,False,False,364.0,2025-04-25 00:00:00,2026-04-24 23:59:59
+au-osteopath.com,jpcert,com,0.29140687,0.58281374,0.988974269928836,0,0,1,True,208.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-18 08:36:08,2025-09-16 08:36:07
+usps.com-packagesioy.cc,phishtank,cc,0.29140523,0.58281046,0.9873934128864637,1,0,1,True,247.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-09 17:07:35,2025-08-07 17:07:34
+my24pay.com,phishtank,com,0.29133803,0.58267605,0.9866098831463168,0,0,0,True,223.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-02 21:08:56,2025-08-31 21:08:55
+shangeketang.com,jpcert,com,0.29012254,0.5802451,0.976039798849612,0,0,0,True,392.0,Let's Encrypt,True,1.0,False,False,False,89.0,2024-12-16 03:20:46,2025-03-16 03:20:45
+abonnement-uiys.com,phishtank,com,0.29001147,0.58002293,0.9915421376152204,0,0,0,True,222.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-04 15:15:07,2025-09-02 15:15:06
+cntuopu.com,certificates,com,0.2872241,0.5744482,0.9754274081665306,0,0,0,True,390.0,Let's Encrypt,True,3.0,False,False,False,89.0,2024-12-18 02:40:49,2025-03-18 02:40:48
+ekarir.com,jpcert,com,0.28402925,0.5680585,0.9710066081823442,0,0,0,True,314.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-03-04 11:22:55,2025-06-02 11:22:54
+inforeglement-serv.com,phishtank,com,0.28376645,0.5675329,0.991179632120748,0,0,0,True,217.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-09 04:40:00,2025-09-07 04:39:59
+honeystuck.com,certificates,com,0.2832888,0.5665776,0.9820555889381712,0,0,0,True,193.0,Let's Encrypt,True,90.0,False,False,False,89.0,2025-07-03 06:03:58,2025-10-01 06:03:57
+renewal-flix-net.com,phishtank,com,0.2830604,0.5661208,0.9897419971904952,0,0,0,True,201.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-24 18:42:32,2025-09-22 18:42:31
+jllia.cn,jpcert,cn,0.28258908,0.56517816,0.9900632638729004,1,0,0,True,224.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-02 11:54:47,2025-08-31 11:54:46
+skypersystems.com.pk,phishtank,pk,0.2809822,0.5619644,0.9856397510151352,0,0,0,True,256.0,Let's Encrypt,True,8.0,False,False,False,89.0,2025-04-30 22:50:32,2025-07-29 22:50:31
+trajet-mondialrelay.com,phishtank,com,0.2801691,0.5603382,0.9903546294667231,0,0,0,True,262.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-25 00:12:28,2025-07-24 00:12:27
+kankyosogoz.net,jpcert,net,0.27746135,0.5549227,0.9739554371761368,0,0,0,True,372.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-01-05 10:59:18,2025-04-05 10:59:17
+mon-peage-ulys.com,phishtank,com,0.27583778,0.55167556,0.9892365103745648,0,0,0,True,222.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-03 19:42:54,2025-09-01 19:42:53
+mathgoeasy.com,jpcert,com,0.27428824,0.5485765,0.9734797434679124,0,0,0,True,397.0,Let's Encrypt,True,3.0,False,False,False,89.0,2024-12-10 19:06:30,2025-03-10 19:06:29
+cdqfl.cn,phishtank,cn,0.2740381,0.5480762,0.9883643948682612,1,0,0,True,196.0,Let's Encrypt,True,12.0,False,False,False,89.0,2025-06-30 15:10:02,2025-09-28 15:10:01
+kerroum-groupe.com,phishtank,com,0.27374455,0.5474891,0.9680128150167744,0,0,0,True,320.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-02-25 18:15:39,2025-05-26 18:15:38
+cgd-apoia.com,phishtank,com,0.27339154,0.5467831,0.9795512499897644,0,0,0,True,223.0,Let's Encrypt,True,89.0,False,False,False,89.0,2025-06-02 22:23:43,2025-08-31 22:23:42
+cchouse.com.au,certificates,au,0.27271286,0.5454257,0.9574268889944256,0,1,1,True,380.0,Let's Encrypt,True,14.0,False,False,False,89.0,2024-12-28 00:27:55,2025-03-28 00:27:54
+hengshuidianti.com,jpcert,com,0.27269796,0.5453959,0.9698449878527556,0,0,0,True,343.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-02-03 10:15:05,2025-05-04 10:15:04
+satriaputra.com,certificates,com,0.27238655,0.5447731,0.967630888536676,0,0,0,True,329.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-02-17 08:06:08,2025-05-18 08:06:07
+wivko.cn,phishtank,cn,0.27230713,0.54461426,0.990285005841436,1,0,0,True,211.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-15 03:46:09,2025-09-13 03:46:08
+expressllane-orgxok.vip,phishtank,vip,0.2721778,0.5443556,0.9888526135164424,1,0,0,True,253.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-04 11:16:54,2025-08-02 11:16:53
+dglxsj.com,certificates,com,0.27117094,0.5423419,0.9891853981944158,0,0,0,True,260.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-04-27 14:02:00,2025-07-26 14:01:59
+ekwa-clientbackup.info,phishtank,info,0.27002078,0.54004157,0.9887796004898446,0,0,0,True,240.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-16 16:22:53,2025-08-14 16:22:52
+transition-routiere.info,phishtank,info,0.26999727,0.53999454,0.9904082328134964,0,0,0,True,208.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-17 19:37:47,2025-09-15 19:37:46
+heromca.com,jpcert,com,0.26980135,0.5396027,0.9744456979659938,0,0,0,True,335.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-02-11 09:42:34,2025-05-12 09:42:33
+uiys-auto.com,phishtank,com,0.2696946,0.5393892,0.9910385152618216,0,0,1,True,220.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-05 23:17:58,2025-09-03 23:17:57
+oa2p6z.top,phishtank,top,0.26627943,0.53255886,0.9866849166555977,1,0,0,True,198.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-28 15:00:31,2025-09-26 15:00:30
+suivi-consigne.com,phishtank,com,0.26562393,0.53124785,0.9908266580320378,0,0,0,True,229.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-28 02:23:58,2025-08-26 02:23:57
+jssfljxc.com,jpcert,com,0.26397893,0.52795786,0.9881736274806636,0,0,0,True,246.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-11 10:20:22,2025-08-09 10:20:21
+weiyu66.com,jpcert,com,0.2621782,0.5243564,0.9673840131960078,0,0,0,True,356.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-01-20 20:11:53,2025-04-20 20:11:52
+au-safety.com,jpcert,com,0.26039582,0.52079165,0.9904811698102048,0,0,1,True,227.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-30 07:15:45,2025-08-28 07:15:44
+lixunfb.com,jpcert,com,0.25929376,0.5185875,0.9806755722315116,0,0,0,True,204.0,Let's Encrypt,True,90.0,False,False,False,89.0,2025-06-21 17:51:11,2025-09-19 17:51:10
+3q3qsq.com,jpcert,com,0.25730756,0.5146151,0.9705309814016994,0,0,0,True,223.0,Let's Encrypt,True,88.0,False,False,False,89.0,2025-06-03 04:22:59,2025-09-01 04:22:58
+ameforward.com,certificates,com,0.25634626,0.5126925,0.9649977894445764,0,0,0,True,313.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-03-05 10:48:11,2025-06-03 10:48:10
+bljjd.com,certificates,com,0.25614083,0.51228166,0.9645004182082124,0,0,0,True,246.0,ZeroSSL,True,4.0,False,False,False,90.0,2025-05-11 00:00:00,2025-08-09 23:59:59
+suivre-mondial.com,phishtank,com,0.25481567,0.50963134,0.9903748257115108,0,0,0,True,248.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-08 22:34:44,2025-08-06 22:34:43
+altruman.com,jpcert,com,0.25352678,0.50705355,0.979929140533539,0,0,0,True,236.0,Let's Encrypt,True,90.0,False,False,False,89.0,2025-05-20 19:24:40,2025-08-18 19:24:39
+vmoqz.cn,phishtank,cn,0.25127038,0.50254077,0.9899720443388288,1,0,0,True,219.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-07 15:37:22,2025-09-05 16:34:25
+toprocese.life,jpcert,life,0.25048813,0.50097626,0.9712023832237128,0,0,0,True,400.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-12-08 10:23:41,2025-03-08 10:23:40
+hpcc.org.cn,certificates,cn,0.25005192,0.50010383,0.9839683139073864,1,0,0,True,286.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-03-31 18:12:29,2025-06-29 19:10:14
+hzspypglj.com,jpcert,com,0.24831021,0.49662042,0.9842576568546652,0,0,0,True,213.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-13 11:00:56,2025-09-11 11:58:39
+xanderleneave.com,jpcert,com,0.24559173,0.49118346,0.9686351340530288,0,0,0,True,505.0,Let's Encrypt,True,9.0,False,False,False,89.0,2024-08-25 11:44:50,2024-11-23 11:44:49
+enter-layerzero.org,phishtank,org,0.24520184,0.49040365,0.9659297096044208,0,0,0,True,570.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-06-21 05:20:42,2024-09-19 05:20:41
+jhjgc.com,jpcert,com,0.24515772,0.49031544,0.9644454420776905,0,0,0,True,262.0,DigiCert Inc,True,1.0,False,False,False,364.0,2025-04-25 00:00:00,2026-04-24 23:59:59
+pentake.com,jpcert,com,0.24372032,0.48744065,0.9700014727325011,0,0,1,True,502.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-08-28 10:24:13,2024-11-26 10:24:12
+ameli-actualisation.com,phishtank,com,0.24285956,0.48571908,0.989561541950886,0,0,0,True,233.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-23 23:21:34,2025-08-21 23:21:33
+cgpdzw.top,phishtank,top,0.24227922,0.48455846,0.9872290055118056,1,0,0,True,272.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-15 11:51:15,2025-07-14 11:51:14
+hljspys.com,certificates,com,0.2419541,0.48390818,0.9852781363002469,0,0,0,True,291.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-03-27 13:21:01,2025-06-25 14:19:30
+fnopz.cn,jpcert,cn,0.24173966,0.48347932,0.9892192330207747,1,0,0,True,288.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-03-30 15:10:40,2025-06-28 16:09:25
+5ojep5.top,phishtank,top,0.24105811,0.48211622,0.9846237399892426,1,0,0,True,199.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-27 04:02:55,2025-09-25 04:02:54
+laomaal.com,jpcert,com,0.24086244,0.48172486,0.9723661800349496,0,0,0,True,397.0,Let's Encrypt,True,3.0,False,False,False,89.0,2024-12-11 14:45:01,2025-03-11 14:45:00
+hnhaomo.com,jpcert,com,0.23997675,0.47995353,0.9594722321130914,0,0,0,True,320.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-02-26 12:08:18,2025-05-27 12:08:17
+886521-coinbase.com,phishtank,com,0.23977745,0.4795549,0.972451571703815,0,0,1,True,218.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-07 16:32:44,2025-09-05 17:31:04
+hongbxs.com,certificates,com,0.23939015,0.47878027,0.98552166466544,0,0,0,True,198.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-28 07:36:07,2025-09-26 07:36:06
+alafq.com,certificates,com,0.23844922,0.47689843,0.9701950676971544,0,0,0,True,496.0,Let's Encrypt,True,1.0,False,False,False,89.0,2024-09-03 05:50:50,2024-12-02 05:50:49
+tracker-suivi.com,phishtank,com,0.23834269,0.4766854,0.98920902132654,0,0,0,True,230.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-26 23:28:15,2025-08-24 23:28:14
+piyjha.cn,jpcert,cn,0.23807284,0.47614568,0.9865743393886316,1,0,0,True,302.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-16 12:30:48,2025-06-14 12:30:47
+hnlangsha.net,certificates,net,0.23715879,0.47431755,0.9538579381258748,0,0,0,True,371.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-01-06 13:46:08,2025-04-06 13:46:07
+globbers.com.br,phishtank,br,0.23689015,0.47378027,0.985452627366652,0,0,0,True,216.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-09 18:18:20,2025-09-07 18:18:19
+exf4s.com,jpcert,com,0.23650913,0.4730183,0.962975607400248,0,0,0,True,386.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-12-22 14:10:31,2025-03-22 14:10:30
+zkxyiji.cn,jpcert,cn,0.23410626,0.4682125,0.985315593056868,1,0,0,True,297.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-21 11:13:30,2025-06-19 11:13:29
+szdsib.com,jpcert,com,0.23305081,0.46610165,0.9757329106048358,0,0,0,True,649.0,ZeroSSL,True,1.0,False,False,False,90.0,2024-04-03 00:00:00,2024-07-02 23:59:59
+mon-espace-personnel.ru,phishtank,ru,0.23285156,0.46570313,0.94638943748819,0,0,0,True,579.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-06-12 05:28:26,2024-09-10 05:28:25
+illaricv.com,jpcert,com,0.23251937,0.46503878,0.95951113427928,0,0,0,True,386.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-12-22 06:56:48,2025-03-22 06:56:47
+kavakyeli.com,jpcert,com,0.23165353,0.46330702,0.968634695010432,0,0,0,True,572.0,Let's Encrypt,True,3.0,False,False,False,89.0,2024-06-18 21:08:25,2024-09-16 21:08:24
+cursos.merkas.co,phishtank,co,0.23163769,0.46327537,0.9871380995598772,0,0,0,True,233.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-24 01:36:44,2025-08-22 01:36:43
+bdxhdl.com,certificates,com,0.23122525,0.4624505,0.9849905980089376,0,0,0,True,283.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-04-03 18:42:42,2025-07-02 19:41:11
+electronniyj-document.net,phishtank,net,0.23113418,0.46226835,0.982522978188856,0,0,0,True,260.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-27 08:43:05,2025-07-26 08:43:04
+localhost.allegrolokalnie.pk,phishtank,pk,0.23089105,0.4617821,0.985242556521108,0,0,1,True,285.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-01 22:27:53,2025-06-30 22:27:52
+www.inkindifinance.rw,phishtank,rw,0.23058183,0.46116364,0.96720876018357,0,0,0,True,417.0,DigiCert Inc,True,2.0,False,False,False,364.0,2024-11-21 00:00:00,2025-11-20 23:59:59
+soilsta.co.za,jpcert,za,0.23031868,0.46063733,0.9434601682151502,0,0,0,True,359.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-01-18 15:49:27,2025-04-18 15:49:26
+famoty.cn,jpcert,cn,0.22969018,0.4593804,0.9864694167010218,1,0,0,True,302.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-15 17:00:52,2025-06-13 17:00:51
+cfbn.com.cn,certificates,cn,0.2282599,0.45651984,0.9813975929111968,1,0,0,True,213.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-13 07:28:58,2025-09-11 08:26:38
+routiere-circul.info,phishtank,info,0.22788526,0.4557705,0.9879068002319036,0,0,0,True,211.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-14 19:29:54,2025-09-12 19:29:53
+cnbjyh.com,certificates,com,0.22759818,0.45519638,0.9856682596746172,0,0,0,True,261.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-26 06:58:02,2025-07-25 06:58:01
+nascentcell.com,certificates,com,0.22714287,0.45428574,0.9638520328544092,0,0,0,True,474.0,Let's Encrypt,True,3.0,False,False,False,89.0,2024-09-25 14:35:30,2024-12-24 14:35:29
+atelierdeleah.eleven.ma,jpcert,ma,0.22662285,0.4532457,0.9577975425772848,0,0,0,True,209.0,"cPanel, LLC",True,3.0,False,False,False,90.0,2025-06-17 00:00:00,2025-09-15 23:59:59
+zgstct.com,phishtank,com,0.22656986,0.45313972,0.985579752741599,0,0,0,True,280.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-07 15:11:46,2025-07-06 15:11:45
+41agenziatv.com,jpcert,com,0.22517747,0.45035493,0.9688749921578697,0,0,0,True,223.0,Let's Encrypt,True,88.0,False,False,False,89.0,2025-06-03 04:22:59,2025-09-01 04:22:58
+7starsdata.com,jpcert,com,0.22513218,0.45026433,0.9588579233160156,0,0,0,True,437.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-11-01 04:32:23,2025-01-30 04:32:22
+app-tokyo.com,certificates,com,0.22409868,0.44819736,0.9608965256890352,0,0,0,True,479.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-09-20 06:50:25,2024-12-19 06:50:24
+pnqmdib.top,jpcert,top,0.2229556,0.44591117,0.9834662192504506,1,0,0,True,245.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-12 00:49:45,2025-08-10 00:49:44
+leoniferreira.com.br,phishtank,br,0.22259349,0.44518697,0.950623459006747,0,0,0,True,422.0,Let's Encrypt,True,2.0,True,False,False,89.0,2024-11-16 05:01:47,2025-02-14 05:01:46
+nabtag.com,jpcert,com,0.22250043,0.4450009,0.9655696755615673,0,0,0,True,541.0,Let's Encrypt,True,3.0,False,False,False,89.0,2024-07-19 19:19:51,2024-10-17 19:19:50
+hzoq.cn,certificates,cn,0.2221333,0.44426656,0.9850913401408132,1,0,0,True,266.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-20 19:05:11,2025-07-19 19:05:10
+ulys-versement.com,phishtank,com,0.22195204,0.44390404,0.9866756802135396,0,0,0,True,219.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-06 19:10:35,2025-09-04 19:10:34
+106304-coinbase.com,phishtank,com,0.22040655,0.44081306,0.9681784292588084,0,0,1,True,263.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-04-23 21:21:43,2025-07-22 22:20:18
+tjdgxy.com.cn,jpcert,cn,0.22036569,0.4407314,0.9780416020016656,1,0,0,True,275.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-04-11 22:10:36,2025-07-10 23:07:02
+ykchaojun.com,certificates,com,0.21872123,0.43744242,0.9606418355410852,0,0,0,True,359.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-01-18 04:12:45,2025-04-18 04:12:44
+sh-ort.app,jpcert,app,0.2187187,0.43743742,0.983060490719468,0,0,0,True,191.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-05 07:51:27,2025-10-03 07:51:26
+ameritecrealty.com,jpcert,com,0.21855626,0.4371125,0.9622050599777006,0,0,0,True,395.0,Let's Encrypt,True,3.0,False,False,False,89.0,2024-12-12 19:40:27,2025-03-12 19:40:26
+kucoin.dog,certificates,dog,0.21819666,0.43639332,0.9679780755098734,0,0,0,True,462.0,DigiCert Inc,True,1.0,False,False,False,364.0,2024-10-07 00:00:00,2025-10-06 23:59:59
+procedure-free.com,phishtank,com,0.21728353,0.4345671,0.9873482596667676,0,0,0,True,202.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-23 21:41:12,2025-09-21 21:41:11
+payement-telepeage-autoroute.com,phishtank,com,0.21636565,0.43273127,0.9838171721870436,0,0,1,True,208.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-18 06:18:21,2025-09-16 06:18:20
+locker-espace.com,phishtank,com,0.2163487,0.43269742,0.9871146066737984,0,0,0,True,199.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-26 23:06:47,2025-09-24 23:06:46
+mkksconsultorees.click,phishtank,click,0.21565112,0.43130225,0.964381608232786,1,0,0,True,231.0,ZeroSSL,True,2.0,False,False,False,90.0,2025-05-26 00:00:00,2025-08-24 23:59:59
+zone-relivraison.com,phishtank,com,0.21425833,0.42851663,0.9817995858012034,0,0,0,True,270.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-17 05:37:57,2025-07-16 05:37:56
+commande-connect.com,phishtank,com,0.2138958,0.4277916,0.986266793666996,0,0,0,True,221.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-04 17:57:27,2025-09-02 17:57:26
+75kx.com,certificates,com,0.21324573,0.4264915,0.9449408078232644,0,0,0,True,326.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-02-20 02:32:40,2025-05-21 02:32:39
+redevance-edf.com,phishtank,com,0.21137048,0.42274094,0.9865739436577424,0,0,0,True,206.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-20 09:36:18,2025-09-18 09:36:17
+crnetfilx-info.com,phishtank,com,0.2108589,0.42171776,0.9853353119875842,0,0,0,True,202.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-24 13:26:48,2025-09-22 13:26:47
+cryptocurrency.su,phishtank,su,0.21078672,0.4215734,0.9561577314380172,0,0,0,True,427.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-11-10 22:23:39,2025-02-08 22:23:38
+clickcobazaar.com,jpcert,com,0.21048364,0.42096728,0.947632477020862,0,0,0,True,321.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-02-24 17:22:28,2025-05-25 17:22:27
+bastidoresdoemagrecimento.com.br,phishtank,br,0.2103364,0.42067277,0.981835212723218,0,0,0,True,208.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-17 16:17:21,2025-09-15 16:17:20
+malkservice.com,phishtank,com,0.20903857,0.4180771,0.9558573886349044,0,0,0,True,535.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-07-26 01:10:23,2024-10-24 01:10:22
+acenmxcosexmeco.cc,jpcert,cc,0.20891967,0.41783935,0.9586479574115784,1,0,0,True,288.0,DigiCert Inc,True,1.0,False,False,False,365.0,2025-03-30 00:00:00,2026-03-30 23:59:59
+lllysgy.com,jpcert,com,0.20796876,0.41593754,0.9804991671900438,0,0,0,True,236.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-05-21 08:06:38,2025-08-19 09:05:10
+nta-tax.com,jpcert,com,0.20744085,0.4148817,0.9852345556222776,0,0,1,True,218.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-07 20:14:24,2025-09-05 20:14:23
+picolittos.com.br,phishtank,br,0.20731334,0.41462672,0.9816053522055016,0,0,0,True,233.0,Let's Encrypt,True,9.0,True,False,False,89.0,2025-05-24 00:31:20,2025-08-22 00:31:19
+uuhqyq.cn,jpcert,cn,0.20573303,0.41146606,0.9814654398163426,1,0,0,True,291.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-27 11:19:31,2025-06-25 11:19:30
+rxqi.cn,jpcert,cn,0.20448856,0.40897715,0.98299790588367,1,0,0,True,201.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-25 08:19:44,2025-09-23 08:19:43
+1mafu.com,jpcert,com,0.20323852,0.40647703,0.9817245734176102,0,0,0,True,231.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-26 02:07:04,2025-08-24 02:07:03
+cunamutualconnect.com,phishtank,com,0.20288372,0.40576744,0.9542949642740716,0,0,0,True,373.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-01-04 10:34:22,2025-04-04 10:34:21
+paleoftmc.com,jpcert,com,0.20283554,0.40567112,0.9546571207839688,0,0,0,True,446.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-10-22 21:54:31,2025-01-20 21:54:30
+vip5vip.com,certificates,com,0.20193061,0.40386122,0.9398859569148742,0,0,0,True,440.0,Let's Encrypt,True,3.0,False,False,False,89.0,2024-10-29 05:01:38,2025-01-27 05:01:37
+hassantesting.trionex.pk,phishtank,pk,0.20100681,0.40201366,0.9764273745907586,0,0,1,True,233.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-23 21:04:53,2025-08-21 21:04:52
+hhhobbywarehouse.com,phishtank,com,0.20030282,0.40060568,0.9485575277630652,0,0,0,True,493.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-09-06 06:10:32,2024-12-05 06:10:31
+sfwcorp.com,jpcert,com,0.20025396,0.40050793,0.9805107027772266,0,0,0,True,200.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-26 11:25:13,2025-09-24 11:25:12
+menelisi.com,jpcert,com,0.20021515,0.40043032,0.9737603983960336,0,0,0,True,638.0,ZeroSSL,True,1.0,False,False,False,90.0,2024-04-14 00:00:00,2024-07-13 23:59:59
+cgd-l.com,phishtank,com,0.19940193,0.39880383,0.9634589632543664,0,0,0,True,233.0,Let's Encrypt,True,90.0,False,False,False,89.0,2025-05-23 19:24:18,2025-08-21 19:24:17
+shinkansenjr-central-co-jp.in,jpcert,in,0.19918045,0.3983609,0.9300635234656256,0,0,0,True,412.0,Let's Encrypt,True,1.0,False,False,False,89.0,2024-11-26 07:26:59,2025-02-24 07:26:58
+iaygehwiwhgdud.com,jpcert,com,0.19851857,0.39703715,0.9532763483501876,0,0,0,True,560.0,DigiCert Inc,True,1.0,False,False,False,364.0,2024-07-01 00:00:00,2025-06-30 23:59:59
+buffycam.com,jpcert,com,0.19845529,0.39691055,0.9720364867932536,0,0,0,True,226.0,Let's Encrypt,True,81.0,False,False,False,89.0,2025-05-30 20:19:28,2025-08-28 20:19:27
+jsszcm.com,jpcert,com,0.19814208,0.39628416,0.9840580803952634,0,0,0,True,257.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,90.0,2025-04-29 21:58:19,2025-07-28 21:58:19
+aufgelegt.com,jpcert,com,0.1979577,0.3959154,0.965969570609486,0,0,1,True,251.0,Let's Encrypt,True,89.0,False,False,False,89.0,2025-05-06 13:18:14,2025-08-04 13:18:13
+monlocker-casier.com,phishtank,com,0.19695926,0.3939185,0.9829755235463876,0,0,0,True,252.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-04 21:57:44,2025-08-02 21:57:43
+makinedjp.net,jpcert,net,0.19688885,0.39377773,0.955228187303548,0,0,0,True,354.0,DigiCert Inc,True,1.0,False,False,False,364.0,2025-01-23 00:00:00,2026-01-22 23:59:59
+generalgaming.ca,phishtank,ca,0.19656189,0.39312375,0.9506952231884256,0,1,1,True,556.0,Let's Encrypt,True,9.0,False,False,False,89.0,2024-07-05 06:37:57,2024-10-03 06:37:56
+wjszgd.com,jpcert,com,0.19655952,0.39311904,0.980886794901496,0,0,0,True,254.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-03 15:56:03,2025-08-01 15:56:02
+choix-jour.net,phishtank,net,0.19647565,0.3929513,0.9650646678527394,0,0,0,True,237.0,Let's Encrypt,True,90.0,False,False,False,89.0,2025-05-19 19:15:28,2025-08-17 19:15:27
+kucointokencode.com,phishtank,com,0.1961167,0.39223337,0.9519731264960068,0,0,0,True,494.0,Let's Encrypt,True,2.0,True,False,False,89.0,2024-09-05 05:54:00,2024-12-04 05:53:59
+haimgestaoimobiliaria.com.br,phishtank,br,0.19607733,0.3921547,0.9800012879425268,0,0,0,True,214.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-12 04:19:41,2025-09-10 04:19:40
+aichappraisers.com,phishtank,com,0.19558406,0.39116812,0.9490803894728844,0,0,0,True,471.0,Let's Encrypt,True,2.0,True,False,False,89.0,2024-09-28 00:49:25,2024-12-27 00:49:24
+findazores.com,certificates,com,0.19552656,0.39105308,0.9561863591146346,0,0,0,True,338.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-02-08 13:39:52,2025-05-09 13:39:51
+lindastilesfox.com,jpcert,com,0.1942647,0.38852942,0.941896854039819,0,0,0,True,370.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-01-06 17:43:20,2025-04-06 17:43:19
+putianbuttons.com,phishtank,com,0.19363216,0.3872643,0.9506054420261372,0,0,0,True,460.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-10-09 15:11:51,2025-01-07 15:11:50
+umeixlanhua.com,jpcert,com,0.19309175,0.3861835,0.9709525828253924,0,0,0,True,203.0,ZeroSSL,True,1.0,False,False,False,90.0,2025-06-23 00:00:00,2025-09-21 23:59:59
+lhv-ee.bager.am,phishtank,am,0.19235389,0.3847078,0.973270526739384,0,0,0,True,296.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-03-22 06:34:05,2025-06-20 06:34:04
+mondiai-consigne.com,phishtank,com,0.19093695,0.3818739,0.9821069046666012,0,0,0,True,254.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-03 02:28:12,2025-08-01 02:28:11
+farmastim.com,jpcert,com,0.19066653,0.38133305,0.9392274172955992,0,0,0,True,525.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-08-05 04:14:27,2024-11-03 04:14:26
+mondialrelayfrance-support.com,phishtank,com,0.19005588,0.38011175,0.9799340327066408,0,0,0,True,264.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-23 12:20:39,2025-07-22 12:20:38
+yarus-tech.com,jpcert,com,0.18958996,0.37917995,0.9830144502232998,0,0,0,True,210.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-16 09:40:31,2025-09-14 09:40:30
+etc-akiaki.cam,certificates,cam,0.18843189,0.37686378,0.9734450157752956,0,0,1,True,660.0,"GoDaddy.com, Inc.",False,1.0,False,False,False,365.0,2024-03-22 19:43:21,2025-03-22 19:43:21
+mineralenergi.com,phishtank,com,0.18840086,0.37680173,0.9509675592068788,0,0,0,True,438.0,"cPanel, LLC",True,8.0,False,False,False,90.0,2024-10-31 00:00:00,2025-01-29 23:59:59
+aaxlx.cn,phishtank,cn,0.18714617,0.37429237,0.980073546511904,1,0,0,True,209.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-16 21:50:50,2025-09-14 21:50:49
+yourvacancytoday.click,phishtank,click,0.18709764,0.37419528,0.9754471740255546,1,0,0,True,213.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-13 06:49:57,2025-09-11 06:49:56
+ouqcq.cn,phishtank,cn,0.18497297,0.36994594,0.9795243478679304,1,0,0,True,209.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-17 02:24:28,2025-09-15 02:24:27
+ynjfjc.com,certificates,com,0.18492809,0.36985618,0.9762688254452871,0,0,0,True,276.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-04-11 14:44:14,2025-07-10 15:41:43
+ulys-paiements.com,phishtank,com,0.18391305,0.3678261,0.9808086380738806,0,0,0,True,221.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-04 19:59:36,2025-09-02 19:59:35
+oioaqf.cc,jpcert,cc,0.1838372,0.3676744,0.9545908298103972,1,0,0,True,584.0,Let's Encrypt,True,1.0,False,False,False,89.0,2024-06-06 22:38:43,2024-09-04 22:38:42
+portalnutrimania.com.br,phishtank,br,0.18099125,0.36198246,0.9745305458444518,0,0,0,True,219.0,Let's Encrypt,True,9.0,False,False,False,89.0,2025-06-07 03:01:00,2025-09-05 03:00:59
+infos-reiais.com,phishtank,com,0.18053429,0.3610686,0.9764621235479646,0,0,0,True,244.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-13 12:36:25,2025-08-11 12:36:24
+seasidesurfshop.shop,jpcert,shop,0.17927776,0.35855556,0.9746549428702452,1,0,0,True,208.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-18 13:35:59,2025-09-16 13:35:58
+mondiai-client.com,phishtank,com,0.17840497,0.35680997,0.9750352825425884,0,0,0,True,210.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-16 06:13:11,2025-09-14 06:13:10
+hu166.com,certificates,com,0.17784065,0.3556813,0.9182590379551164,0,0,0,True,474.0,DigiCert Inc,True,1.0,False,False,False,364.0,2024-09-25 00:00:00,2025-09-24 23:59:59
+pathalive.com,jpcert,com,0.17760892,0.3552178,0.9504671382261404,0,0,0,True,315.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-02 22:11:19,2025-05-31 22:11:18
+qge8o8.cn,jpcert,cn,0.17757602,0.355152,0.9275692749176224,1,0,0,True,311.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-03-07 01:28:06,2025-06-05 01:28:05
+nkxmkr.com,phishtank,com,0.177245,0.35449004,0.9738775154059616,0,0,0,True,223.0,Let's Encrypt,True,8.0,False,False,False,89.0,2025-06-03 04:15:29,2025-09-01 04:15:28
+allegro-appassionato.org,phishtank,org,0.17503376,0.3500675,0.9762619516978276,0,0,1,True,244.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-13 00:11:51,2025-08-11 00:11:50
+yuanchangping.com,jpcert,com,0.17483169,0.34966338,0.9342917001786332,0,0,1,True,472.0,ZeroSSL,True,4.0,False,False,False,90.0,2024-09-27 00:00:00,2024-12-26 23:59:59
+walletconnectweb3.com,phishtank,com,0.17348042,0.34696084,0.9305927407050874,0,0,1,True,425.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-11-13 08:18:24,2025-02-11 08:18:23
+sblsec-maudei.com,phishtank,com,0.1731852,0.3463704,0.9685506480961568,0,0,1,True,235.0,Let's Encrypt,True,20.0,False,False,False,89.0,2025-05-21 21:23:44,2025-08-19 21:23:43
+waselegypt.com,phishtank,com,0.17294446,0.3458889,0.9528258307927652,0,0,0,True,294.0,ZeroSSL,True,2.0,False,False,False,90.0,2025-03-24 00:00:00,2025-06-22 23:59:59
+correos.lol,jpcert,lol,0.17218618,0.3443724,0.9456636566499468,0,0,0,True,556.0,Let's Encrypt,True,1.0,False,False,False,89.0,2024-07-04 23:40:12,2024-10-02 23:40:11
+sodexo-push.amapps.cz,phishtank,cz,0.17065896,0.3413179,0.969396244484639,0,0,0,True,219.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-06-07 02:03:19,2025-09-05 02:03:18
+ouvih.cn,jpcert,cn,0.17057228,0.34114456,0.9763755916565852,1,0,0,True,296.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-22 10:37:46,2025-06-20 10:37:45
+sellingsonomaranch.com,jpcert,com,0.16968806,0.3393761,0.9302430521701036,0,0,1,True,449.0,Let's Encrypt,True,7.0,False,False,False,89.0,2024-10-20 16:15:34,2025-01-18 16:15:33
+7xlveayj.com,certificates,com,0.16918784,0.3383757,0.9674696323643596,0,0,0,True,264.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-23 00:59:03,2025-07-22 00:59:02
+facchsssd.com,jpcert,com,0.16891202,0.33782405,0.969892362363362,0,0,0,True,456.0,Google Trust Services,False,2.0,False,False,False,89.0,2024-10-12 20:35:37,2025-01-10 20:35:36
+blushseo.com,certificates,com,0.16832095,0.3366419,0.9364271835132048,0,0,0,True,499.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-08-30 20:14:22,2024-11-28 20:14:21
+xazlty.com,jpcert,com,0.16810814,0.33621627,0.9714894564959768,0,0,0,True,212.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-14 02:23:24,2025-09-12 02:23:23
+zozo2726.cc,jpcert,cc,0.16764222,0.33528447,0.9545677740829952,1,0,0,True,227.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-30 09:39:20,2025-08-28 09:39:19
+creneau-de-mon-colis.com,phishtank,com,0.1673923,0.33478463,0.9677893145110436,0,0,1,True,220.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-06 06:58:23,2025-09-04 06:58:22
+js086i3eim.icu,phishtank,icu,0.1654772,0.33095443,0.9572522572716248,1,0,0,True,236.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-21 03:09:48,2025-08-19 03:09:47
+mondiai-depot.com,phishtank,com,0.1649847,0.3299694,0.975494899616526,0,0,0,True,264.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-23 00:49:48,2025-07-22 00:49:47
+trajets-uiys.com,phishtank,com,0.16305456,0.3261091,0.976183914376062,0,0,0,True,227.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-30 12:36:01,2025-08-28 12:36:00
+tele-gram.store,phishtank,store,0.16284895,0.3256979,0.9736770575781408,0,0,0,True,218.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-08 13:55:11,2025-09-06 13:55:10
+jcryl.asia,phishtank,asia,0.16270083,0.32540166,0.9675911516893672,1,0,0,True,235.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-22 14:45:47,2025-08-20 14:45:46
+gestaovelejar.com.br,jpcert,br,0.16190258,0.32380515,0.9692735938978416,0,0,0,True,233.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-23 16:53:54,2025-08-21 16:53:53
+arvinhe.club,jpcert,club,0.16105178,0.32210356,0.9725716712875206,1,0,0,True,297.0,Let's Encrypt,True,5.0,False,False,False,89.0,2025-03-20 23:13:37,2025-06-18 23:13:36
+metacenter.com.mx,jpcert,mx,0.16089971,0.3217994,0.968199534689789,0,0,0,True,209.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-16 17:33:01,2025-09-14 17:33:00
+tintasweb.com.br,jpcert,br,0.16021538,0.32043076,0.9607037065359024,0,0,1,True,245.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-11 22:20:09,2025-08-09 22:20:08
+fnyshop.com,certificates,com,0.15994494,0.3198899,0.9684311442672774,0,0,0,True,287.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-03-31 10:26:09,2025-06-29 10:26:08
+golemcoin.net,phishtank,net,0.15836057,0.31672114,0.9527590639867654,0,0,0,True,225.0,Let's Encrypt,True,89.0,False,False,False,89.0,2025-06-01 14:59:09,2025-08-30 14:59:08
+photoniccrystal.cn,jpcert,cn,0.1582843,0.3165686,0.962846075815207,1,0,0,True,303.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-15 09:44:55,2025-06-13 09:44:54
+dhl-news.com,phishtank,com,0.15813491,0.31626981,0.9665498389770268,0,0,1,True,254.0,Google Trust Services,False,1.0,False,False,False,90.0,2025-05-02 18:42:57,2025-07-31 19:42:55
+weddingcufflinksuk.com,jpcert,com,0.15780474,0.31560946,0.8973299250193916,0,0,1,True,382.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-12-26 06:28:42,2025-03-26 06:28:41
+ipv6guru.com,certificates,com,0.15762383,0.31524765,0.9669425299994016,0,0,0,True,192.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-04 03:32:49,2025-10-02 03:32:48
+dflash.com.br,phishtank,br,0.15729237,0.31458473,0.9671516040484208,0,0,0,True,215.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-10 19:14:43,2025-09-08 19:14:42
+taisei-food.com,jpcert,com,0.15718855,0.31437707,0.976308992114891,0,0,0,True,208.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-18 15:33:05,2025-09-16 15:33:04
+inkaqkanjsha.com,jpcert,com,0.15716179,0.31432354,0.9209856963823644,0,0,0,True,392.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-12-16 13:15:49,2025-03-16 13:15:48
+purplethumbsng.com,phishtank,com,0.15696868,0.31393737,0.8815870896056058,0,0,0,True,328.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-02-17 23:54:10,2025-05-18 23:54:09
+dhxx.net,certificates,net,0.15654479,0.3130896,0.917556092598945,0,0,0,True,552.0,Let's Encrypt,True,1.0,False,False,False,89.0,2024-07-09 08:58:38,2024-10-07 08:58:37
+eki-co-jp.icu,jpcert,icu,0.15599304,0.3119861,0.9593730523645204,1,0,0,True,290.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-27 16:43:26,2025-06-25 16:43:25
+xajkhbj.com,certificates,com,0.15593557,0.31187117,0.9665148644422912,0,0,0,True,273.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-04-13 22:47:43,2025-07-12 22:47:42
+irrisk.com.au,certificates,au,0.15533257,0.31066513,0.816784620729195,0,1,1,True,421.0,Let's Encrypt,True,90.0,False,False,False,89.0,2024-11-17 03:12:59,2025-02-15 03:12:58
+einoq.cn,jpcert,cn,0.15513901,0.31027806,0.9701323371598088,1,0,0,True,296.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-21 22:17:17,2025-06-19 22:17:16
+0755yz.com.cn,jpcert,cn,0.15510568,0.31021136,0.93314951241591,1,0,0,True,213.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-13 07:43:09,2025-09-11 08:41:14
+cnjuwks.com,phishtank,com,0.15403572,0.30807143,0.9670191762117776,0,0,0,True,219.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-07 10:59:09,2025-09-05 10:59:08
+kikiacai.com.br,jpcert,br,0.15350471,0.30700946,0.8789417381526369,0,0,0,True,555.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-07-06 08:32:30,2024-10-04 08:32:29
+pay-paybank.icu,phishtank,icu,0.15326318,0.30652636,0.9724329367222144,1,0,0,True,206.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-20 10:27:45,2025-09-18 10:27:44
+everymotors.mn,phishtank,mn,0.1532501,0.3065002,0.915415485889882,0,0,0,True,332.0,Let's Encrypt,True,3.0,True,False,False,89.0,2025-02-14 13:16:54,2025-05-15 13:16:53
+ulys-france.com,phishtank,com,0.15233164,0.3046633,0.9703937811399964,0,0,0,True,228.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-29 02:17:20,2025-08-27 02:17:19
+zrcbracelets.com,phishtank,com,0.15192564,0.30385125,0.9318462350222206,0,0,0,True,217.0,ZeroSSL,True,2.0,False,False,False,90.0,2025-06-09 00:00:00,2025-09-07 23:59:59
+goto-mica.com,phishtank,com,0.15168609,0.30337214,0.9737336487531832,0,0,0,True,224.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-01 20:51:46,2025-08-30 20:51:45
+jxomgd.com,jpcert,com,0.15102139,0.30204278,0.9425072586748274,0,0,0,True,241.0,ZeroSSL,True,1.0,False,False,False,90.0,2025-05-16 00:00:00,2025-08-14 23:59:59
+unfilteredoilexperience.com,phishtank,com,0.15054351,0.30108702,0.9460610852483092,0,0,0,True,398.0,ZeroSSL,True,1.0,False,False,False,90.0,2024-12-10 00:00:00,2025-03-10 23:59:59
+5qwrf.lat,phishtank,lat,0.14960997,0.29921997,0.9597031884875304,1,0,0,True,209.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-17 12:56:20,2025-09-15 13:54:02
+jucreditzc.com,jpcert,com,0.1489041,0.29780817,0.9153809528761052,0,0,0,True,437.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-11-01 04:15:54,2025-01-30 04:15:53
+skincareanti-aging.com,phishtank,com,0.14861037,0.2972207,0.9653062040049412,0,0,1,True,214.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-12 08:59:24,2025-09-10 08:59:23
+gonzodisenador.com,phishtank,com,0.14669049,0.29338098,0.9173780930429044,0,0,0,True,558.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-07-03 00:40:07,2024-10-01 00:40:06
+nbjfdiwefkd.com,jpcert,com,0.14581591,0.29163182,0.9553059246807468,0,0,0,True,294.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-24 11:39:22,2025-06-22 11:39:21
+guminwx.com,certificates,com,0.14576343,0.29152685,0.9391755480273724,0,0,0,True,957.0,ZeroSSL,True,1.0,False,False,False,90.0,2023-05-31 00:00:00,2023-08-29 23:59:59
+bobiem.com.mk,jpcert,mk,0.14574036,0.29148072,0.9605507522553458,0,0,0,True,210.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-15 20:10:21,2025-09-13 20:10:20
+consultoresretail.com.ar,phishtank,ar,0.14535618,0.29071236,0.9634862673378332,1,0,0,True,243.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-14 05:48:21,2025-08-12 05:48:20
+lockers-pointrelais.com,phishtank,com,0.1449166,0.2898332,0.9659427518812606,0,0,0,True,221.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-05 10:28:31,2025-09-03 10:28:30
+takahashi-dental-cl.com,jpcert,com,0.14473517,0.28947031,0.956609053504174,0,0,1,True,249.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-08 08:28:10,2025-08-06 08:28:09
+skywxwy.org,phishtank,org,0.14406939,0.28813875,0.9581075891119668,0,0,0,True,216.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-09 18:06:02,2025-09-07 18:06:01
+primatebrace.com,jpcert,com,0.1437173,0.28743458,0.913398169770994,0,0,0,True,482.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-09-16 21:13:06,2024-12-15 21:13:05
+espace-relay.com,phishtank,com,0.14354533,0.28709066,0.9683576541379486,0,0,0,True,214.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-12 01:37:31,2025-09-10 01:37:30
+xiaomoerp.com,jpcert,com,0.14332756,0.28665513,0.9375564320459886,0,0,0,True,407.0,ZeroSSL,True,2.0,False,False,False,90.0,2024-12-01 00:00:00,2025-03-01 23:59:59
+nozominosato-nagashima.com,jpcert,com,0.14250742,0.28501487,0.9632353104052174,0,0,0,True,240.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-17 02:09:35,2025-08-15 02:09:34
+context.vc,jpcert,vc,0.14210114,0.28420228,0.935137184091046,0,0,0,True,273.0,ZeroSSL,True,1.0,False,False,False,90.0,2025-04-14 00:00:00,2025-07-13 23:59:59
+renouvellements-assures-sante.com,phishtank,com,0.14206615,0.2841323,0.9568212310522513,0,0,0,True,205.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-21 13:14:01,2025-09-19 13:14:00
+dhjmsb.com,certificates,com,0.14190246,0.2838049,0.9632154679693632,0,0,0,True,237.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-20 01:21:53,2025-08-18 01:21:52
+wf12349.com.cn,jpcert,cn,0.14159982,0.28319967,0.9079602666379236,1,0,0,True,231.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-05-26 00:15:43,2025-08-24 01:14:03
+nevasnation.com,jpcert,com,0.14147493,0.28294986,0.9394943713615704,0,0,0,True,638.0,ZeroSSL,True,1.0,False,False,False,90.0,2024-04-14 00:00:00,2024-07-13 23:59:59
+illinois-aap.org,phishtank,org,0.14115511,0.28231025,0.9673556886544566,0,0,0,True,234.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-23 02:34:39,2025-08-21 02:34:38
+zgzszb.com,jpcert,com,0.140811,0.281622,0.9368306194056818,0,0,0,True,214.0,Let's Encrypt,True,50.0,False,False,False,89.0,2025-06-11 17:51:02,2025-09-09 17:51:01
+ads2.xyz,jpcert,xyz,0.14056703,0.28113407,0.9503959804924468,1,0,0,True,203.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-23 09:41:43,2025-09-21 09:41:42
+le-diablotin-rouen.com,phishtank,com,0.13963035,0.2792607,0.9604857320114272,0,0,0,True,223.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-03 14:00:39,2025-09-01 14:00:38
+y6956.cc,jpcert,cc,0.13931538,0.27863073,0.9344180500652706,1,0,0,True,207.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-18 16:51:55,2025-09-16 16:51:54
+4x4onlineshop.co.za,phishtank,za,0.13810886,0.2762177,0.8384202908190765,0,0,1,True,539.0,Let's Encrypt,True,2.0,True,False,False,89.0,2024-07-21 21:00:14,2024-10-19 21:00:13
+abka3d.co,jpcert,co,0.13689376,0.2737875,0.9557135436720368,0,0,0,True,239.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-17 21:48:29,2025-08-15 21:48:28
+xinchuchem.com,jpcert,com,0.13672313,0.27344626,0.8974505346300448,0,0,0,True,424.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-11-14 08:34:04,2025-02-12 08:34:03
+tclle.com,jpcert,com,0.13663986,0.27327973,0.9270057710934436,0,0,0,True,229.0,Let's Encrypt,True,90.0,False,False,False,89.0,2025-05-27 17:53:39,2025-08-25 17:53:38
+dbcnmememd04.com,jpcert,com,0.13662426,0.27324855,0.9422275514785218,0,0,0,True,456.0,Google Trust Services,False,2.0,False,False,False,89.0,2024-10-13 11:34:44,2025-01-11 11:34:43
+whatsafsd.vip,phishtank,vip,0.13623907,0.2724781,0.9223105808100678,1,0,0,True,623.0,ZeroSSL,True,1.0,False,False,False,90.0,2024-04-29 00:00:00,2024-07-28 23:59:59
+mibanco-online.es,phishtank,es,0.13620533,0.27241063,0.8898738756431483,0,1,1,True,387.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-12-21 03:57:51,2025-03-21 03:57:50
+rarityconnect.rf.gd,phishtank,gd,0.1361113,0.27222264,0.9626386633074704,0,0,0,True,860.0,GoGetSSL,False,2.0,False,False,False,90.0,2023-09-05 00:00:00,2023-12-04 23:59:59
+rjdqct.com,jpcert,com,0.1357656,0.27153122,0.958037891926618,0,0,0,True,222.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-06-04 09:50:22,2025-09-02 09:50:21
+externexoenlineaa.space,phishtank,space,0.13556223,0.27112448,0.9210507230819264,0,0,1,True,241.0,ZeroSSL,True,2.0,False,False,False,90.0,2025-05-16 00:00:00,2025-08-14 23:59:59
+bfd269.com,jpcert,com,0.13537353,0.27074707,0.933931218759494,0,0,0,True,353.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-01-24 10:03:54,2025-04-24 11:02:22
+electrorecycle.cl,jpcert,cl,0.13536407,0.2707281,0.8899403227723404,1,0,0,True,507.0,Let's Encrypt,True,4.0,False,False,False,89.0,2024-08-23 03:22:30,2024-11-21 03:22:29
+ahhrdc.com,jpcert,com,0.13533767,0.2706753,0.9459588469265184,0,0,0,True,286.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-04-01 08:26:57,2025-06-30 08:26:56
+bohaikj.com,jpcert,com,0.13527033,0.27054065,0.9330963683034852,0,0,0,True,268.0,ZeroSSL,True,1.0,False,False,False,90.0,2025-04-19 00:00:00,2025-07-18 23:59:59
+g6ns7e.cn,jpcert,cn,0.13512966,0.27025932,0.9512910261424508,1,0,0,True,278.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-09 04:35:56,2025-07-08 04:35:55
+bitconce.top,phishtank,top,0.134628,0.269256,0.8999194790308542,1,0,0,True,401.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-12-06 19:32:46,2025-03-06 19:32:45
+boston-analytics.com,jpcert,com,0.13445109,0.26890218,0.8897704465007886,0,0,1,True,252.0,Let's Encrypt,True,92.0,False,False,False,89.0,2025-05-04 19:40:32,2025-08-02 19:40:31
+syracuseinvesting.com,jpcert,com,0.13407423,0.26814842,0.88732739006682,0,0,1,True,553.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-07-08 16:06:51,2024-10-06 16:06:50
+jibunbank.pro,certificates,pro,0.13339864,0.2667973,0.8971356624111723,0,0,0,True,584.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-06-07 10:59:13,2024-09-05 10:59:12
+circul-ulys.info,phishtank,info,0.1332193,0.2664386,0.9572136121595372,0,0,0,True,201.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-25 14:54:24,2025-09-23 14:54:23
+e-eisin.com,jpcert,com,0.13238056,0.2647611,0.9617834332215892,0,0,0,True,242.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-15 07:12:46,2025-08-13 07:12:45
+jm1860.com.cn,certificates,cn,0.13223894,0.26447785,0.9040614686782298,1,0,0,True,275.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-04-11 16:32:57,2025-07-10 17:31:25
+flowcv.me,phishtank,me,0.13218394,0.26436788,0.9548978991480286,1,0,0,True,235.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-22 13:34:37,2025-08-20 13:34:36
+cpyg.net,certificates,net,0.13209637,0.2641927,0.8817525703831767,0,0,0,True,510.0,Let's Encrypt,True,1.0,False,False,False,89.0,2024-08-20 03:25:02,2024-11-18 03:25:01
+myartsauction.com,jpcert,com,0.1319836,0.26396716,0.9135612707838762,0,0,1,True,270.0,Let's Encrypt,True,90.0,False,False,False,89.0,2025-04-16 20:30:54,2025-07-15 20:30:53
+TiNy.Cc,certificates,Cc,0.13127981,0.26255965,0.9654560406326884,1,0,0,True,216.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-10 01:21:43,2025-09-08 01:21:42
+TINy.Cc,certificates,Cc,0.13127981,0.26255965,0.9654560406326884,1,0,0,True,216.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-10 01:21:43,2025-09-08 01:21:42
+redesapoyo.org,phishtank,org,0.12948504,0.25897008,0.9201171133359428,0,0,0,True,232.0,ZeroSSL,True,2.0,False,False,False,90.0,2025-05-25 00:00:00,2025-08-23 23:59:59
+ykj-tax.com,jpcert,com,0.12893,0.25786,0.9546487606383198,0,0,0,True,191.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-05 11:49:21,2025-10-03 11:49:20
+satsumatsu.com,jpcert,com,0.12769683,0.25539362,0.9222644793690072,0,0,0,True,1330.0,ZeroSSL,True,1.0,False,False,False,90.0,2022-05-23 00:00:00,2022-08-21 23:59:59
+jkjzzl.com,certificates,com,0.12735754,0.25471509,0.9509518385981406,0,0,0,True,203.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-06-23 15:34:13,2025-09-21 15:34:12
+amazonexpressreviews.com,jpcert,com,0.12698695,0.2539739,0.9116179843211686,0,0,1,True,203.0,ZeroSSL,True,1.0,False,False,False,90.0,2025-06-23 00:00:00,2025-09-21 23:59:59
+ipf-patent.com,jpcert,com,0.12693135,0.25386274,0.9457841302113308,0,0,0,True,472.0,"Japan Registry Services Co., Ltd.",False,2.0,False,False,False,368.0,2024-09-27 04:12:16,2025-09-30 14:59:59
+schxhwab.com,phishtank,com,0.12665787,0.25331575,0.8469122614122571,0,0,0,True,211.0,DigiCert Inc,True,2.0,False,False,False,364.0,2025-06-15 00:00:00,2026-06-14 23:59:59
+2bceca694b.nxcli.io,phishtank,io,0.12659793,0.25319588,0.9066187254882522,0,0,0,True,258.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-29 07:00:24,2025-07-28 07:00:23
+psce.pw,phishtank,pw,0.12639,0.25277996,0.9489965260796058,1,0,0,True,215.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-10 16:56:39,2025-09-08 16:56:38
+ea-quality.com,jpcert,com,0.1256871,0.25137424,0.9534634665037808,0,0,0,True,194.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-02 06:24:55,2025-09-30 06:24:54
+litige-paypai.com,phishtank,com,0.12555113,0.25110227,0.956314583720582,0,0,0,True,228.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-29 13:19:22,2025-08-27 13:19:21
+liudehen.COM,certificates,COM,0.1251225,0.25024498,0.8961959842179765,0,0,0,True,570.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-06-21 00:22:20,2024-09-19 00:22:19
+xn--100-ti4buj8d5166a.com,jpcert,com,0.124934174,0.24986833,0.8249057139372513,0,0,0,True,193.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-03 10:23:42,2025-10-01 10:23:41
+ulys-support.com,phishtank,com,0.12489658,0.24979317,0.9519380446359608,0,0,0,True,229.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-28 00:16:31,2025-08-26 00:16:30
+phoenix288.info,phishtank,info,0.12457521,0.2491504,0.8778671751885301,0,0,0,True,459.0,Sectigo Limited,True,2.0,False,False,False,365.0,2024-10-10 00:00:00,2025-10-10 23:59:59
+i-looks.com,phishtank,com,0.12446458,0.24892914,0.94291238042799,0,0,0,True,239.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-17 19:55:24,2025-08-15 19:55:23
+sb1seclive2.com,phishtank,com,0.12431289,0.24862576,0.9382362422147864,0,0,0,True,209.0,Let's Encrypt,True,11.0,False,False,False,89.0,2025-06-16 22:11:31,2025-09-14 22:11:30
+2ysmm.cc,phishtank,cc,0.12356309,0.24712616,0.9447231839657588,1,0,0,True,220.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-06 08:50:45,2025-09-04 08:50:44
+thesocial.cn,certificates,cn,0.1234936,0.24698722,0.8859807983908998,1,0,0,True,284.0,DigiCert Inc,True,1.0,False,False,False,364.0,2025-04-03 00:00:00,2026-04-02 23:59:59
+livraisons-de-colis.com,phishtank,com,0.12325087,0.24650174,0.9413680150579906,0,0,0,True,273.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-13 21:55:22,2025-07-12 21:55:21
+sparka-zertifikat.net,phishtank,net,0.12284884,0.24569768,0.9387892031841752,0,0,0,True,235.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-22 07:22:16,2025-08-20 07:22:15
+get-bible.com,jpcert,com,0.121617064,0.24323416,0.9384526818678348,0,0,0,True,217.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-09 06:55:29,2025-09-07 06:55:28
+cardscc.com,certificates,com,0.12118101,0.24236202,0.9390101946120798,0,0,0,True,254.0,Let's Encrypt,True,4.0,True,False,False,89.0,2025-05-03 15:31:29,2025-08-01 15:31:28
+uliu.cn,certificates,cn,0.12068261,0.2413652,0.8527204717104278,1,0,0,True,466.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-10-03 11:08:50,2025-01-01 11:08:49
+7vah.top,phishtank,top,0.12058505,0.24117011,0.859243366941213,1,0,0,True,221.0,DigiCert Inc,True,1.0,False,False,False,364.0,2025-06-05 00:00:00,2026-06-04 23:59:59
+fotosistem.com,phishtank,com,0.12048426,0.24096853,0.9112140149505292,0,0,0,True,279.0,ZeroSSL,True,1.0,False,False,False,90.0,2025-04-08 00:00:00,2025-07-07 23:59:59
+casesol.com,jpcert,com,0.12045197,0.24090397,0.917076517785607,0,0,0,True,293.0,Sectigo Limited,True,2.0,False,False,False,365.0,2025-03-25 00:00:00,2026-03-25 23:59:59
+misslovage.com,certificates,com,0.11981058,0.23962116,0.9068048051941576,0,0,0,True,610.0,ZeroSSL,True,1.0,False,False,False,90.0,2024-05-12 00:00:00,2024-08-10 23:59:59
+locker-mr.com,phishtank,com,0.119809404,0.23961878,0.949726128887741,0,0,0,True,208.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-17 21:25:15,2025-09-15 21:25:14
+veggieperrins.com,jpcert,com,0.11978729,0.23957455,0.8703034759677367,0,0,0,True,309.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-03-09 10:46:04,2025-06-07 10:46:03
+ynsuofan.com,certificates,com,0.11958215,0.2391643,0.8307256709376207,0,0,0,True,313.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-03-05 13:59:22,2025-06-03 13:59:21
+hengrungongju.com,certificates,com,0.11943489,0.23886979,0.8949608019295175,0,0,0,True,272.0,Let's Encrypt,True,89.0,False,False,False,89.0,2025-04-15 02:29:37,2025-07-14 02:29:36
+oladapoogunjobi.com,jpcert,com,0.11811669,0.23623335,0.95252565230256,0,0,0,True,196.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-29 23:41:34,2025-09-27 23:41:33
+institute-aet.com,jpcert,com,0.118035294,0.23607057,0.928289016786752,0,0,0,True,253.0,Let's Encrypt,True,12.0,True,False,False,89.0,2025-05-04 00:08:18,2025-08-02 00:08:17
+accountwallstreet.com,jpcert,com,0.11772858,0.23545718,0.8504384132945138,0,0,0,True,422.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-11-15 18:36:21,2025-02-13 18:36:20
+american-medical.net,phishtank,net,0.11771277,0.23542553,0.9464480348192024,0,0,0,True,240.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-17 01:37:48,2025-08-15 01:37:47
+cropsmall.com,certificates,com,0.11767996,0.2353599,0.8996041389826629,0,0,0,True,842.0,ZeroSSL,True,1.0,False,False,False,90.0,2023-09-23 00:00:00,2023-12-22 23:59:59
+leaders-cleaning.com,jpcert,com,0.117635235,0.2352705,0.9455227913282868,0,0,1,True,239.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-17 21:55:45,2025-08-15 21:55:44
+971nb.com,certificates,com,0.117302686,0.23460537,0.8458362164695458,0,0,0,True,497.0,Sectigo Limited,True,2.0,False,False,False,365.0,2024-09-02 00:00:00,2025-09-02 23:59:59
+claroseguros.com.br,phishtank,br,0.11705961,0.23411924,0.9334068478824076,0,0,0,True,227.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-30 07:11:49,2025-08-28 07:11:48
+vistaplaya.cl,jpcert,cl,0.11672254,0.23344505,0.867086776472602,1,0,0,True,495.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-09-04 16:00:34,2024-12-03 16:00:33
+go.click.ly,jpcert,ly,0.11634022,0.23268044,0.9199565423476193,0,0,0,True,211.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-15 04:50:18,2025-09-13 04:50:17
+u-m.top,jpcert,top,0.11606962,0.23213923,0.853189006458857,1,0,0,True,448.0,Let's Encrypt,True,1.0,False,False,False,89.0,2024-10-20 20:07:55,2025-01-18 20:07:54
+papeleriadelnorte.com.ar,phishtank,ar,0.11600238,0.23200476,0.9313827107915252,1,0,0,True,253.0,Let's Encrypt,True,4.0,True,False,False,89.0,2025-05-04 00:00:53,2025-08-02 00:00:52
+lckgw.com,jpcert,com,0.11589369,0.23178738,0.939519431650892,0,0,0,True,256.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-30 20:22:19,2025-07-29 20:22:18
+zihi-seikotsuin.com,jpcert,com,0.11542706,0.23085415,0.9418120988702507,0,0,0,True,204.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-22 06:10:06,2025-09-20 06:10:05
+vineria-lavolpe.com,jpcert,com,0.11536595,0.2307319,0.9420956889858786,0,0,0,True,232.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-25 03:22:34,2025-08-23 03:22:33
+mitra-solution.com,phishtank,com,0.114969805,0.22993958,0.9457435629976388,0,0,0,True,235.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-22 04:58:07,2025-08-20 04:58:06
+mrelay-servicefr.com,phishtank,com,0.114871755,0.22974348,0.9435838736023158,0,0,0,True,206.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-19 22:03:16,2025-09-17 22:03:15
+huidianpower.com,certificates,com,0.11430627,0.22861254,0.9042539319629276,0,0,0,True,361.0,Sectigo Limited,True,2.0,False,False,False,365.0,2025-01-16 00:00:00,2026-01-16 23:59:59
+jwnjg.com,jpcert,com,0.11412502,0.22825003,0.9365118721415474,0,0,0,True,261.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-26 04:32:30,2025-07-25 04:32:29
+pt-trackctt.com,phishtank,com,0.11374258,0.22748518,0.9346193786926104,0,0,0,True,244.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-12 18:47:57,2025-08-10 18:47:56
+aidijia999.com,jpcert,com,0.11303795,0.22607589,0.8545068161885367,0,0,0,True,1005.0,Sectigo Limited,True,2.0,False,False,False,365.0,2023-04-13 00:00:00,2024-04-12 23:59:59
+roblox.tg,phishtank,tg,0.11286254,0.22572505,0.9386421616076124,0,0,0,True,237.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-20 16:10:50,2025-08-18 16:10:49
+huohuodai.com,jpcert,com,0.11276755,0.2255351,0.9428943824454644,0,0,0,True,208.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-18 01:01:39,2025-09-16 01:01:38
+oneprimeseg.com.br,phishtank,br,0.11270396,0.2254079,0.9286892799319056,0,0,0,True,229.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-28 04:34:24,2025-08-26 04:34:23
+csesolutions.fr,jpcert,fr,0.1125663,0.22513258,0.8586820247837355,0,1,0,True,497.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-09-02 14:22:06,2024-12-01 14:22:05
+folhapr.com.br,phishtank,br,0.11199249,0.22398496,0.9320882535722216,0,0,0,True,226.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-31 12:02:19,2025-08-29 12:02:18
+ducomon.com,jpcert,com,0.111722834,0.22344565,0.9043869680875132,0,0,0,True,196.0,Let's Encrypt,True,80.0,False,False,False,89.0,2025-06-30 10:38:35,2025-09-28 10:38:34
+cdfme.com,jpcert,com,0.111633874,0.22326773,0.9266404327004184,0,0,0,True,233.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-23 21:14:13,2025-08-21 21:14:12
+inktheshirta.cc,certificates,cc,0.110558584,0.22111714,0.8357289846623365,1,0,0,True,505.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-08-25 13:19:09,2024-11-23 13:19:08
+jtqfk.com,jpcert,com,0.11035989,0.22071981,0.92691398170874,0,0,0,True,209.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-16 18:57:52,2025-09-14 19:56:44
+ashleytevatia.com,jpcert,com,0.1098504,0.21970081,0.8881174410853347,0,0,0,True,632.0,ZeroSSL,True,1.0,False,False,False,90.0,2024-04-20 00:00:00,2024-07-19 23:59:59
+kelpai.cn,jpcert,cn,0.109822705,0.21964538,0.9327697272860708,1,0,0,True,303.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-15 09:40:58,2025-06-13 09:40:57
+eh-md.com,phishtank,com,0.10961485,0.2192297,0.9319549686471238,0,0,0,True,233.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-23 22:06:50,2025-08-21 22:06:49
+bookingdulich365.com,phishtank,com,0.10954863,0.21909726,0.903994350337986,0,0,1,True,264.0,Let's Encrypt,True,8.0,False,False,False,89.0,2025-04-23 06:26:43,2025-07-22 06:26:42
+dshous.cn,jpcert,cn,0.10948879,0.21897757,0.9306523671070112,1,0,0,True,229.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-28 08:57:23,2025-08-26 08:57:22
+lfzxwl.com,jpcert,com,0.10946502,0.21893,0.929839825206021,0,0,0,True,239.0,Let's Encrypt,True,5.0,False,False,False,89.0,2025-05-18 16:04:47,2025-08-16 16:04:46
+mndot-etzodv.xin,phishtank,xin,0.10940372,0.21880746,0.9296557462665618,0,0,0,True,292.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-26 12:22:40,2025-06-24 12:22:39
+itsssl.com,jpcert,com,0.10902478,0.21804953,0.9190705932119116,0,0,0,True,187.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-07-09 12:46:58,2025-10-07 12:46:57
+mtiny.org,phishtank,org,0.108146645,0.21629328,0.8861794509404928,0,0,0,True,343.0,Sectigo Limited,True,2.0,False,False,False,369.0,2025-02-03 00:00:00,2026-02-07 23:59:59
+tomaschool.ru,certificates,ru,0.107741065,0.21548212,0.8408654282617338,0,0,0,True,327.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-02-19 02:45:51,2025-05-20 02:45:50
+jipiaoonline.com,certificates,com,0.10717164,0.21434331,0.9289756691178936,0,0,1,True,234.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-23 03:01:54,2025-08-21 03:01:53
+swisscom.cc,phishtank,cc,0.10713199,0.21426398,0.9254046407538644,1,0,0,True,249.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-08 11:27:10,2025-08-06 11:27:09
+amaons.com,certificates,com,0.10690339,0.21380675,0.8391796679478931,0,0,0,True,326.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-02-20 03:13:01,2025-05-21 03:13:00
+quickfixprotocol.rf.gd,phishtank,gd,0.10672312,0.21344626,0.9347288144705524,0,0,0,True,731.0,GoGetSSL,False,2.0,False,False,False,90.0,2024-01-12 00:00:00,2024-04-11 23:59:59
+aspirecareersintl.com,jpcert,com,0.10636197,0.21272397,0.89821454866955,0,0,0,True,2160.0,Network Solutions L.L.C.,False,2.0,False,False,False,366.0,2020-02-13 00:00:00,2021-02-13 23:59:59
+eriuioetrt.top,jpcert,top,0.105648,0.21129602,0.9265512517222464,1,0,0,True,212.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-14 08:16:45,2025-09-12 08:16:44
+octron.com.br,phishtank,br,0.105397485,0.21079499,0.9106943309309364,0,0,0,True,230.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-27 06:12:12,2025-08-25 06:12:11
+sntqvf.com,phishtank,com,0.10536602,0.21073204,0.9261382057990232,0,0,0,True,232.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-25 12:55:49,2025-08-23 12:55:48
+g4w.top,certificates,top,0.1050735,0.21014702,0.92027850193246,1,0,0,True,201.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-25 08:08:14,2025-09-23 09:06:46
+vencomservices.com.ve,phishtank,ve,0.10485632,0.20971262,0.9079608177886556,0,0,0,True,254.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-02 18:42:11,2025-07-31 18:42:10
+3stepads.com,jpcert,com,0.104688086,0.20937616,0.9061089327990376,0,0,0,True,259.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-28 02:55:21,2025-07-27 02:55:20
+logistik-schweiz-unternehmen.com,phishtank,com,0.10435506,0.20871013,0.865020492495024,0,0,0,True,256.0,"GoDaddy.com, Inc.",False,1.0,False,False,False,365.0,2025-05-01 15:54:35,2026-05-01 15:54:35
+huidongxin.com,jpcert,com,0.104112454,0.2082249,0.8883536433892956,0,0,0,True,294.0,DigiCert Inc,True,2.0,False,False,False,89.0,2025-03-24 00:00:00,2025-06-21 23:59:59
+kamaulaw.com,jpcert,com,0.10347876,0.20695752,0.925627978640764,0,0,1,True,230.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-27 02:34:25,2025-08-25 02:34:24
+jp-ppy.com,jpcert,com,0.10326611,0.20653224,0.8837219631791656,0,0,0,True,1867.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,365.0,2020-12-02 00:32:20,2021-12-02 00:32:20
+arjscl.cn,jpcert,cn,0.103166975,0.20633394,0.9288395688766944,1,0,0,True,229.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-28 07:48:30,2025-08-26 07:48:29
+aeon-servec.com,certificates,com,0.10292306,0.20584613,0.8976358855290124,0,0,0,True,560.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,365.0,2024-07-01 08:55:59,2025-07-01 08:55:59
+hroffline.com,certificates,com,0.10282002,0.20564002,0.9393415156497852,0,0,1,True,277.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,90.0,2025-04-10 11:15:36,2025-07-09 11:15:36
+steviclogistics.com,jpcert,com,0.102729514,0.205459,0.9220112452722198,0,0,0,True,1323.0,Sectigo Limited,True,2.0,False,False,False,90.0,2022-05-30 00:00:00,2022-08-28 23:59:59
+tl7999.com,jpcert,com,0.102263466,0.2045269,0.8800808166088255,0,0,0,True,241.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-16 05:36:32,2025-08-14 05:36:31
+vcsr.cn,jpcert,cn,0.102049775,0.20409954,0.9172054626256436,1,0,0,True,213.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-13 04:21:11,2025-09-11 05:19:48
+hs-india.com,phishtank,com,0.10201534,0.2040307,0.9255652755770636,0,0,0,True,251.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-05 20:00:55,2025-08-03 20:00:54
+allnull.cn,certificates,cn,0.1018587,0.20371741,0.9237041029990504,1,0,0,True,233.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-24 04:55:53,2025-08-22 04:55:52
+camarasciervo.com.mx,phishtank,mx,0.10154711,0.20309424,0.9034064729986936,0,0,0,True,252.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-05 00:32:47,2025-08-03 00:32:46
+stricaimoveis.com.br,jpcert,br,0.101175815,0.20235163,0.9048946574457376,0,0,0,True,222.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-03 22:17:38,2025-09-01 22:17:37
+artager.com,certificates,com,0.10106351,0.20212704,0.82804673785548,0,0,0,True,426.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-11-12 05:27:40,2025-02-10 05:27:39
+app-2025.click,phishtank,click,0.10096929,0.20193857,0.8620184405546163,1,0,0,True,220.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-05 20:15:44,2025-09-03 20:15:43
+jhbnm.com,jpcert,com,0.10095111,0.20190221,0.9108853311233902,0,0,0,True,209.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-16 20:42:34,2025-09-14 21:40:56
+palby.info,certificates,info,0.10043568,0.20087135,0.8973572134797984,0,0,0,True,669.0,"GoDaddy.com, Inc.",False,1.0,False,False,False,365.0,2024-03-14 04:17:36,2025-03-14 04:17:36
+8ujshg.lat,phishtank,lat,0.1002305,0.20046103,0.9032034301047096,1,0,0,True,207.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-19 06:26:13,2025-09-17 07:26:07
+dasong.info,jpcert,info,0.099915,0.19983,0.9096497600226956,0,0,0,True,301.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-17 15:15:15,2025-06-15 15:15:14
+usna85.com,jpcert,com,0.09988891,0.19977784,0.8462328501523837,0,0,0,True,235.0,Let's Encrypt,True,86.0,False,False,False,89.0,2025-05-22 11:32:43,2025-08-20 11:32:42
+lk-medical.net,jpcert,net,0.09959914,0.19919825,0.9240743724479824,0,0,0,True,194.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-02 08:40:23,2025-09-30 08:40:22
+mybulldozer.com,certificates,com,0.09950174,0.19900346,0.8077114746599511,0,0,0,True,426.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-11-11 19:43:40,2025-02-09 19:43:39
+spacedoing.com,jpcert,com,0.09930968,0.19861937,0.8631305980854466,0,0,1,True,1496.0,ZeroSSL,True,1.0,False,False,False,90.0,2021-12-08 00:00:00,2022-03-08 23:59:59
+ragrugtextiles.com,phishtank,com,0.09866086,0.19732171,0.8623162896002474,0,0,0,True,587.0,ZeroSSL,True,1.0,False,False,False,90.0,2024-06-04 00:00:00,2024-09-02 23:59:59
+adityaresidencypollachi.com,phishtank,com,0.09856037,0.19712073,0.9126610504761592,0,0,0,True,238.0,Let's Encrypt,True,9.0,False,False,False,89.0,2025-05-19 09:42:38,2025-08-17 09:42:37
+cf-brands.com,jpcert,com,0.098458625,0.19691724,0.9237638065681764,0,0,0,True,208.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,90.0,2025-06-18 02:55:23,2025-09-16 02:55:23
+maahaya.cn,certificates,cn,0.098261125,0.19652224,0.8110828319470332,1,0,0,True,439.0,Let's Encrypt,True,7.0,False,False,False,89.0,2024-10-29 17:56:31,2025-01-27 17:56:30
+12d-oman.com,phishtank,com,0.09788621,0.19577241,0.9016605204722404,0,0,0,True,238.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-19 14:48:04,2025-08-17 14:48:03
+payer-frais-mondial-relay.com,phishtank,com,0.09739062,0.19478124,0.8843590754861584,0,0,0,True,276.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-11 14:36:11,2025-07-10 14:36:10
+olivia.paradox.ai,phishtank,ai,0.096717104,0.19343424,0.9118349680331276,0,0,0,True,252.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-05 03:13:29,2025-08-03 03:13:28
+ski-bbt.com,jpcert,com,0.09589717,0.19179434,0.9115359107744944,0,0,0,True,222.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-03 18:36:02,2025-09-01 18:36:01
+test-directory.com,jpcert,com,0.09578999,0.19158,0.9154638564293373,0,0,0,True,192.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-04 07:03:41,2025-10-02 07:03:40
+zenritsusen-care.com,jpcert,com,0.095343515,0.19068706,0.9166759393978352,0,0,0,True,222.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-04 09:38:37,2025-09-02 09:38:36
+i-merchant.biz,jpcert,biz,0.09509597,0.19019192,0.912363305251998,0,0,0,True,194.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-01 22:29:39,2025-09-29 22:29:38
+forlife-co.com,jpcert,com,0.09506562,0.19013125,0.9102065750282564,0,0,0,True,211.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-14 23:25:37,2025-09-12 23:25:36
+jfpjq.com,jpcert,com,0.09439187,0.18878376,0.8965669042074462,0,0,0,True,209.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-16 21:47:42,2025-09-14 22:45:22
+lgo66.club,jpcert,club,0.09421532,0.18843067,0.8844744861687633,1,0,0,True,297.0,Let's Encrypt,True,5.0,False,False,False,89.0,2025-03-20 23:13:37,2025-06-18 23:13:36
+dolcehanoigoldenlake.com,jpcert,com,0.09384677,0.18769354,0.918625209295962,0,0,0,True,193.0,Let's Encrypt,True,8.0,False,False,False,89.0,2025-07-03 02:27:49,2025-10-01 02:27:48
+webnetworks.in,phishtank,in,0.09304785,0.18609571,0.7923533598692746,0,0,0,True,405.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-12-02 19:11:29,2025-03-02 19:11:28
+millandfeed.company,jpcert,company,0.09281245,0.1856249,0.7382463374929735,0,0,0,True,418.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-11-20 12:03:34,2025-02-18 12:03:33
+en-bitcoin.org,phishtank,org,0.09281006,0.18562013,0.913609932687077,0,0,0,True,221.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-05 10:41:45,2025-09-03 10:41:44
+kuronekoyamata.com,jpcert,com,0.09270115,0.18540227,0.9090797718115872,0,0,0,True,207.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-19 01:06:20,2025-09-17 01:06:19
+funky-music.com,jpcert,com,0.09257001,0.18514001,0.8975835624989551,0,0,0,True,219.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-07 10:09:40,2025-09-05 10:09:39
+samedayme.com,certificates,com,0.09242672,0.18485343,0.7941567898175462,0,0,0,True,341.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-02-05 05:28:28,2025-05-06 05:28:27
+justweds.com,certificates,com,0.09239534,0.18479067,0.9252219080160912,0,0,0,True,282.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,90.0,2025-04-05 04:18:24,2025-07-04 04:18:24
+weilong-motor.com,jpcert,com,0.09217483,0.18434966,0.8799735879397278,0,0,0,True,253.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-03 22:09:56,2025-08-01 22:09:55
+fhqp0i0d.lat,phishtank,lat,0.091946736,0.18389344,0.8665203244102168,1,0,0,True,215.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-11 08:26:09,2025-09-09 09:24:41
+farfrommyselfrgov.online,phishtank,online,0.09174697,0.18349397,0.8648646531247364,1,0,1,True,234.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-23 09:36:34,2025-08-21 09:36:33
+nagata-k.net,jpcert,net,0.09120581,0.18241161,0.913678693287185,0,0,0,True,187.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-09 04:49:58,2025-10-07 04:49:57
+hablw.cn,certificates,cn,0.09081429,0.18162858,0.9157658398264952,1,0,0,True,228.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-29 03:39:41,2025-08-27 03:39:40
+marcoandreseguros.com.br,jpcert,br,0.090745285,0.18149054,0.8771829017207109,0,0,0,True,248.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-09 02:40:30,2025-08-07 02:40:29
+kek-technik.com,phishtank,com,0.09072773,0.1814555,0.9014716214482544,0,0,0,True,246.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-11 07:57:39,2025-08-09 07:57:38
+amazons.top,certificates,top,0.09066404,0.18132806,0.89645368339187,1,0,1,True,236.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-21 02:33:16,2025-08-19 02:33:15
+youaishidai.com,certificates,com,0.09050221,0.1810044,0.8961118067381423,0,0,0,True,253.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-03 19:52:40,2025-08-01 19:52:39
+yunwaisong.com,certificates,com,0.09048106,0.18096209,0.7861933404049943,0,0,0,True,590.0,ZeroSSL,True,2.0,False,False,False,90.0,2024-06-01 00:00:00,2024-08-30 23:59:59
+e9u.cc,certificates,cc,0.08981563,0.17963123,0.7481914446485392,1,0,0,True,500.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-08-30 04:22:52,2024-11-28 04:22:51
+xqzoss.top,phishtank,top,0.089435145,0.17887032,0.8872294388547444,1,0,0,True,211.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-15 15:44:56,2025-09-13 15:44:55
+largo-morioka.com,jpcert,com,0.08900642,0.17801285,0.8991495910139893,0,0,0,True,271.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-15 22:27:50,2025-07-14 22:27:49
+alswlj.com,certificates,com,0.08898568,0.17797136,0.890257894017634,0,0,0,True,245.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-12 11:14:04,2025-08-10 11:14:03
+kodomo-support.org,jpcert,org,0.08890701,0.177814,0.9027210633875328,0,0,0,True,214.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-12 11:07:38,2025-09-10 11:07:37
+gsredu.com,certificates,com,0.08883804,0.17767608,0.8891227705400198,0,0,0,True,194.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-01 22:00:36,2025-09-29 22:00:35
+sanction-myfin.com,phishtank,com,0.08880895,0.17761791,0.8963454254497182,0,0,0,True,213.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-13 08:17:34,2025-09-11 08:17:33
+maurosantos.adv.br,jpcert,br,0.0886885,0.17737699,0.8761932441673882,0,0,1,True,230.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-27 06:00:17,2025-08-25 06:00:16
+aasthaprinters.com,certificates,com,0.08862836,0.1772567,0.7681878510948337,0,0,0,True,222.0,ZeroSSL,True,1.0,False,False,False,90.0,2025-06-04 00:00:00,2025-09-02 23:59:59
+yebxcd.com,jpcert,com,0.08858667,0.17717338,0.8594226895527174,0,0,0,True,631.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,365.0,2024-04-21 05:47:14,2025-04-21 05:47:14
+bell-reset.com,phishtank,com,0.08858157,0.17716312,0.9023823686319584,0,0,0,True,209.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-17 07:41:08,2025-09-15 07:41:07
+ianjsf.com,certificates,com,0.08847532,0.17695063,0.8750121740168032,0,0,0,True,278.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-09 14:30:36,2025-07-08 14:30:35
+gzdelicnc.com,jpcert,com,0.08837642,0.1767528,0.8840651473678676,0,0,0,True,225.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-01 07:14:14,2025-08-30 07:14:13
+kw-anwaelte.com,jpcert,com,0.088177964,0.17635596,0.9030828734461916,0,0,0,True,198.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-28 03:02:44,2025-09-26 03:02:43
+friedchicken.cn,certificates,cn,0.087913446,0.1758269,0.7658281317968207,1,0,0,True,482.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-09-17 05:07:28,2024-12-16 05:07:27
+jpmercari.org,jpcert,org,0.0878632,0.17572641,0.8802912455182743,0,0,1,True,248.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-09 03:07:30,2025-08-07 03:07:29
+tydevbps.icu,phishtank,icu,0.08768728,0.17537457,0.880258790079464,1,0,0,True,206.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-20 02:40:19,2025-09-18 02:40:18
+hiddenkissstudio.com,certificates,com,0.08660278,0.17320555,0.8064371893335723,0,0,0,True,385.0,ZeroSSL,True,1.0,False,False,False,90.0,2024-12-23 00:00:00,2025-03-23 23:59:59
+tlpdirect.com,jpcert,com,0.08651246,0.1730249,0.8748812441659233,0,0,0,True,231.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-26 12:52:22,2025-08-24 12:52:21
+wwt-hygiene.com,jpcert,com,0.08620951,0.17241901,0.8819674206747485,0,0,0,True,200.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-25 17:14:17,2025-09-23 17:14:16
+lihdesigns.com,jpcert,com,0.086142264,0.17228454,0.8818593338106624,0,0,0,True,286.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-04-01 12:01:56,2025-06-30 12:01:55
+macxel.com,jpcert,com,0.08606819,0.17213637,0.7634086656741474,0,0,0,True,317.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-02-28 18:46:01,2025-05-29 18:46:00
+uspsserve.com,phishtank,com,0.0860389,0.17207778,0.8827112977426872,0,0,1,True,409.0,Google Trust Services,False,2.0,False,False,False,89.0,2024-11-28 17:22:40,2025-02-26 17:22:39
+shresthasameerman.com.np,phishtank,np,0.08599958,0.17199916,0.8610571561735684,0,0,0,True,231.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-26 15:57:27,2025-08-24 15:57:26
+bom.so,phishtank,so,0.08467073,0.16934144,0.7784341741747565,0,0,0,True,274.0,ZeroSSL,True,2.0,False,False,False,90.0,2025-04-13 00:00:00,2025-07-12 23:59:59
+invernaderosjarabacoa.com,phishtank,com,0.08464209,0.16928416,0.8981913906805866,0,0,0,True,236.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-20 22:41:28,2025-08-18 22:41:27
+azratechnologies.com,jpcert,com,0.08445454,0.16890907,0.8040641393285782,0,0,0,True,252.0,ZeroSSL,True,2.0,False,False,False,90.0,2025-05-05 00:00:00,2025-08-03 23:59:59
+eye-lucir.com,jpcert,com,0.08434591,0.16869181,0.8941253406860442,0,0,0,True,262.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-25 01:31:05,2025-07-24 01:31:04
+mito-sogyoyushi.com,jpcert,com,0.083837755,0.1676755,0.8917128929504929,0,0,0,True,234.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-22 19:17:03,2025-08-20 19:17:02
+consultoriaexperimental.com.br,phishtank,br,0.08364946,0.16729891,0.8643414319373789,0,0,1,True,220.0,Let's Encrypt,True,6.0,False,False,False,89.0,2025-06-05 21:43:40,2025-09-03 21:43:39
+assetlatch.online,phishtank,online,0.08349053,0.16698104,0.7735870011317271,1,0,1,True,621.0,Sectigo Limited,True,2.0,False,False,False,365.0,2024-05-01 00:00:00,2025-05-01 23:59:59
+ink-a.co.il,jpcert,il,0.082618915,0.16523784,0.6535898902352146,0,0,0,True,575.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-06-15 23:40:34,2024-09-13 23:40:33
+godoctor.com.ec,phishtank,ec,0.0825252,0.16505039,0.8741439113210966,0,0,0,True,230.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-27 07:48:57,2025-08-25 07:48:56
+kbxsgo.top,phishtank,top,0.082500294,0.16500056,0.8774055811971972,1,0,0,True,268.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-19 10:22:20,2025-07-18 10:22:19
+aceder-particular.com,phishtank,com,0.08221991,0.1644398,0.8788577433098154,0,0,0,True,268.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-19 05:21:04,2025-07-18 05:21:03
+ligamat.com.br,phishtank,br,0.081629105,0.1632582,0.8706074997516418,0,0,0,True,216.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-10 02:25:52,2025-09-08 02:25:51
+trafcomfioy.info,phishtank,info,0.08065432,0.16130865,0.8657327540472077,0,0,0,True,239.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-17 22:14:09,2025-08-15 22:14:08
+choix-creneau-mondialrelay.com,phishtank,com,0.0806488,0.16129762,0.848251914069791,0,0,1,True,253.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-04 05:40:13,2025-08-02 05:40:12
+153in.net,phishtank,net,0.08059427,0.16118854,0.8333452310816885,0,0,0,True,241.0,Let's Encrypt,True,10.0,False,False,False,89.0,2025-05-16 11:28:49,2025-08-14 11:28:48
+shinjuku-mc.net,jpcert,net,0.08058025,0.16116047,0.8716593095018266,0,0,0,True,223.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-03 08:10:24,2025-09-01 08:10:23
+gan456.cc,phishtank,cc,0.08040022,0.16080046,0.8148858349609198,1,0,0,True,196.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-30 10:06:37,2025-09-28 11:06:07
+writingacer.com,jpcert,com,0.08025401,0.16050804,0.7186651817947662,0,0,1,True,1889.0,DigiCert Inc,True,2.0,False,False,False,365.0,2020-11-10 00:00:00,2021-11-10 23:59:59
+relieveaucards.com,jpcert,com,0.080253676,0.16050732,0.8536550440974238,0,0,1,True,300.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-18 02:47:10,2025-06-16 02:47:09
+valoloud.com,jpcert,com,0.08020676,0.1604135,0.8572919829612589,0,0,0,True,604.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,365.0,2024-05-18 05:49:45,2025-05-18 05:49:45
+hj68888.com,jpcert,com,0.080182225,0.16036445,0.7860782721988743,0,0,0,True,241.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-16 05:39:41,2025-08-14 05:39:40
+todolar.com.br,phishtank,br,0.079763405,0.15952682,0.8651427179705763,0,0,0,True,212.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-13 19:53:26,2025-09-11 19:53:25
+entrepots-colis.com,phishtank,com,0.07976267,0.15952533,0.8735342238164814,0,0,0,True,234.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-23 04:33:59,2025-08-21 04:33:58
+alvocerto.srv.br,certificates,br,0.07933445,0.15866888,0.8545869352879107,0,0,0,True,218.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-08 14:14:11,2025-09-06 14:14:10
+pedalnationevents.com,phishtank,com,0.07903148,0.15806293,0.777005442541039,0,0,0,True,276.0,ZeroSSL,True,2.0,False,False,False,90.0,2025-04-11 00:00:00,2025-07-10 23:59:59
+hongxianghs.com,certificates,com,0.078936316,0.15787262,0.8492761367457565,0,0,0,True,195.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-30 22:51:59,2025-09-28 22:51:58
+123xiutu.com,phishtank,com,0.078641325,0.15728265,0.8311469051968035,0,0,0,True,261.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-26 08:42:47,2025-07-25 08:42:46
+i5207.com,jpcert,com,0.07860761,0.15721524,0.7951020606928093,0,0,0,True,287.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-03-31 12:46:03,2025-06-29 12:46:02
+ericedwsfe.icu,phishtank,icu,0.07836225,0.15672451,0.8554539665286647,1,0,0,True,212.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-13 19:26:01,2025-09-11 19:26:00
+ceoyz.cn,jpcert,cn,0.078061104,0.15612221,0.8802538285906194,1,0,0,True,285.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-04-02 06:58:51,2025-07-01 07:57:19
+banghexep.com,jpcert,com,0.0774166,0.1548332,0.8554103383733573,0,0,0,True,246.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-11 03:26:07,2025-08-09 03:26:06
+bbz668.com,jpcert,com,0.07680844,0.1536169,0.7959006578949172,0,0,0,True,203.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-23 05:31:49,2025-09-21 05:31:48
+alpha-net.online,jpcert,online,0.0762426,0.15248519,0.8417858673096461,1,0,1,True,248.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-09 02:48:42,2025-08-07 02:48:41
+quniu365.com,certificates,com,0.07616646,0.1523329,0.8325845196161489,0,0,0,True,292.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-03-26 09:25:43,2025-06-24 09:25:42
+cres-support.com,jpcert,com,0.07570232,0.15140462,0.8534926187992703,0,0,0,True,223.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-03 02:23:46,2025-09-01 02:23:45
+airdogsdrop.one,phishtank,one,0.07551945,0.15103889,0.843646969068991,1,0,0,True,245.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-12 02:39:06,2025-08-10 02:39:05
+liberta-jikohasan.com,jpcert,com,0.07537409,0.1507482,0.8679337668379786,0,0,0,True,214.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-11 21:19:13,2025-09-09 21:19:12
+zoom-howto.com,jpcert,com,0.07532433,0.15064865,0.8565725756835014,0,0,0,True,205.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-21 04:04:38,2025-09-19 04:04:37
+dljinbomy.com,certificates,com,0.07490431,0.14980865,0.8310245973061945,0,0,0,True,271.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-16 15:58:11,2025-07-15 15:58:10
+gardnersregiment.com,jpcert,com,0.074203946,0.14840788,0.753761457933187,0,0,0,True,661.0,ZeroSSL,True,1.0,False,False,False,90.0,2024-03-22 00:00:00,2024-06-20 23:59:59
+mi-ll.com,jpcert,com,0.0741629,0.1483258,0.8608753354951454,0,0,0,True,241.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-15 20:55:48,2025-08-13 20:55:47
+junkedit.com,certificates,com,0.0735285,0.147057,0.8492323181165584,0,0,0,True,233.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-24 10:43:04,2025-08-22 10:43:03
+tuwyxhsebo.xyz,phishtank,xyz,0.07334897,0.14669794,0.820856296495911,1,0,0,True,216.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-10 09:40:21,2025-09-08 09:40:20
+d-gadget.net,phishtank,net,0.073315285,0.14663059,0.8473349455351861,0,0,0,True,262.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-24 17:17:00,2025-07-23 17:16:59
+pms-agency.com,jpcert,com,0.0732917,0.14658338,0.8380053922112268,0,0,0,True,214.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-11 18:11:31,2025-09-09 18:11:30
+web-telegram.club,phishtank,club,0.07300574,0.14601147,0.8242282758582892,1,0,1,True,245.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-05-11 17:32:09,2025-08-09 18:30:48
+sooraneh.ir,phishtank,ir,0.07296513,0.14593029,0.691310627843823,0,0,0,True,578.0,Let's Encrypt,True,2.0,True,False,False,89.0,2024-06-13 06:12:34,2024-09-11 06:12:33
+nr-grp.net,jpcert,net,0.07268509,0.14537019,0.8508702755399443,0,0,0,True,224.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-01 16:21:56,2025-08-30 16:21:55
+iejxuuece.xyz,phishtank,xyz,0.07243664,0.14487326,0.8427633604931389,1,0,0,True,221.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-05 10:48:03,2025-09-03 10:48:02
+usagco.online,phishtank,online,0.07215965,0.1443193,0.8228731696344367,1,0,1,True,228.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-29 09:33:00,2025-08-27 09:32:59
+sonapta.sn,jpcert,sn,0.071905166,0.14381033,0.7475495407086762,0,0,0,True,1315.0,ZeroSSL,True,2.0,False,False,False,90.0,2022-06-07 00:00:00,2022-09-05 23:59:59
+sunjeetcommunications.com,phishtank,com,0.0714929,0.14298582,0.8520694608014713,0,0,1,True,245.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-12 01:21:12,2025-08-10 01:21:11
+amaznoeom.com,jpcert,com,0.07140918,0.14281833,0.748051791381257,0,0,0,True,2408.0,Sectigo Limited,True,2.0,False,False,False,365.0,2019-06-10 00:00:00,2020-06-09 23:59:59
+unionservicex.com,phishtank,com,0.071375445,0.14275086,0.8399632887576579,0,0,0,True,206.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-19 23:59:11,2025-09-17 23:59:10
+everestmotors.com.np,phishtank,np,0.07122159,0.14244318,0.8101484231480961,0,0,0,True,230.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-26 17:51:18,2025-08-24 17:51:17
+beiduxww.com,jpcert,com,0.07114164,0.14228326,0.8317661496902613,0,0,0,True,245.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-11 18:48:52,2025-08-09 18:48:51
+ninchisho-cafe.com,jpcert,com,0.07103124,0.14206249,0.8337989980802017,0,0,0,True,272.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-14 19:25:58,2025-07-13 19:25:57
+gayatrienterprise.com,jpcert,com,0.07084672,0.14169347,0.7406757612939013,0,0,0,True,214.0,ZeroSSL,True,1.0,False,False,False,90.0,2025-06-12 00:00:00,2025-09-10 23:59:59
+data-okinawa.com,jpcert,com,0.07038155,0.1407631,0.8107511737483124,0,0,0,True,237.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-20 07:33:19,2025-08-18 07:33:18
+freebird.co.in,phishtank,in,0.070344195,0.14068842,0.8070086055572309,0,0,0,True,268.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-04-18 20:08:09,2025-07-17 20:08:08
+insabelle.com,phishtank,com,0.0702485,0.14049697,0.8811515559694775,0,0,0,True,230.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,90.0,2025-05-26 17:25:11,2025-08-24 17:25:11
+frutty.com.br,jpcert,br,0.07021526,0.14043051,0.8044127320146575,0,0,0,True,254.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-03 02:28:38,2025-08-01 02:28:37
+meacoppertech.com,certificates,com,0.0701217,0.14024341,0.7462897031839262,0,0,0,True,387.0,Sectigo Limited,True,2.0,False,False,False,365.0,2024-12-21 00:00:00,2025-12-21 23:59:59
+sulejidian.com,jpcert,com,0.07006724,0.14013445,0.8452918727333251,0,0,0,True,243.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-14 01:24:06,2025-08-12 01:24:05
+spiritualreaderbonnie.com,phishtank,com,0.06986009,0.1397202,0.8540251280570917,0,0,0,True,226.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-31 14:22:09,2025-08-29 14:22:08
+yesseafood.com,jpcert,com,0.069663055,0.1393261,0.8340922850079565,0,0,0,True,235.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-22 07:07:25,2025-08-20 07:07:24
+curvesvietnam.com.vn,jpcert,vn,0.06961051,0.13922101,0.8260917643142142,0,0,0,True,197.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-29 16:08:52,2025-09-27 16:08:51
+rs-bt.com,jpcert,com,0.069359235,0.13871849,0.8235267951736386,0,0,0,True,217.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-06-09 04:35:44,2025-09-07 04:35:43
+aemvx.cn,jpcert,cn,0.06920024,0.1384005,0.8441553248227786,1,0,0,True,287.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-03-31 06:59:12,2025-06-29 07:57:27
+americaexpre.com,certificates,com,0.06919306,0.13838613,0.7973090585957964,0,0,0,True,602.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,365.0,2024-05-19 19:58:00,2025-05-19 19:58:00
+kobayashi.farm,jpcert,farm,0.06917394,0.13834786,0.600028980129716,0,0,0,True,642.0,CloudSecure Corporation,False,2.0,False,False,False,396.0,2024-04-10 00:00:00,2025-05-11 23:59:59
+granollerstv.com,jpcert,com,0.06906089,0.13812178,0.8094843781427268,0,0,0,True,192.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-04 07:23:59,2025-10-02 07:23:58
+codigosestimativas.pt,phishtank,pt,0.06888441,0.1377688,0.8452324835181868,0,0,0,True,259.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-04-27 20:32:07,2025-07-26 20:32:06
+caffesound.com,phishtank,com,0.0688778,0.13775563,0.8367270624313273,0,0,0,True,215.0,Let's Encrypt,True,10.0,False,False,False,89.0,2025-06-11 09:02:43,2025-09-09 09:02:42
+jazmin-services.com,jpcert,com,0.06885898,0.13771796,0.8303590864271954,0,0,0,True,301.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-03-16 18:53:26,2025-06-14 18:53:25
+studiolegalelastarza.it,phishtank,it,0.06874953,0.1374991,0.6625843128432662,0,1,0,True,316.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-03-02 02:37:10,2025-05-31 02:37:09
+colocationquimper.com,jpcert,com,0.06872645,0.1374529,0.8284827647946166,0,0,0,True,201.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-24 22:06:46,2025-09-22 22:06:45
+nalahouse.com,jpcert,com,0.06869547,0.13739097,0.8299684967557338,0,0,0,True,257.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-29 20:22:21,2025-07-28 20:22:20
+replanifierma-livraison.com,phishtank,com,0.06841422,0.13682842,0.8371757710846934,0,0,0,True,227.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-30 04:07:34,2025-08-28 04:07:33
+hansonfiction.com,jpcert,com,0.06830923,0.1366185,0.7367321396848769,0,0,0,True,298.0,Sectigo Limited,True,2.0,False,False,False,365.0,2025-03-20 00:00:00,2026-03-20 23:59:59
+darcydjeffs.com,phishtank,com,0.06823646,0.13647294,0.7961454047897841,0,0,0,True,210.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-16 00:31:33,2025-09-14 00:31:32
+globalxpresstraders.com,phishtank,com,0.067842364,0.13568473,0.7020646991965832,0,0,0,True,259.0,ZeroSSL,True,1.0,False,False,False,90.0,2025-04-28 00:00:00,2025-07-27 23:59:59
+laferre.com.ar,phishtank,ar,0.067410916,0.13482183,0.8205487193703322,1,0,0,True,217.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-09 16:14:24,2025-09-07 16:14:23
+juetz.cn,phishtank,cn,0.06740122,0.13480246,0.8436915517300796,1,0,0,True,219.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-07 14:56:09,2025-09-05 15:54:56
+igesz.cn,phishtank,cn,0.06740122,0.13480246,0.843641872578179,1,0,0,True,219.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-07 14:29:24,2025-09-05 15:26:54
+internetku.id,jpcert,id,0.067343764,0.13468754,0.7449605428079464,0,0,0,True,476.0,Sectigo Limited,True,2.0,False,False,False,365.0,2024-09-23 00:00:00,2025-09-23 23:59:59
+dongalo.com,jpcert,com,0.06719518,0.13439035,0.872100998953061,0,0,0,True,251.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,90.0,2025-05-05 16:50:21,2025-08-03 16:50:21
+auraacres.com,jpcert,com,0.06709466,0.13418931,0.7942816422236806,0,0,1,True,203.0,"GoDaddy.com, Inc.",False,1.0,False,False,False,365.0,2025-06-23 16:01:32,2026-06-23 16:01:32
+ssk08.ru,phishtank,ru,0.06674264,0.13348532,0.7794213590034039,0,0,0,True,265.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-22 06:41:57,2025-07-21 06:41:56
+korfans.com,jpcert,com,0.06671572,0.13343143,0.8164444159672439,0,0,0,True,233.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-24 14:30:43,2025-08-22 14:30:42
+issiuk.com.cn,jpcert,cn,0.06663191,0.13326383,0.7705122026951517,1,0,0,True,227.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-30 10:02:34,2025-08-28 10:02:33
+uzdrbmn.shop,jpcert,shop,0.06662034,0.1332407,0.7909530249289674,1,0,0,True,254.0,Google Trust Services,False,1.0,False,False,False,90.0,2025-05-03 03:00:49,2025-08-01 04:00:47
+yourmeetinginvite.com,phishtank,com,0.06604759,0.13209516,0.8105694082041698,0,0,1,True,221.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-04 23:54:50,2025-09-02 23:54:49
+exteriorvenecos.shop,phishtank,shop,0.06603499,0.13206995,0.8673983862930722,1,0,0,True,241.0,Google Trust Services,False,1.0,False,False,False,89.0,2025-05-16 00:59:44,2025-08-14 00:59:43
+tg1.com.cn,jpcert,cn,0.06598129,0.1319626,0.7489153476860521,1,0,0,True,275.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-04-11 22:08:05,2025-07-10 23:06:33
+baahskdndnxnshwhehe.com,phishtank,com,0.06596266,0.13192534,0.6635804817072335,0,0,0,True,278.0,"GoDaddy.com, Inc.",False,1.0,False,False,False,365.0,2025-04-09 06:35:23,2026-04-09 06:35:23
+ruralmi.com,jpcert,com,0.065785095,0.13157022,0.8170022481387119,0,0,0,True,234.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-23 08:17:07,2025-08-21 08:17:06
+hblanhai.com,certificates,com,0.06576423,0.1315285,0.8070681217005718,0,0,0,True,213.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-13 11:11:31,2025-09-11 11:11:30
+biechulife.com,jpcert,com,0.06574073,0.13148147,0.818417113355534,0,0,0,True,213.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-13 00:38:06,2025-09-11 00:38:05
+aicolumns.com,jpcert,com,0.06566867,0.13133734,0.8083494128888702,0,0,0,True,233.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-24 01:52:45,2025-08-22 01:52:44
+dradenisechiquetti.com.br,phishtank,br,0.065658756,0.1313175,0.8158526971725005,0,0,0,True,222.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-04 16:05:13,2025-09-02 16:05:12
+vxxre.xyz,certificates,xyz,0.06561848,0.13123697,0.7548644240159704,1,0,0,True,374.0,"GoDaddy.com, Inc.",False,1.0,False,False,False,365.0,2025-01-02 20:01:15,2026-01-02 20:01:15
+thizinternational.com,phishtank,com,0.06561834,0.13123667,0.8250125471677678,0,0,0,True,253.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-04 13:53:32,2025-08-02 13:53:31
+hutaobang.com,jpcert,com,0.065357596,0.13071519,0.8151492455187509,0,0,0,True,212.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-14 03:38:05,2025-09-12 03:38:04
+pontoss.com,phishtank,com,0.06527494,0.13054991,0.8077673271955564,0,0,0,True,223.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-03 15:27:22,2025-09-01 15:27:21
+womenclubmeripehchan.com,jpcert,com,0.06502311,0.13004625,0.6997498906422049,0,0,0,True,1270.0,ZeroSSL,True,1.0,False,False,False,90.0,2022-07-22 00:00:00,2022-10-20 23:59:59
+inquebra.com.mx,phishtank,mx,0.06490786,0.1298157,0.7791646429771593,0,0,0,True,263.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-04-23 19:10:15,2025-07-22 19:10:14
+jjbyjh.com,jpcert,com,0.064849384,0.12969875,0.7927529660857832,0,0,0,True,243.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-14 00:24:12,2025-08-12 00:24:11
+che-post.club,phishtank,club,0.06475472,0.12950945,0.7918748528914061,1,0,0,True,295.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-03-22 20:13:54,2025-06-20 21:11:35
+nintendo.pe,jpcert,pe,0.06473233,0.12946463,0.7284190291264038,1,0,0,True,375.0,Sectigo Limited,True,2.0,False,False,False,367.0,2025-01-02 00:00:00,2026-01-04 23:59:59
+bojeor.com,certificates,com,0.06458917,0.12917835,0.5979080870803904,0,0,0,True,1001.0,"TrustAsia Technologies, Inc.",False,2.0,False,False,False,365.0,2023-04-17 00:00:00,2024-04-16 23:59:59
+avnetworkonsite.co.za,jpcert,za,0.064523585,0.12904716,0.7595116146972651,0,0,0,True,189.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-07 13:54:44,2025-10-05 13:54:43
+ssgjdnews.com,jpcert,com,0.06348523,0.12697047,0.8035272931665929,0,0,0,True,226.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-31 03:21:46,2025-08-29 03:21:45
+reportermarelivraison.com,phishtank,com,0.06320689,0.12641376,0.8360077490284172,0,0,0,True,207.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-06-18 21:49:15,2025-09-16 21:49:14
+gptyq.com,certificates,com,0.06318535,0.12637067,0.8103057452916589,0,0,0,True,209.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-16 23:52:17,2025-09-14 23:52:16
+toktamhome.ir,phishtank,ir,0.06308911,0.1261782,0.8352157723610507,0,0,0,True,217.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-09 07:34:29,2025-09-07 07:34:28
+antelys.com,certificates,com,0.06302075,0.12604153,0.7799644825100986,0,0,0,True,267.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-19 16:24:27,2025-07-18 16:24:26
+bin.st,jpcert,st,0.06226793,0.12453586,0.797309928631244,0,0,0,True,206.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-19 22:23:29,2025-09-17 22:23:28
+jnvnanded.com,jpcert,com,0.06217308,0.12434614,0.6607956043718958,0,0,0,True,215.0,ZeroSSL,True,2.0,False,False,False,90.0,2025-06-11 00:00:00,2025-09-09 23:59:59
+sarkariupdate.in,jpcert,in,0.062170215,0.124340415,0.6371341354449267,0,0,0,True,408.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-11-30 13:59:47,2025-02-28 13:59:46
+takipcigir.com,phishtank,com,0.062073965,0.12414795,0.7965912646527393,0,0,0,True,206.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-19 17:56:12,2025-09-17 17:56:11
+mexperiencia.com,phishtank,com,0.06194759,0.12389517,0.7859039445261033,0,0,0,True,263.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-23 17:27:21,2025-07-22 17:27:20
+chulekeji.com,certificates,com,0.061787464,0.12357491,0.7980811506843682,0,0,0,True,249.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-07 18:45:04,2025-08-05 18:45:03
+gl-projects.com,jpcert,com,0.061656024,0.123312056,0.7813945015811277,0,0,0,True,206.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-20 13:28:09,2025-09-18 13:28:08
+imsj.cn,jpcert,cn,0.061301988,0.12260395,0.802786781589323,1,0,0,True,211.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-15 00:42:52,2025-09-13 01:41:38
+hypr.ink,jpcert,ink,0.060783856,0.121567726,0.7623803425656787,0,0,0,True,201.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-25 11:25:34,2025-09-23 11:25:33
+czqby.com,certificates,com,0.0607123,0.121424615,0.7963361535010194,0,0,0,True,232.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-25 09:48:05,2025-08-23 09:48:04
+jintangshebei.com,jpcert,com,0.060351975,0.120703936,0.7491194055268146,0,0,1,True,303.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-15 01:26:33,2025-06-13 01:26:32
+expy.top,jpcert,top,0.060273476,0.12054694,0.5766436428824027,1,0,0,True,490.0,Let's Encrypt,True,1.0,False,False,False,89.0,2024-09-09 15:11:40,2024-12-08 15:11:39
+caronl.com,certificates,com,0.060238756,0.1204775,0.7859182538823613,0,0,0,True,234.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-22 20:59:52,2025-08-20 20:59:51
+zlaysjme.com,jpcert,com,0.0595318,0.119063616,0.8052202526549945,0,0,0,True,234.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-23 06:58:31,2025-08-21 06:58:30
+iqtaste.com,jpcert,com,0.059468936,0.11893785,0.7864444359156936,0,0,0,True,234.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-23 02:38:59,2025-08-21 02:38:58
+quantumbackupassets.com,phishtank,com,0.05930295,0.11860591,0.6635737585536227,0,0,0,True,630.0,ZeroSSL,True,2.0,False,False,False,90.0,2024-04-22 00:00:00,2024-07-21 23:59:59
+mass-gov-nces.live,phishtank,live,0.05923351,0.11846703,0.7322805860067905,0,0,0,True,199.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-27 15:17:22,2025-09-25 16:12:44
+zuijianduan.com,jpcert,com,0.059138507,0.11827701,0.8264718991418303,0,0,0,True,233.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-24 14:53:14,2025-08-22 14:53:13
+iberoprint.com,jpcert,com,0.059085056,0.11817014,0.7812352083509492,0,0,0,True,229.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-27 22:01:38,2025-08-25 22:01:37
+hlotfiseismologist.com,jpcert,com,0.05904796,0.118095934,0.6615397754949942,0,0,0,True,1176.0,ZeroSSL,True,2.0,False,False,False,90.0,2022-10-24 00:00:00,2023-01-22 23:59:59
+serveaucards.com,jpcert,com,0.058948565,0.11789715,0.7496467769361637,0,0,1,True,300.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-18 02:47:18,2025-06-16 02:47:17
+cenkaskalli.com.tr,jpcert,tr,0.058811493,0.11762297,0.7641278582851198,0,0,0,True,204.0,Let's Encrypt,True,6.0,False,False,False,89.0,2025-06-22 12:31:50,2025-09-20 12:31:49
+planetavallenato.com,phishtank,com,0.058670968,0.117341936,0.8031410350310831,0,0,0,True,242.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-14 21:32:24,2025-08-12 21:32:23
+cheezstore.com,phishtank,com,0.058637228,0.11727446,0.7336412166939191,0,0,0,True,563.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,365.0,2024-06-28 15:21:12,2025-06-28 15:21:12
+beforewemeetllc.com,jpcert,com,0.058608282,0.11721659,0.7854636416545324,0,0,0,True,235.0,Let's Encrypt,True,9.0,False,False,False,89.0,2025-05-22 08:22:25,2025-08-20 08:22:24
+galex-pro.com,jpcert,com,0.058502637,0.11700529,0.7932153149113568,0,0,0,True,225.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-05-31 19:56:05,2025-08-29 19:56:04
+nina-life.com,jpcert,com,0.05848683,0.11697364,0.8076557903969948,0,0,0,True,226.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-31 10:04:42,2025-08-29 10:04:41
+toshibafileexchange.com,jpcert,com,0.058425765,0.11685151,0.7940567048217543,0,0,0,True,228.0,Let's Encrypt,True,6.0,False,False,False,89.0,2025-05-29 03:26:21,2025-08-27 03:26:20
+gujuantong.com,certificates,com,0.058353554,0.11670709,0.7768889745308653,0,0,0,True,212.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-14 04:37:15,2025-09-12 04:37:14
+integrateprojectus.com,jpcert,com,0.058258034,0.11651605,0.6702667817722534,0,0,0,True,1251.0,Sectigo Limited,True,2.0,False,False,False,365.0,2022-08-10 00:00:00,2023-08-10 23:59:59
+techwillow.com,jpcert,com,0.058248248,0.1164965,0.6469584400104986,0,0,0,True,471.0,ZeroSSL,True,2.0,False,False,False,90.0,2024-09-28 00:00:00,2024-12-27 23:59:59
+appcanaldigital.com,phishtank,com,0.05814818,0.11629635,0.7400545147944387,0,0,1,True,256.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-01 02:53:52,2025-07-30 02:53:51
+cfl402ee.com,phishtank,com,0.05767451,0.115348995,0.7064946906677193,0,0,0,True,244.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-12 19:50:36,2025-08-10 19:50:35
+icellsn.com,certificates,com,0.057650786,0.11530155,0.7992932988304754,0,0,0,True,206.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-06-20 14:37:17,2025-09-18 14:37:16
+goldmannimpressos.com.br,phishtank,br,0.057604875,0.11520976,0.7278325325944541,0,0,0,True,261.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-04-26 13:16:00,2025-07-25 13:15:59
+xdigitalacademy.com,jpcert,com,0.05745274,0.11490548,0.7823314582904745,0,0,0,True,264.0,Let's Encrypt,True,8.0,False,False,False,89.0,2025-04-22 20:29:41,2025-07-21 20:29:40
+farmantisk.com,phishtank,com,0.057318278,0.11463654,0.7955802817028244,0,0,0,True,235.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-22 03:37:25,2025-08-20 03:37:24
+pardisfilm.ir,phishtank,ir,0.057172917,0.11434585,0.8038420029764523,0,0,0,True,212.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-14 10:01:55,2025-09-12 10:01:54
+obkit.cn,phishtank,cn,0.0571704,0.11434078,0.7950673422084418,1,0,0,True,220.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-06 10:00:40,2025-09-04 10:57:03
+9408kramerwood.com,phishtank,com,0.057140492,0.114281,0.6961838196299902,0,0,0,True,235.0,Let's Encrypt,True,7.0,False,False,False,89.0,2025-05-21 19:15:00,2025-08-19 19:14:59
+slkgfoeig.top,phishtank,top,0.056969713,0.113939404,0.739218667898271,1,0,0,True,222.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-04 14:50:48,2025-09-02 14:50:47
+vivido-office.ro,jpcert,ro,0.056675095,0.11335021,0.7818842700701686,0,0,0,True,238.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-19 16:03:48,2025-08-17 16:03:47
+cafsrl.com.ar,jpcert,ar,0.05660759,0.11321521,0.7313724235889487,1,0,0,True,206.0,Let's Encrypt,True,5.0,False,False,False,89.0,2025-06-19 18:38:22,2025-09-17 18:38:21
+pajno.cn,phishtank,cn,0.056607284,0.11321455,0.7901850781940093,1,0,0,True,222.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-04 09:51:37,2025-09-02 10:49:59
+ilsentiero.net,certificates,net,0.05650573,0.11301148,0.78339216097212,0,0,0,True,286.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-03-31 20:02:03,2025-06-29 20:02:02
+terrarioskarungen.cl,jpcert,cl,0.056454133,0.112908244,0.7978311433679488,1,0,0,True,194.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-07-02 00:21:50,2025-09-30 00:21:49
+apollomedia.ro,phishtank,ro,0.056358073,0.11271614,0.8090469340528221,0,0,0,True,227.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-30 03:17:13,2025-08-28 03:17:12
+selecttulsa.com,jpcert,com,0.056276623,0.11255324,0.7510647618555025,0,0,0,True,226.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-31 14:09:44,2025-08-29 14:09:43
+yuukayamada-art-leciel-sky.com,jpcert,com,0.05611629,0.112232566,0.6899644354561841,0,0,0,True,252.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-04 20:46:37,2025-08-02 20:46:36
+guchengzhangji.com,certificates,com,0.056086335,0.11217266,0.7371215439661511,0,0,0,True,198.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-28 04:57:54,2025-09-26 04:57:53
+flownergy.com,jpcert,com,0.055910878,0.11182177,0.8113701995466175,0,0,0,True,241.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,90.0,2025-05-15 20:15:04,2025-08-13 20:15:04
+sxmba.com.cn,jpcert,cn,0.055874765,0.11174953,0.698024016841579,1,0,0,True,197.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-29 00:21:35,2025-09-27 01:19:00
+ccsq.net,jpcert,net,0.05571591,0.11143184,0.7140970732324511,0,0,0,False,,,,,,,,89.0,,
+moldcoop.md,phishtank,md,0.055075776,0.11015153,0.7803576455930622,0,0,0,True,217.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-08 16:50:35,2025-09-06 16:50:34
+jagtambaiti.com,jpcert,com,0.055063587,0.11012715,0.74419008893488,0,0,0,True,303.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-03-14 18:21:46,2025-06-12 18:21:45
+mickydweb.com,phishtank,com,0.05499597,0.10999191,0.6645543904194634,0,0,0,True,945.0,The USERTRUST Network,False,2.0,False,False,False,365.0,2023-06-12 00:00:00,2024-06-11 23:59:59
+707.su,phishtank,su,0.054941006,0.109882,0.646196564904182,0,0,0,True,216.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-10 03:13:01,2025-09-08 03:13:00
+vaultandpartners.com,phishtank,com,0.05480746,0.10961491,0.7300417080815578,0,0,1,True,239.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-18 01:48:06,2025-08-16 01:48:05
+groeuijh.top,phishtank,top,0.054693386,0.1093868,0.7603433404412037,1,0,0,True,229.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-28 07:52:30,2025-08-26 07:52:29
+amzoneid54620-jp.com,jpcert,com,0.054500535,0.10900104,0.3595791887565394,0,0,0,True,2086.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,730.0,2020-04-27 02:00:09,2022-04-27 02:00:09
+mbpetsitting.com,phishtank,com,0.054464307,0.10892862,0.7437569526119304,0,0,1,True,269.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-04-18 14:21:01,2025-07-17 14:21:00
+cjzuibang.com,jpcert,com,0.054435324,0.108870625,0.7297797109233815,0,0,0,True,303.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-15 01:26:07,2025-06-13 01:26:06
+endopeel.fr,jpcert,fr,0.054370936,0.10874188,0.6346342947959216,0,1,0,True,203.0,ZeroSSL,True,2.0,False,False,False,90.0,2025-06-23 00:00:00,2025-09-21 23:59:59
+radimaconsultores.com,phishtank,com,0.05434408,0.108688176,0.7793246524555212,0,0,0,True,230.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-26 23:52:39,2025-08-24 23:52:38
+logguscorretora.online,phishtank,online,0.05431309,0.10862619,0.5857401062989152,1,0,1,True,228.0,ZeroSSL,True,2.0,False,False,False,90.0,2025-05-29 00:00:00,2025-08-27 23:59:59
+gwinnettathome.com,certificates,com,0.05412573,0.10825145,0.74784182110477,0,0,0,True,198.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-28 09:00:36,2025-09-26 09:00:35
+armwoodnews.com,phishtank,com,0.054042235,0.10808444,0.7381055415630056,0,0,0,True,219.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-06 23:31:51,2025-09-04 23:31:50
+mopty.cn,jpcert,cn,0.054026052,0.108052135,0.6377174050500359,1,0,0,True,272.0,DigiCert Inc,True,2.0,False,False,False,89.0,2025-04-15 00:00:00,2025-07-13 23:59:59
+industriasclaudette.com,jpcert,com,0.053744912,0.107489824,0.7290581095121412,0,0,1,True,250.0,Let's Encrypt,True,11.0,False,False,False,89.0,2025-05-07 15:40:17,2025-08-05 15:40:16
+crencia.net,phishtank,net,0.05374253,0.107485056,0.7506234816975137,0,0,0,True,243.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-13 22:10:31,2025-08-11 22:10:30
+eastmeadowfillies.com,jpcert,com,0.05373915,0.10747832,0.7238358143146526,0,0,0,True,258.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-29 08:46:07,2025-07-28 08:46:06
+changyoushiyou.com,jpcert,com,0.05372149,0.107442975,0.7365806305249546,0,0,0,True,221.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-05 09:54:20,2025-09-03 09:54:19
+neonvault.click,phishtank,click,0.05367786,0.107355714,0.770729339412896,1,0,1,True,225.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-01 11:40:06,2025-08-30 11:40:05
+ojyodcxuisnh.xyz,jpcert,xyz,0.053500436,0.10700089,0.7159815772216779,1,0,0,True,302.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-16 15:31:57,2025-06-14 15:31:56
+binancell.com,certificates,com,0.05350005,0.10700011,0.766818783852069,0,0,1,True,232.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-25 03:36:27,2025-08-23 03:36:26
+robonelectric.co.za,phishtank,za,0.053466547,0.10693312,0.7102937383326461,0,0,0,True,247.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-10 06:06:45,2025-08-08 06:06:44
+easyhealthadvise.com,phishtank,com,0.053415686,0.10683137,0.7344009371086936,0,0,0,True,238.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-18 21:22:18,2025-08-16 21:22:17
+forodhaniparkhotel.com,phishtank,com,0.05337963,0.10675925,0.7639697161271932,0,0,0,True,230.0,Let's Encrypt,True,7.0,False,False,False,89.0,2025-05-27 13:46:27,2025-08-25 13:46:26
+mischahiller.com,jpcert,com,0.053177547,0.10635507,0.7312511925805715,0,0,0,True,247.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-09 16:51:35,2025-08-07 16:51:34
+2ctcat.lat,phishtank,lat,0.053163752,0.10632753,0.7147387497286709,1,0,0,True,205.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-21 05:55:32,2025-09-19 06:53:16
+healthywithzaida.com,phishtank,com,0.053066257,0.10613251,0.7094742668773661,0,0,0,True,240.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-17 00:32:04,2025-08-15 00:32:03
+vaanitech.com,phishtank,com,0.053054173,0.10610837,0.7773597196405612,0,0,0,True,221.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-05 10:05:13,2025-09-03 10:05:12
+sb1-sec-astasiai.com,phishtank,com,0.05295742,0.10591483,0.6486851463342325,0,0,0,True,209.0,Let's Encrypt,True,18.0,False,False,False,89.0,2025-06-16 22:05:53,2025-09-14 22:05:52
+doudouxizi.com,certificates,com,0.052706625,0.10541326,0.8019692277154441,0,0,0,True,227.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-30 08:21:49,2025-08-28 08:21:48
+spzia.com,phishtank,com,0.052559014,0.105118036,0.7321155700010167,0,0,0,True,252.0,Let's Encrypt,True,10.0,False,False,False,89.0,2025-05-05 16:15:10,2025-08-03 16:15:09
+fullconstruction.com.ar,phishtank,ar,0.05243615,0.10487229,0.6673786763145991,1,0,0,True,264.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-04-23 08:58:55,2025-07-22 08:58:54
+huwaifeng.cn,certificates,cn,0.05231334,0.104626656,0.7477840691667272,1,0,0,True,234.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-23 09:15:00,2025-08-21 09:14:59
+mobility-pioneers.com,phishtank,com,0.052289773,0.10457957,0.7687008185868387,0,0,0,True,216.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-10 12:16:04,2025-09-08 12:16:03
+dellavillas.com,phishtank,com,0.052221928,0.10444385,0.7346103309580209,0,0,0,True,235.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-22 01:20:01,2025-08-20 01:20:00
+1000okrs.com,phishtank,com,0.05219465,0.10438931,0.6469030047133223,0,0,0,True,227.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-29 18:32:36,2025-08-27 18:32:35
+aztouring.com,jpcert,com,0.05210128,0.10420257,0.7807413804311627,0,0,1,True,227.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-30 16:15:58,2025-08-28 16:15:57
+i5s.top,certificates,top,0.05204629,0.1040926,0.7326525205555179,1,0,0,True,309.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-03-08 23:10:39,2025-06-07 00:08:12
+skxsh.com,jpcert,com,0.05183559,0.10367119,0.7238238944886962,0,0,0,True,242.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-15 05:53:41,2025-08-13 05:53:40
+junkunoo.com,jpcert,com,0.051806558,0.10361314,0.70576867669253,0,0,0,True,602.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,365.0,2024-05-20 04:32:48,2025-05-20 04:32:48
+pejuangbaik.com,jpcert,com,0.051675636,0.103351295,0.7290267114191102,0,0,0,True,219.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-07 01:37:12,2025-09-05 01:37:11
+goltaa.com,phishtank,com,0.051477045,0.10295409,0.7526788628344641,0,0,0,True,256.0,Let's Encrypt,True,4.0,True,False,False,89.0,2025-05-01 14:28:51,2025-07-30 14:28:50
+equilibriumpilatesrj.com.br,phishtank,br,0.051374372,0.10274875,0.7165142571562999,0,0,0,True,233.0,Let's Encrypt,True,8.0,False,False,False,89.0,2025-05-24 06:11:46,2025-08-22 06:11:45
+buscoverytours.com,jpcert,com,0.05135689,0.10271376,0.7164084296946654,0,0,0,True,189.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-07 16:15:01,2025-10-05 16:15:00
+misophoniainstitute.com,phishtank,com,0.051186804,0.1023736,0.7486535294534407,0,0,0,True,230.0,Let's Encrypt,True,9.0,False,False,False,89.0,2025-05-27 07:46:31,2025-08-25 07:46:30
+dkehw.com,phishtank,com,0.051006008,0.10201204,0.7257344618932102,0,0,0,True,218.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-08 13:46:54,2025-09-06 13:46:53
+wistariatree.cn,jpcert,cn,0.050864186,0.10172838,0.7250102039749722,1,0,0,True,259.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-28 07:28:44,2025-07-27 07:28:43
+vraiduo.com,phishtank,com,0.050825436,0.10165089,0.6841585970290003,0,0,0,True,438.0,"GoDaddy.com, Inc.",False,3.0,False,False,False,365.0,2024-10-31 11:22:51,2025-10-31 11:22:51
+connectweebly.com,phishtank,com,0.05079778,0.10159558,0.5836386198684549,0,0,0,True,599.0,ZeroSSL,True,2.0,False,False,False,90.0,2024-05-23 00:00:00,2024-08-21 23:59:59
+chauffeurz.com,jpcert,com,0.050658196,0.10131639,0.7877000646521531,0,0,1,True,217.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,90.0,2025-06-09 12:54:21,2025-09-07 12:54:21
+griffithdds.com,phishtank,com,0.050639454,0.1012789,0.7098292931825436,0,0,0,True,234.0,Let's Encrypt,True,5.0,False,False,False,89.0,2025-05-23 08:58:09,2025-08-21 08:58:08
+dourosailing.com,jpcert,com,0.05055064,0.10110128,0.7505716220993393,0,0,1,True,215.0,Let's Encrypt,True,9.0,False,False,False,89.0,2025-06-10 21:16:50,2025-09-08 21:16:49
+monkeygumbo.com,jpcert,com,0.050288722,0.10057747,0.7227477430613264,0,0,0,True,220.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-05 21:28:08,2025-09-03 21:28:07
+furohoon.com,jpcert,com,0.050210305,0.100420594,0.769798187262155,0,0,0,True,223.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-02 23:24:42,2025-08-31 23:24:41
+mang123.cn,certificates,cn,0.049964428,0.099928856,0.6362119876076731,1,0,0,True,293.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-03-25 11:46:06,2025-06-23 12:44:14
+egyptanode.com,phishtank,com,0.049921293,0.09984261,0.7585399162571357,0,0,0,True,213.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-13 05:31:01,2025-09-11 05:31:00
+blogclaudiooliveira.com,jpcert,com,0.049468637,0.09893727,0.6866037836139688,0,0,1,True,303.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-15 13:06:21,2025-06-13 13:06:20
+amzawszone.online,jpcert,online,0.049279027,0.09855807,0.5352534256214386,1,0,1,True,1455.0,ZeroSSL,True,2.0,False,False,False,90.0,2022-01-18 00:00:00,2022-04-18 23:59:59
+aeonzm.com,certificates,com,0.04924753,0.098495066,0.7923061550596024,0,0,0,True,264.0,Google Trust Services,False,2.0,False,False,False,89.0,2025-04-23 00:00:06,2025-07-22 00:00:05
+zsedsu.cn,jpcert,cn,0.049246725,0.09849346,0.7588890105293948,1,0,0,True,294.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-23 16:27:28,2025-06-21 16:27:27
+legomania.net,phishtank,net,0.04908577,0.09817153,0.7776513008333763,0,0,0,True,243.0,Let's Encrypt,True,5.0,False,False,False,89.0,2025-05-14 03:37:18,2025-08-12 03:37:17
+bistanbuldanismanlik.com,jpcert,com,0.04901448,0.09802896,0.7064279963364435,0,0,0,True,247.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-09 23:57:10,2025-08-07 23:57:09
+techwizz.in,certificates,in,0.04882837,0.09765673,0.6492152442036696,0,0,0,True,458.0,"GoDaddy.com, Inc.",False,3.0,False,False,False,365.0,2024-10-11 12:32:51,2025-10-11 12:32:51
+fitnat.com.br,phishtank,br,0.048816055,0.09763211,0.6777766526870646,0,0,0,True,255.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-05-02 09:30:41,2025-07-31 09:30:40
+uiysbadge.info,phishtank,info,0.048761785,0.09752357,0.7536303272240883,0,0,0,True,227.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-30 14:28:22,2025-08-28 14:28:21
+newburycafe.co.za,phishtank,za,0.048739996,0.09748,0.6751510905139487,0,0,0,True,222.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-03 17:15:47,2025-09-01 17:15:46
+usatodaty.com,jpcert,com,0.048638847,0.0972777,0.6989081273615277,0,0,0,True,299.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-03-18 21:27:53,2025-06-16 21:27:52
+amukaigpe.com,phishtank,com,0.048409626,0.09681928,0.7692162600253076,0,0,0,True,241.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-16 05:47:00,2025-08-14 05:46:59
+food4medxb.com,jpcert,com,0.048351087,0.09670216,0.6838355241676064,0,0,0,True,255.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-01 17:00:02,2025-07-30 17:00:01
+riverwalkvisitorsguide.org,phishtank,org,0.048284374,0.09656876,0.7117862781212656,0,0,0,True,280.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-04-06 19:02:11,2025-07-05 19:02:10
+edufarm.com.np,phishtank,np,0.048241775,0.09648353,0.6868243617880495,0,0,0,True,256.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-01 02:18:08,2025-07-30 02:18:07
+g-jp.top,certificates,top,0.04792071,0.09584141,0.7199306672849937,1,0,0,True,197.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-29 06:31:55,2025-09-27 06:31:54
+hsotels.com,certificates,com,0.047799084,0.09559816,0.6855451155575487,0,0,0,True,279.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-07 16:31:39,2025-07-06 16:31:38
+mxjstone.com,jpcert,com,0.04779186,0.09558374,0.7050558222548833,0,0,0,True,238.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-19 04:37:09,2025-08-17 04:37:08
+gtfotv.com,jpcert,com,0.04779037,0.09558076,0.6528841183246904,0,0,0,True,347.0,"GoDaddy.com, Inc.",False,1.0,False,False,False,365.0,2025-01-29 18:05:36,2026-01-29 18:05:36
+baohebolt.com,jpcert,com,0.04766384,0.095327675,0.4912627970122939,0,0,0,True,393.0,DigiCert Inc,True,2.0,False,False,False,364.0,2024-12-15 00:00:00,2025-12-14 23:59:59
+mamoruke.com,jpcert,com,0.04764236,0.0952847,0.7053305361383682,0,0,0,True,265.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-22 05:42:48,2025-07-21 05:42:47
+dibare.com,certificates,com,0.04746502,0.09493005,0.7537870930415825,0,0,0,True,218.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-08 03:32:05,2025-09-06 03:32:04
+playstationgames.in,phishtank,in,0.047439918,0.094879866,0.5701667819748072,0,0,0,True,239.0,ZeroSSL,True,2.0,False,False,False,90.0,2025-05-18 00:00:00,2025-08-16 23:59:59
+tviveria.ge,phishtank,ge,0.046862643,0.093725264,0.5130688796452946,0,0,0,True,562.0,Let's Encrypt,True,2.0,False,False,False,89.0,2024-06-29 12:35:06,2024-09-27 12:35:05
+beneficioregularizacao.com,phishtank,com,0.04683905,0.09367812,0.6790787528315959,0,0,0,True,277.0,"GoDaddy.com, Inc.",False,1.0,False,False,False,365.0,2025-04-09 16:50:29,2026-04-09 16:50:29
+ervilokma.com,jpcert,com,0.04671466,0.09342933,0.6610956502527047,0,0,0,True,2142.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,365.0,2020-03-01 22:28:10,2021-03-01 22:28:10
+veeradalaw.com,phishtank,com,0.046703544,0.093407094,0.7640095864284377,0,0,0,True,220.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-05 21:46:48,2025-09-03 21:46:47
+oceanbanksalerts.com,phishtank,com,0.04664651,0.09329301,0.6808991857023835,0,0,0,True,212.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-14 13:32:59,2025-09-12 13:32:58
+servicedc.sbs,phishtank,sbs,0.04662613,0.09325224,0.650088811873715,1,0,0,True,198.0,Let's Encrypt,True,34.0,False,False,False,89.0,2025-06-28 12:18:23,2025-09-26 12:18:22
+chevy.ru,phishtank,ru,0.046543572,0.09308714,0.7380862690675647,0,0,0,True,214.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-12 03:29:27,2025-09-10 03:29:26
+tdgcpa.net,phishtank,net,0.04645273,0.09290546,0.7117723399882653,0,0,0,True,249.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-08 01:24:33,2025-08-06 01:24:32
+kotaroproduction.com,jpcert,com,0.046378292,0.09275657,0.7304388310919014,0,0,0,True,198.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-27 22:11:09,2025-09-25 22:11:08
+pioneerselectricals.ae,phishtank,ae,0.046228293,0.09245658,0.7272583436794733,0,0,0,True,247.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-10 07:20:49,2025-08-08 07:20:48
+riouruguaysrl.com,jpcert,com,0.046163265,0.09232652,0.7090003333449406,0,0,0,True,208.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-17 23:42:59,2025-09-15 23:42:58
+mtalu.cn,jpcert,cn,0.046148505,0.09229702,0.7210555457234354,1,0,0,True,300.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-03-18 13:12:58,2025-06-16 13:12:57
+yagimama.com,jpcert,com,0.046043105,0.092086196,0.7418266343543034,0,0,0,True,230.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-27 15:05:47,2025-08-25 15:05:46
+fevidint.com,phishtank,com,0.04598867,0.09197736,0.728104155744141,0,0,0,True,224.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-01 17:33:24,2025-08-30 17:33:23
+tagomori.biz,jpcert,biz,0.045954835,0.09190965,0.7598032696025377,0,0,0,True,241.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-16 09:01:03,2025-08-14 09:01:02
+susosweet.com,phishtank,com,0.04594724,0.09189451,0.7127128367169602,0,0,0,True,292.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-03-26 05:42:58,2025-06-24 05:42:57
+goldennumber.pk,jpcert,pk,0.0458302,0.09166038,0.7305756440898182,0,0,0,True,218.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-08 14:40:09,2025-09-06 14:40:08
+sleepmaskz.com,phishtank,com,0.045539413,0.09107882,0.7089275089454766,0,0,0,True,223.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-03 04:00:48,2025-09-01 04:00:47
+idescrow.com,certificates,com,0.04548841,0.090976834,0.6402508430978318,0,0,0,True,220.0,"GoDaddy.com, Inc.",False,1.0,False,False,False,365.0,2025-06-06 07:58:30,2026-06-06 07:58:30
+dinerogeek.com,phishtank,com,0.0454348,0.090869606,0.7562807475588607,0,0,0,True,242.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-15 08:05:07,2025-08-13 08:05:06
+faceforwardinc.com,jpcert,com,0.045224816,0.09044963,0.6658295076083957,0,0,0,True,252.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-04 18:50:50,2025-08-02 18:50:49
+propatchesusa.com,phishtank,com,0.04515477,0.09030956,0.5794036564851155,0,0,0,True,898.0,Sectigo Limited,True,2.0,False,False,False,307.0,2023-07-29 00:00:00,2024-05-31 23:59:59
+carenet.lk,jpcert,lk,0.04511386,0.09022772,0.7281599303331615,0,0,0,True,245.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-12 06:14:33,2025-08-10 06:14:32
+72dosl4.lat,phishtank,lat,0.045089565,0.090179145,0.5954534966335087,1,0,0,True,215.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-11 09:00:21,2025-09-09 09:58:47
+dahecaihui.com,certificates,com,0.045074247,0.09014851,0.7398247496417658,0,0,0,True,262.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-04-25 01:37:32,2025-07-24 01:37:31
+cinov.cn,jpcert,cn,0.045046892,0.09009379,0.7162229420281024,1,0,0,True,256.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-05-01 13:16:28,2025-07-30 14:12:31
+hopmedia.co.za,phishtank,za,0.044993952,0.089987874,0.6485000339528506,0,0,0,True,252.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-05 12:48:48,2025-08-03 12:48:47
+tugetuge.com,jpcert,com,0.044736285,0.08947259,0.7335216836564685,0,0,0,True,223.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-02 23:58:22,2025-08-31 23:58:21
+botik.dk,phishtank,dk,0.044734094,0.08946818,0.7416847932546468,0,0,0,True,225.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-01 16:11:46,2025-08-30 16:11:45
+softech360.com,phishtank,com,0.04452022,0.08904046,0.6592290400863045,0,0,0,True,219.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,90.0,2025-06-07 08:35:21,2025-09-05 08:35:21
+ruruana.top,phishtank,top,0.044392213,0.088784456,0.6902628379321661,1,0,1,True,217.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-08 16:17:39,2025-09-06 16:17:38
+niquwsa.com,jpcert,com,0.044356197,0.088712394,0.6698002510874675,0,0,0,True,303.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-15 11:38:26,2025-06-13 11:38:25
+lexa.com.tr,jpcert,tr,0.04427422,0.08854842,0.6517271989628696,0,0,0,True,205.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-21 09:07:44,2025-09-19 09:07:43
+rabikikaku.com,jpcert,com,0.04397513,0.08795023,0.7448756571999685,0,0,0,True,200.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-26 06:38:02,2025-09-24 06:38:01
+isikserradyator.com,jpcert,com,0.043974828,0.08794963,0.708659407649167,0,0,0,True,255.0,Let's Encrypt,True,5.0,False,False,False,89.0,2025-05-02 09:00:46,2025-07-31 09:00:45
+selvamedic.com,phishtank,com,0.043959856,0.08791971,0.7086819874250682,0,0,0,True,244.0,Let's Encrypt,True,8.0,False,False,False,89.0,2025-05-12 23:57:44,2025-08-10 23:57:43
+hxueoxhop.icu,phishtank,icu,0.043950725,0.08790147,0.6853531276253534,1,0,0,True,208.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-18 13:25:35,2025-09-16 13:25:34
+taton.hk,phishtank,hk,0.04385627,0.08771253,0.7034707648585561,0,0,0,True,263.0,Let's Encrypt,True,8.0,False,False,False,89.0,2025-04-23 17:12:33,2025-07-22 17:12:32
+sml-eg.com,phishtank,com,0.04374992,0.08749986,0.6546507927399984,0,0,0,True,226.0,Let's Encrypt,True,9.0,False,False,False,89.0,2025-05-31 02:06:08,2025-08-29 02:06:07
+lodgevinasdelsol.com,phishtank,com,0.04373522,0.08747041,0.688368872929522,0,0,0,True,252.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-05 04:19:00,2025-08-03 04:18:59
+stp-mex.com,phishtank,com,0.043648645,0.08729732,0.6585933350927535,0,0,0,True,214.0,Let's Encrypt,True,5.0,False,False,False,89.0,2025-06-12 14:15:00,2025-09-10 14:14:59
+bocastraders.com,jpcert,com,0.04364789,0.08729577,0.6786018442654314,0,0,0,True,207.0,Let's Encrypt,True,10.0,True,False,False,89.0,2025-06-18 18:58:41,2025-09-16 18:58:40
+oceancitysandcastlecontest.com,phishtank,com,0.043599527,0.08719903,0.6767870173178148,0,0,0,True,200.0,Let's Encrypt,True,9.0,False,False,False,89.0,2025-06-26 16:13:47,2025-09-24 16:13:46
+abogadoscelaya.com,phishtank,com,0.043562464,0.087124944,0.729912205615863,0,0,0,True,224.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-02 02:24:07,2025-08-31 02:24:06
+challenge8778.com,jpcert,com,0.043479975,0.08695996,0.6028693945379004,0,0,0,True,202.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-24 01:03:00,2025-09-22 01:02:59
+buboaleimxrt.xyz,jpcert,xyz,0.04342157,0.08684313,0.6292924428433895,1,0,0,True,302.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-16 06:38:15,2025-06-14 06:38:14
+vrkgroup.in,phishtank,in,0.04338623,0.08677244,0.6782675573815027,0,0,0,True,216.0,Let's Encrypt,True,3.0,True,False,False,89.0,2025-06-09 20:26:25,2025-09-07 20:26:24
+marketagricola.pe,jpcert,pe,0.043331172,0.08666235,0.7092189763495649,1,0,0,True,199.0,Let's Encrypt,True,8.0,True,False,False,89.0,2025-06-27 04:18:11,2025-09-25 04:18:10
+levant.edu.jo,phishtank,jo,0.043266624,0.08653325,0.6266468567840952,0,0,0,True,266.0,Let's Encrypt,True,10.0,False,False,False,89.0,2025-04-20 18:08:49,2025-07-19 18:08:48
+oltre.mx,phishtank,mx,0.043259695,0.08651936,0.7030453450532397,0,0,0,True,211.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-14 18:16:57,2025-09-12 18:16:56
+garittooberu.com,jpcert,com,0.04319356,0.0863871,0.710688756728146,0,0,0,True,196.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-30 06:19:47,2025-09-28 06:19:46
+dgsimx.com,certificates,com,0.043183424,0.08636683,0.7026895711753522,0,0,0,True,206.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-06-20 05:01:10,2025-09-18 05:01:09
+mnssourcing.com,jpcert,com,0.04306731,0.08613461,0.6980684673740779,0,0,1,False,,,,,,,,89.0,,
+ydshelf.com,certificates,com,0.042812657,0.08562529,0.6604426501116134,0,0,0,True,316.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-03-02 06:06:04,2025-05-31 07:04:18
+panther.wiki,jpcert,wiki,0.04281009,0.085620165,0.6994818747858734,0,0,0,True,265.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-21 20:01:09,2025-07-20 20:01:08
+moretime123.com,jpcert,com,0.04271584,0.085431695,0.6182564302759123,0,0,0,True,239.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-18 13:25:11,2025-08-16 13:25:10
+fleetwoodchicago.com,jpcert,com,0.042706404,0.0854128,0.7423427362740301,0,0,0,True,249.0,Google Trust Services,False,2.0,False,False,False,89.0,2025-05-08 05:09:56,2025-08-06 05:09:55
+bishopmassenburg.com,jpcert,com,0.042689692,0.08537936,0.6945538128075498,0,0,0,True,246.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-11 05:58:51,2025-08-09 05:58:50
+unitekups.in,jpcert,in,0.042407583,0.084815145,0.6248639418495393,0,0,1,False,,,,,,,,365.0,,
+webseth.com,phishtank,com,0.042349618,0.08469921,0.6943426453227275,0,0,0,True,220.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-06-06 03:19:07,2025-09-04 03:19:06
+urlsurvey.co.in,jpcert,in,0.042239603,0.08447921,0.6434773954048656,0,0,0,True,191.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-05 15:03:58,2025-10-03 15:03:57
+espacioroma.com,phishtank,com,0.04219995,0.08439988,0.7193499752821627,0,0,0,True,212.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-06-13 21:08:11,2025-09-11 21:08:10
+ewqga.com,certificates,com,0.04216847,0.08433694,0.612873482019681,0,0,0,True,449.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,365.0,2024-10-20 01:09:19,2025-10-20 01:09:19
+qldtutoring.com,jpcert,com,0.041951466,0.083902955,0.679021062761479,0,0,1,True,232.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-25 09:36:07,2025-08-23 09:36:06
+floridavacationrentalsbyowners.com,phishtank,com,0.041906435,0.08381289,0.647888308469613,0,0,1,True,244.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-13 13:00:04,2025-08-11 13:00:03
+romadiaz.com,jpcert,com,0.041885193,0.083770394,0.7311810332498084,0,0,0,True,222.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-03 17:09:53,2025-09-01 17:09:52
+zzyaolejk.com,certificates,com,0.041878365,0.083756745,0.6769725778731517,0,0,1,True,305.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-03-13 07:32:06,2025-06-11 07:32:05
+ardriven.live,phishtank,live,0.041862037,0.08372408,0.6968145654869332,0,0,0,True,201.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-24 20:05:40,2025-09-22 20:05:39
+251az4.lat,phishtank,lat,0.04179196,0.08358395,0.5862729973846496,1,0,0,True,200.0,"CLOUDFLARE, INC.",True,2.0,False,False,False,90.0,2025-06-26 13:24:18,2025-09-24 13:32:58
+aquaveil.net,phishtank,net,0.041747604,0.0834952,0.7205454000611994,0,0,0,True,297.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-03-21 01:01:10,2025-06-19 01:01:09
+kanimeospas.com,phishtank,com,0.041727234,0.08345449,0.5170906151584539,0,0,0,True,202.0,Sectigo Limited,True,2.0,False,False,False,365.0,2025-06-24 00:00:00,2026-06-24 23:59:59
+evignettesonline.com,phishtank,com,0.041638847,0.0832777,0.6084978204933582,0,0,1,True,285.0,"GoDaddy.com, Inc.",False,1.0,False,False,False,365.0,2025-04-02 15:28:42,2026-04-02 15:28:42
+mariaruizevents.com,phishtank,com,0.041631505,0.08326304,0.6774301939530621,0,0,0,True,206.0,Let's Encrypt,True,9.0,False,False,False,89.0,2025-06-20 06:30:07,2025-09-18 06:30:06
+shanarei.com,phishtank,com,0.041584622,0.08316922,0.6922521336667459,0,0,1,True,229.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-28 01:19:08,2025-08-26 01:19:07
+kifortequimica.com.br,phishtank,br,0.041519664,0.08303934,0.6425887716875843,0,0,0,True,257.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-30 01:09:48,2025-07-29 01:09:47
+sgaircon.com.sg,phishtank,sg,0.041299686,0.0825994,0.6810348245690037,0,0,0,True,223.0,Google Trust Services,False,2.0,False,False,False,89.0,2025-06-03 06:43:56,2025-09-01 06:43:55
+eplshippinguae.com,jpcert,com,0.041253097,0.08250618,0.6361539208977777,0,0,1,True,253.0,Let's Encrypt,True,12.0,False,False,False,89.0,2025-05-03 19:36:45,2025-08-01 19:36:44
+xiaotiandisg.com,phishtank,com,0.041058388,0.08211678,0.712036521692874,0,0,0,True,220.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-06 05:48:55,2025-09-04 05:48:54
+kishvandnews.ir,phishtank,ir,0.041045386,0.082090795,0.6627734757458895,0,0,0,True,252.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-04 20:43:35,2025-08-02 20:43:34
+cestperu.com,phishtank,com,0.04104203,0.08208406,0.6769302984490781,0,0,0,True,233.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-24 07:16:52,2025-08-22 07:16:51
+agdefei.cn,jpcert,cn,0.041016627,0.08203328,0.6692053515371532,1,0,0,True,225.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-01 01:42:07,2025-08-30 01:42:06
+guangxingcun.com,certificates,com,0.040946983,0.08189398,0.6171444761318559,0,0,1,True,196.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-06-30 10:43:13,2025-09-28 10:43:12
+kmiiuojsk.net.tr,jpcert,tr,0.04072932,0.08145863,0.563656358509167,0,0,0,True,235.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-22 05:53:54,2025-08-20 05:53:53
+ilkalcoopbank.com,phishtank,com,0.040662438,0.081324875,0.6814489555507487,0,0,0,True,212.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-14 00:32:38,2025-09-12 00:32:37
+creativeingredient.com,phishtank,com,0.04064434,0.081288695,0.6543060074651614,0,0,1,True,233.0,Let's Encrypt,True,9.0,False,False,False,89.0,2025-05-24 01:53:48,2025-08-22 01:53:47
+ikhwantv.com,jpcert,com,0.0405869,0.08117378,0.6903292023908177,0,0,0,True,193.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-03 10:06:24,2025-10-01 10:06:23
+gjilan.al,jpcert,al,0.040561378,0.081122756,0.6899518578142557,0,0,0,True,195.0,Let's Encrypt,True,4.0,True,False,False,89.0,2025-07-01 03:47:54,2025-09-29 03:47:53
+pattayapeople.com,phishtank,com,0.04055187,0.08110374,0.6670135625462674,0,0,0,True,270.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-04-17 02:48:49,2025-07-16 02:48:48
+icongt.com,phishtank,com,0.04045136,0.080902696,0.6715798674720802,0,0,0,True,234.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-22 20:10:25,2025-08-20 20:10:24
+axhotelsmaltas.com,phishtank,com,0.04035452,0.08070904,0.4813296750451221,0,0,0,True,212.0,Sectigo Limited,True,2.0,False,False,False,365.0,2025-06-14 00:00:00,2026-06-14 23:59:59
+praevida.com.ar,jpcert,ar,0.04029323,0.08058643,0.6432183421224327,1,0,0,True,246.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-11 05:01:17,2025-08-09 05:01:16
+roblox.mq,phishtank,mq,0.040195465,0.08039093,0.705609099476732,0,0,0,True,207.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-19 00:33:23,2025-09-17 00:33:22
+incatrailbookings.com,phishtank,com,0.040011767,0.08002353,0.6563912690292176,0,0,1,True,241.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-15 16:42:17,2025-08-13 16:42:16
+gobmx.org,phishtank,org,0.03993888,0.079877734,0.6806015119982355,0,0,0,True,233.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-24 05:09:51,2025-08-22 05:09:50
+kafkasariotel.com,phishtank,com,0.039924152,0.07984829,0.6995874782123283,0,0,0,True,216.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-06-09 17:01:10,2025-09-07 17:01:09
+hengsenshengda.com,phishtank,com,0.03982337,0.07964671,0.6194229024247194,0,0,0,True,199.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-27 08:20:10,2025-09-25 08:20:09
+hordrid.com,phishtank,com,0.039807923,0.07961583,0.6818155417860929,0,0,0,True,230.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-26 19:42:17,2025-08-24 19:42:16
+rspbharat.com,phishtank,com,0.039654706,0.079309404,0.6557601357964961,0,0,0,True,217.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-09 14:42:47,2025-09-07 14:42:46
+skincaresavvytips.com,phishtank,com,0.03963467,0.07926935,0.585447463507056,0,0,0,True,300.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-03-17 17:06:26,2025-06-15 17:06:25
+godaieducation.org,phishtank,org,0.039607458,0.07921493,0.6881704348327126,0,0,0,True,252.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-05 15:55:24,2025-08-03 15:55:23
+kalush-osvita.if.ua,phishtank,ua,0.039519265,0.0790385,0.6131279299981373,0,0,0,True,220.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-05 19:22:50,2025-09-03 19:22:49
+kobcastgroup.com,jpcert,com,0.03949994,0.07899988,0.6474396291909759,0,0,0,True,210.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-16 12:10:58,2025-09-14 12:10:57
+3kksu6.lat,phishtank,lat,0.039295413,0.07859081,0.5647041296169776,1,0,0,True,205.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-21 05:55:37,2025-09-19 06:53:21
+asiabow.com,jpcert,com,0.03920699,0.07841396,0.6576987276134194,0,0,0,True,234.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-23 09:25:52,2025-08-21 09:25:51
+qorexz.com,phishtank,com,0.039204363,0.07840872,0.6716261087936809,0,0,0,True,239.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-17 17:15:07,2025-08-15 17:15:06
+hgmc.net,jpcert,net,0.03918462,0.07836926,0.6092114214131282,0,0,0,True,301.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-03-17 14:00:00,2025-06-15 13:59:59
+3c5.com,jpcert,com,0.039111555,0.07822311,0.5663536568499625,0,0,0,True,198.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-28 00:41:40,2025-09-26 01:40:09
+jwesteng.com,jpcert,com,0.039085336,0.07817066,0.6883723291882937,0,0,0,True,205.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-20 17:23:27,2025-09-18 17:23:26
+esbimetal.com,phishtank,com,0.03906035,0.07812071,0.6889402998353507,0,0,1,False,,,,,,,,89.0,,
+loli.tuidao.me,jpcert,me,0.038923495,0.077847004,0.6546492688735769,1,0,0,True,189.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-07-07 01:31:28,2025-10-05 01:31:27
+niudindi.com,certificates,com,0.03886749,0.07773495,0.5982725888320507,0,0,0,True,306.0,"GoDaddy.com, Inc.",False,1.0,False,False,False,365.0,2025-03-12 14:25:11,2026-03-12 14:25:11
+pasoapaso.com.ar,jpcert,ar,0.038780633,0.07756126,0.6533381823169505,1,0,0,True,218.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-07 23:46:07,2025-09-05 23:46:06
+shinzou.love,jpcert,love,0.038774922,0.077549815,0.6693092121622364,0,0,0,True,270.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-17 02:21:55,2025-07-16 02:21:54
+thecreativetrunk.com,jpcert,com,0.038708515,0.077417016,0.6959719835643572,0,0,0,True,224.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-02 04:34:20,2025-08-31 04:34:19
+foreverbondweddingstudios.com,phishtank,com,0.038705137,0.07741028,0.6036894576620496,0,0,1,True,271.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-04-15 23:29:10,2025-07-14 23:29:09
+vidaexuberante.com.br,phishtank,br,0.03865891,0.077317834,0.613383898039547,0,0,1,True,238.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-19 13:44:32,2025-08-17 13:44:31
+acceptvendorpayment.com,phishtank,com,0.03854354,0.077087104,0.6552600734399325,0,0,0,True,235.0,Let's Encrypt,True,5.0,False,False,False,89.0,2025-05-21 17:41:38,2025-08-19 17:41:37
+mauvinica.com,phishtank,com,0.03845862,0.07691723,0.7017501345760256,0,0,1,True,271.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-04-15 19:11:52,2025-07-14 19:11:51
+okdxs.com,certificates,com,0.038207185,0.07641435,0.6386431237029432,0,0,0,True,264.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-23 15:17:57,2025-07-22 15:17:56
+jrailpas.com,jpcert,com,0.038172286,0.07634455,0.610184476978877,0,0,0,True,294.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-24 10:04:13,2025-06-22 10:04:12
+siriusmultimedia.com,phishtank,com,0.037870187,0.0757404,0.6954904653176116,0,0,0,True,233.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-24 10:34:04,2025-08-22 10:34:03
+huihuangzj.com,certificates,com,0.03783941,0.075678825,0.3123112692402403,0,0,0,False,,,,,,,,365.0,,
+indiexindie.com,jpcert,com,0.03774379,0.075487554,0.6874329900016489,0,0,0,True,232.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-24 16:43:04,2025-08-22 16:43:03
+anonhanashima.com,jpcert,com,0.0376962,0.075392425,0.6497420018144302,0,0,1,True,228.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-29 11:07:24,2025-08-27 11:07:23
+lerybor.com,phishtank,com,0.037681922,0.075363874,0.6640150196275232,0,0,0,True,224.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-02 07:34:07,2025-08-31 07:34:06
+miyagidenki.com,phishtank,com,0.037678957,0.075357914,0.6626567489306735,0,0,0,True,248.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-08 22:20:04,2025-08-06 22:20:03
+kandcrecycling.co.za,jpcert,za,0.037591223,0.07518244,0.5411716398387164,0,0,1,True,221.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-06-04 18:27:02,2025-09-02 18:27:01
+xerodilem.pt,phishtank,pt,0.037455007,0.074910045,0.6519995617215202,0,0,0,True,260.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-04-26 20:47:50,2025-07-25 20:47:49
+kemoproretail.com,jpcert,com,0.037386768,0.07477355,0.6779123634241315,0,0,0,True,215.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-11 04:40:28,2025-09-09 04:40:27
+qr.fm,phishtank,fm,0.037244473,0.07448894,0.6620311392221038,0,0,0,True,245.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-12 02:04:45,2025-08-10 02:04:44
+beisyeosu.xyz,phishtank,xyz,0.037103236,0.07420647,0.6071437774347199,1,0,0,True,209.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-17 13:54:45,2025-09-15 13:54:44
+lbaeventos.com.br,phishtank,br,0.037062988,0.074126005,0.5850570946340061,0,0,0,True,266.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-20 16:22:35,2025-07-19 16:22:34
+thedigitaldelta.com,jpcert,com,0.036993288,0.07398659,0.6945578680688861,0,0,0,True,241.0,"GoDaddy.com, Inc.",False,2.0,False,False,False,90.0,2025-05-16 15:23:10,2025-08-14 15:23:10
+korzo.ir,phishtank,ir,0.036759883,0.07351977,0.6648866008662689,0,0,0,True,245.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-12 08:30:53,2025-08-10 08:30:52
+bikachao.com,jpcert,com,0.036720302,0.07344061,0.6773347835311202,0,0,0,True,239.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-17 17:51:32,2025-08-15 17:51:31
+skiteup.com,jpcert,com,0.03671156,0.07342315,0.6426951029021133,0,0,0,True,471.0,Google Trust Services,False,2.0,False,False,False,89.0,2024-09-27 16:39:33,2024-12-26 16:39:32
+bjqipai.com,jpcert,com,0.036609482,0.07321894,0.6254178314118658,0,0,0,True,289.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-03-29 05:53:08,2025-06-27 05:53:07
+pennstatenotary.com,phishtank,com,0.036525585,0.073051155,0.5965239460026435,0,0,0,True,251.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-05 23:12:49,2025-08-03 23:12:48
+roesmeraldas.com,phishtank,com,0.036447927,0.072895885,0.6481304098641282,0,0,0,True,235.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-22 12:14:04,2025-08-20 12:14:03
+visamir.com,certificates,com,0.036413237,0.072826505,0.6569593791751913,0,0,1,True,254.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-03 09:17:02,2025-08-01 09:17:01
+pallars.org,phishtank,org,0.036371376,0.07274276,0.6245683524566517,0,0,0,True,254.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-03 06:07:09,2025-08-01 06:07:08
+schzconstruction.com,phishtank,com,0.036366343,0.07273269,0.6126926154200639,0,0,0,True,241.0,Let's Encrypt,True,5.0,False,False,False,89.0,2025-05-15 22:34:08,2025-08-13 22:34:07
+exgeomin.com,jpcert,com,0.036334917,0.07266986,0.6740080328260493,0,0,0,True,231.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-25 18:17:43,2025-08-23 18:17:42
+matsutanitomomi.com,jpcert,com,0.03632406,0.07264811,0.6658216981328188,0,0,0,True,232.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-25 15:37:18,2025-08-23 15:37:17
+corporaciongyg.com,phishtank,com,0.03632174,0.07264346,0.5979479220824001,0,0,0,True,302.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-03-16 05:03:54,2025-06-14 05:03:53
+cheyinapp.com,certificates,com,0.036202956,0.072405934,0.6004706688205975,0,0,0,True,231.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-25 23:36:18,2025-08-23 23:36:17
+zapga.online,phishtank,online,0.036034998,0.07207,0.5653942086744208,1,0,1,True,228.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-29 01:42:01,2025-08-27 01:42:00
+jaseating.com,certificates,com,0.036031857,0.072063684,0.6597777466813556,0,0,1,True,217.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-08 20:41:58,2025-09-06 20:41:57
+noaestedesuner.com,jpcert,com,0.035998106,0.07199621,0.563310924451207,0,0,0,True,509.0,"GoDaddy.com, Inc.",False,3.0,False,False,False,365.0,2024-08-21 02:06:16,2025-08-21 02:06:16
+happypet.mx,jpcert,mx,0.035948083,0.071896195,0.6407927518141892,0,0,0,True,197.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-29 01:33:50,2025-09-27 01:33:49
+fanstayhumble.com,phishtank,com,0.03584337,0.071686745,0.569075210844403,0,0,0,True,259.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-28 13:30:06,2025-07-27 13:30:05
+safhenegar.com,jpcert,com,0.035762925,0.07152587,0.6433216237834459,0,0,0,True,218.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-08 02:08:51,2025-09-06 02:08:50
+cliq-ing.com,phishtank,com,0.03573764,0.07147527,0.5755386804534484,0,0,1,False,,,,,,,,90.0,,
+sadaohospital.go.th,jpcert,th,0.035671014,0.07134205,0.6121960494634163,0,0,0,True,243.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-14 01:52:52,2025-08-12 01:52:51
+anestinnature.com,certificates,com,0.03564168,0.07128334,0.6636780315024082,0,0,0,True,246.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-11 04:45:50,2025-08-09 04:45:49
+mondiaiservice.com,phishtank,com,0.035590816,0.071181655,0.6663567842441759,0,0,0,True,227.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-29 20:34:41,2025-08-27 20:34:40
+karachikitchen.com,phishtank,com,0.035419453,0.07083893,0.612785360557392,0,0,0,False,,,,,,,,89.0,,
+wangtuixj.com,certificates,com,0.03527587,0.07055175,0.6286525514186343,0,0,0,True,284.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-03 15:36:17,2025-07-02 15:36:16
+mukaizumi.com,jpcert,com,0.035199832,0.07039964,0.658813491837486,0,0,0,True,267.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-19 22:04:04,2025-07-18 22:04:03
+bunkasousaku.com,jpcert,com,0.03514753,0.070295036,0.644796164967979,0,0,0,True,273.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-13 21:03:41,2025-07-12 21:03:40
+brantsteel.com,jpcert,com,0.034952935,0.06990588,0.6054644542204342,0,0,0,False,,,,,,,,89.0,,
+shetkarinews18.com,phishtank,com,0.034864835,0.069729686,0.5829292368983676,0,0,0,True,274.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-13 06:54:16,2025-07-12 06:54:15
+thegamerhouse.com,jpcert,com,0.0348207,0.06964141,0.656256037831919,0,0,0,True,211.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-14 23:35:31,2025-09-12 23:35:30
+persiadesigner.com,jpcert,com,0.034779727,0.069559455,0.6505513750057451,0,0,0,True,222.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-06-04 13:36:15,2025-09-02 13:36:14
+dinarama.org,jpcert,org,0.034736462,0.06947291,0.6581946944911737,0,0,0,True,243.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-14 15:50:06,2025-08-12 15:50:05
+ferncrest.com,phishtank,com,0.034631,0.06926203,0.5769331072182774,0,0,0,True,271.0,Let's Encrypt,True,9.0,False,False,False,89.0,2025-04-16 00:34:25,2025-07-15 00:34:24
+orderofthewarrior.com,phishtank,com,0.034630608,0.06926119,0.6133749864223184,0,0,0,True,249.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-08 12:17:43,2025-08-06 12:17:42
+beysooxue.xyz,phishtank,xyz,0.034363847,0.06872767,0.5786165265421177,1,0,0,True,206.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-19 21:53:58,2025-09-17 21:53:57
+maftkd.com,jpcert,com,0.034112554,0.068225086,0.5786796666318169,0,0,0,True,259.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-04-28 14:15:29,2025-07-27 15:13:44
+ashaviglobal.com,jpcert,com,0.034084417,0.06816882,0.6254626468829186,0,0,0,True,226.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-31 11:04:12,2025-08-29 11:04:11
+5aggs.lat,phishtank,lat,0.034075014,0.06815004,0.5491780828326209,1,0,0,True,218.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-08 03:37:28,2025-09-06 04:35:38
+hodlbackup.net,phishtank,net,0.03399205,0.067984104,0.6230662833269692,0,0,0,True,232.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-05-24 20:48:23,2025-08-22 20:48:22
+infinitoradio.com.ar,jpcert,ar,0.033968043,0.06793606,0.5801531911885535,1,0,0,True,236.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-21 05:34:50,2025-08-19 05:34:49
+ultrafima.com,phishtank,com,0.033926282,0.06785256,0.6190712362023841,0,0,0,True,256.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-01 02:46:19,2025-07-30 02:46:18
+regulefree.com,phishtank,com,0.033880133,0.06776029,0.6494809850440114,0,0,0,True,224.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-02 15:11:17,2025-08-31 15:11:16
+cs2navi.com,phishtank,com,0.033859324,0.067718625,0.6076867516688663,0,0,0,True,231.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-26 00:16:27,2025-08-24 00:16:26
+bioegroup.com,phishtank,com,0.03382927,0.06765854,0.6659733132449249,0,0,0,False,,,,,,,,89.0,,
+carinsurance.chat,phishtank,chat,0.03379724,0.06759447,0.589944446678177,0,0,0,True,272.0,Let's Encrypt,True,13.0,False,False,False,89.0,2025-04-15 03:41:37,2025-07-14 03:41:36
+ayaksesuar.com,jpcert,com,0.03361968,0.067239344,0.6479840959457375,0,0,0,True,194.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-02 07:50:41,2025-09-30 07:50:40
+hongsicun.com,certificates,com,0.033478916,0.06695783,0.6063400305279243,0,0,0,False,,,,,,,,89.0,,
+veltrixbank.com,phishtank,com,0.033415463,0.06683093,0.594881664264306,0,0,0,True,235.0,Let's Encrypt,True,4.0,True,False,False,89.0,2025-05-22 15:19:10,2025-08-20 15:19:09
+welcometouhcglobal.com,phishtank,com,0.03338105,0.06676209,0.6123492282674502,0,0,0,True,249.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-08 15:34:55,2025-08-06 15:34:54
+opulenttrusbank.pro,phishtank,pro,0.033369616,0.0667392,0.6381160743184903,0,0,1,True,211.0,Google Trust Services,False,2.0,False,False,False,89.0,2025-06-15 14:44:07,2025-09-13 14:44:06
+whwangluo.com,certificates,com,0.033369515,0.06673902,0.603668046268602,0,0,0,False,,,,,,,,89.0,,
+poweroed.com,phishtank,com,0.033340633,0.066681266,0.5992332368461535,0,0,0,False,,,,,,,,89.0,,
+iradgt.com,phishtank,com,0.033288945,0.06657791,0.6299774247329736,0,0,0,True,210.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-16 01:28:36,2025-09-14 01:28:35
+web-hive.com,phishtank,com,0.033282317,0.06656462,0.6075603799157975,0,0,0,True,242.0,Let's Encrypt,True,7.0,False,False,False,89.0,2025-05-15 14:31:48,2025-08-13 14:31:47
+yudian.tech,phishtank,tech,0.033255227,0.06651044,0.6337849662480851,0,0,0,True,221.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-05 12:16:08,2025-09-03 12:16:07
+nichirosoken.com,jpcert,com,0.03322821,0.06645644,0.6184164174692267,0,0,0,True,229.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-28 05:22:54,2025-08-26 05:22:53
+roberthood.net,phishtank,net,0.033193782,0.066387534,0.6242523632220102,0,0,0,True,213.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-12 21:48:03,2025-09-10 21:48:02
+dritefpolice.com,phishtank,com,0.03290554,0.0658111,0.6343716850086817,0,0,0,True,226.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-30 21:11:26,2025-08-28 21:11:25
+hacertech.com,certificates,com,0.0327746,0.065549195,0.4849433710384855,0,0,0,True,230.0,Let's Encrypt,True,64.0,False,False,False,89.0,2025-05-26 18:44:01,2025-08-24 18:44:00
+aargarrrico.shop,phishtank,shop,0.032770634,0.06554127,0.6212098673420586,1,0,0,True,220.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-06 16:01:29,2025-09-04 16:01:28
+jmveiculossantaluzia.com.br,phishtank,br,0.032743778,0.06548756,0.5334842862671508,0,0,1,False,,,,,,,,89.0,,
+forumkahvesi.com,certificates,com,0.032736897,0.065473795,0.634538446304907,0,0,0,True,199.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-27 05:07:24,2025-09-25 05:07:23
+zerolimitart.com,jpcert,com,0.032642733,0.065285444,0.6317686029178676,0,0,0,True,236.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-21 12:31:08,2025-08-19 12:31:07
+optikgeneral.com,phishtank,com,0.03252361,0.065047204,0.62270698562912,0,0,0,True,233.0,Let's Encrypt,True,8.0,False,False,False,89.0,2025-05-23 20:14:09,2025-08-21 20:14:08
+jp-rakuten.net,jpcert,net,0.032400988,0.06480199,0.4831917766912855,0,0,1,True,2129.0,"Starfield Technologies, Inc.",False,2.0,False,False,False,365.0,2020-03-15 03:52:38,2021-03-15 03:52:38
+rowearchitectlove.cc,jpcert,cc,0.032354724,0.064709425,0.557052562636291,1,0,0,True,233.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-23 22:24:04,2025-08-21 22:24:03
+zcs.silomanagement.gr,phishtank,gr,0.032343954,0.06468791,0.5296016824440632,0,0,1,False,,,,,,,,89.0,,
+weizhenyouchuang.com,jpcert,com,0.032187372,0.064374745,0.5926543731868259,0,0,0,True,400.0,Google Trust Services,False,2.0,False,False,False,89.0,2024-12-08 12:56:14,2025-03-08 12:56:13
+cakesbycary.com,phishtank,com,0.032116067,0.06423211,0.5948598210502261,0,0,0,False,,,,,,,,89.0,,
+nomosolar.com,phishtank,com,0.032050565,0.0641011,0.6391328682895424,0,0,0,True,223.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-03 13:40:06,2025-09-01 13:40:05
+lpkoblsznes.com,phishtank,com,0.031945243,0.06389046,0.4708664745170856,0,0,0,True,222.0,"GoDaddy.com, Inc.",False,1.0,False,False,False,365.0,2025-06-04 03:09:16,2026-06-04 03:09:16
+drmasica.com,phishtank,com,0.031790104,0.063580215,0.5929956920359728,0,0,0,True,263.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-24 15:05:08,2025-07-23 15:05:07
+xamzel.cyou,phishtank,cyou,0.031780653,0.06356132,0.6199180106256803,1,0,0,True,224.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-02 14:12:28,2025-08-31 14:12:27
+madlists.com,phishtank,com,0.03170234,0.06340468,0.6056189059827377,0,0,0,True,240.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-17 13:48:09,2025-08-15 13:48:08
+kxm01.com,jpcert,com,0.031637374,0.06327474,0.4822247652197877,0,0,0,True,229.0,Let's Encrypt,True,5.0,False,False,False,89.0,2025-05-28 00:26:27,2025-08-26 00:26:26
+teleperformancerabota.ru,phishtank,ru,0.03159058,0.06318116,0.6281969598294715,0,0,0,True,217.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-09 07:58:21,2025-09-07 07:58:20
+eabener.cn,jpcert,cn,0.031589214,0.06317842,0.5762306421998828,1,0,0,True,199.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-27 04:04:54,2025-09-25 04:04:53
+sensoriumpsychologists.com,phishtank,com,0.031584002,0.06316799,0.5389084934324944,0,0,0,True,263.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-23 23:03:35,2025-07-22 23:03:34
+nrsecsecuritysystems.com,jpcert,com,0.03153724,0.06307447,0.5378634382726335,0,0,0,True,208.0,Let's Encrypt,True,3.0,True,False,False,89.0,2025-06-18 15:37:52,2025-09-16 15:37:51
+drclareallen.com,jpcert,com,0.03141131,0.06282264,0.5922901048801874,0,0,0,False,,,,,,,,89.0,,
+harisan.co.in,jpcert,in,0.031312596,0.06262517,0.5343311936616274,0,0,0,True,253.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-05-04 15:28:48,2025-08-02 15:28:47
+localso.com,phishtank,com,0.031294934,0.062589884,0.598880271610404,0,0,0,True,212.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-14 03:00:53,2025-09-12 03:00:52
+news25.org,phishtank,org,0.031241374,0.062482774,0.4878591053441476,0,0,0,False,,,,,,,,89.0,,
+huangjiagj.com,jpcert,com,0.031196356,0.06239271,0.5852586932737548,0,0,0,False,,,,,,,,89.0,,
+pharmaceuticalsolutionerp.com,phishtank,com,0.03115507,0.06231016,0.5935064483953248,0,0,0,True,258.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-29 07:13:42,2025-07-28 07:13:41
+zekiofarm.com,phishtank,com,0.031135192,0.062270403,0.6220369383927601,0,0,0,False,,,,,,,,89.0,,
+rpcresolution.net,phishtank,net,0.031124664,0.062249303,0.573822220264895,0,0,0,False,,,,,,,,89.0,,
+adwz.cn,phishtank,cn,0.031117419,0.06223482,0.6054971303129445,1,0,0,True,218.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-08 14:34:45,2025-09-06 14:34:44
+kaitechsolns.co.tz,phishtank,tz,0.031112673,0.06222534,0.5264035266946399,0,0,0,False,,,,,,,,89.0,,
+zhuhaiport.cn,phishtank,cn,0.031058637,0.06211728,0.5647325164681776,1,0,0,True,199.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-26 16:30:58,2025-09-24 16:30:57
+megasolucoes.pt,jpcert,pt,0.031016858,0.062033713,0.5961470580333385,0,0,0,False,,,,,,,,89.0,,
+joinlifi.io,phishtank,io,0.030972017,0.061944008,0.5781732170567042,0,0,0,True,213.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-13 05:12:35,2025-09-11 05:12:34
+formulascumplices.pt,phishtank,pt,0.030969333,0.061938643,0.5818111953663,0,0,0,True,228.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-29 13:33:55,2025-08-27 13:33:54
+westbudapestestate.hu,phishtank,hu,0.030916153,0.06183231,0.5884324325823858,0,0,0,True,226.0,Let's Encrypt,True,9.0,False,False,False,89.0,2025-05-30 17:48:12,2025-08-28 17:48:11
+fulltuning.hu,jpcert,hu,0.030876579,0.061753154,0.5983726122095357,0,0,1,False,,,,,,,,89.0,,
+garnote.com,jpcert,com,0.030678151,0.061356306,0.6110632025410534,0,0,0,True,207.0,Let's Encrypt,True,4.0,False,False,False,89.0,2025-06-19 05:42:15,2025-09-17 05:42:14
+ciarafitzgerald.com,jpcert,com,0.03067502,0.061350048,0.5978199883491653,0,0,0,True,204.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-22 13:50:20,2025-09-20 13:50:19
+aonsell.com,phishtank,com,0.030673176,0.061346352,0.6141725623317719,0,0,0,False,,,,,,,,89.0,,
+acumenturnomatics.com,phishtank,com,0.030661548,0.061323106,0.608536931643185,0,0,0,True,245.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-12 13:43:58,2025-08-10 13:43:57
+uiejza.cn,phishtank,cn,0.030620178,0.061240375,0.5742235528246249,1,0,0,True,231.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-05-26 05:41:34,2025-08-24 05:41:33
+jp-pay.me,jpcert,me,0.030609967,0.06121993,0.5846726600267316,1,0,0,True,209.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-17 14:45:54,2025-09-15 14:45:53
+e0728.cn,jpcert,cn,0.030586615,0.0611732,0.3993110790541904,1,0,0,False,,,,,,,,90.0,,
+3cis.com.cn,certificates,cn,0.030552661,0.06110531,0.4527182164434809,1,0,0,True,278.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-04-08 18:25:41,2025-07-07 19:24:17
+vngviatges.com,jpcert,com,0.03048193,0.06096387,0.5597684565813645,0,0,0,True,245.0,Let's Encrypt,True,9.0,False,False,False,89.0,2025-05-11 16:35:43,2025-08-09 16:35:42
+waa.ai,jpcert,ai,0.030394586,0.060789168,0.5983491987874294,0,0,0,True,190.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-07-05 16:39:19,2025-10-03 16:39:18
+qresel.com,jpcert,com,0.030336134,0.060672283,0.60578609146815,0,0,0,True,233.0,Let's Encrypt,True,3.0,False,False,False,89.0,2025-05-23 18:21:01,2025-08-21 18:21:00
+cigarpress.com,phishtank,com,0.030238839,0.060477674,0.5719130575487952,0,0,0,False,,,,,,,,89.0,,
+yallaweb.cyou,phishtank,cyou,0.03021775,0.060435474,0.6037958826421375,1,0,0,True,224.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-02 14:21:37,2025-08-31 14:21:36
+shekhawatenterprise.com,phishtank,com,0.030093504,0.060186982,0.5642871059406753,0,0,0,True,206.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-06-19 17:19:40,2025-09-17 17:19:39
+postbern.net.cn,phishtank,cn,0.0300827,0.060165405,0.4732220330744505,1,0,0,True,293.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-03-25 15:42:33,2025-06-23 16:41:03
+bebimedicalgroup.cn,jpcert,cn,0.029863697,0.05972737,0.5179912421528158,1,0,0,True,305.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-03-13 07:54:39,2025-06-11 07:54:38
+correros.cc,phishtank,cc,0.028765216,0.057530403,0.5304466899700667,1,0,0,True,203.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-23 14:23:06,2025-09-21 14:23:05
+bqa82q.lat,phishtank,lat,0.02875757,0.057515144,0.4662334245525169,1,0,0,True,200.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-26 15:00:30,2025-09-24 15:58:54
+punt-pty.top,phishtank,top,0.028597688,0.057195365,0.4876558395379703,1,0,0,True,199.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-26 23:28:50,2025-09-25 00:27:00
+eposcard.cc,jpcert,cc,0.02845437,0.056908727,0.5859091485630952,1,0,1,True,197.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-29 14:47:11,2025-09-27 14:47:10
+kschain.cn,phishtank,cn,0.026925612,0.053851247,0.5107151118967931,1,0,0,True,219.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-07 14:56:36,2025-09-05 15:55:16
+zzhaoqn.cn,jpcert,cn,0.026914215,0.05382842,0.5236736047584051,1,0,0,True,234.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-05-23 06:27:02,2025-08-21 07:24:43
+line-up.com.ar,phishtank,ar,0.026883883,0.05376774,0.4541651076554106,1,0,1,True,250.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-06 21:31:37,2025-08-04 21:31:36
+batalkan.cc,phishtank,cc,0.026558518,0.053117037,0.574095081205701,1,0,0,True,209.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-17 10:27:59,2025-09-15 10:27:58
+colegiolambert.cl,phishtank,cl,0.026118431,0.052236855,0.5726620068958782,1,0,0,True,201.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-25 04:05:54,2025-09-23 04:05:53
+blackcolt.cn,certificates,cn,0.024695273,0.049390554,0.4933462705586209,1,0,0,True,289.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-03-28 21:40:18,2025-06-26 22:37:51
+lampein.cn,jpcert,cn,0.024605528,0.049211025,0.540844198076621,1,0,0,True,296.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-03-22 10:11:10,2025-06-20 10:11:09
+thatguy.cn,jpcert,cn,0.024483072,0.04896617,0.5091158774085935,1,0,0,True,210.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-15 22:27:01,2025-09-13 23:25:11
+3reer45.lat,phishtank,lat,0.023510706,0.04702139,0.3932033574450523,1,0,0,True,206.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-20 08:34:02,2025-09-18 09:31:46
+rtqa.xyz,jpcert,xyz,0.023281587,0.04656315,0.5441874058546231,1,0,0,True,209.0,Google Trust Services,False,2.0,False,False,False,89.0,2025-06-17 13:57:48,2025-09-15 13:57:47
+aouxy.cn,jpcert,cn,0.023159856,0.046319723,0.5097998234952245,1,0,0,True,285.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-04-02 06:59:29,2025-07-01 07:56:29
+globaltrustbk.online,phishtank,online,0.022857478,0.045714974,0.4559812274745408,1,0,1,True,242.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-05-14 16:27:16,2025-08-12 16:27:15
+finlex.cn,certificates,cn,0.022704216,0.045408428,0.4901806908145686,1,0,0,True,313.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-03-05 11:04:05,2025-06-03 12:02:27
+bonhomia.cl,jpcert,cl,0.022621777,0.04524356,0.5045811823115819,1,0,0,True,212.0,Let's Encrypt,True,9.0,False,False,False,89.0,2025-06-14 13:50:34,2025-09-12 13:50:33
+kimte.top,phishtank,top,0.021882338,0.04376465,0.4522729382278697,1,0,0,True,218.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-08 15:41:49,2025-09-06 15:41:48
+inbook.cc,certificates,cc,0.021551877,0.043103755,0.521552664809511,1,0,0,True,199.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-27 00:15:41,2025-09-25 00:15:40
+daycom.cn,jpcert,cn,0.02142686,0.042853713,0.4717701255653734,1,0,0,True,207.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-18 23:12:12,2025-09-17 00:10:35
+qa1ej7.lat,phishtank,lat,0.020936502,0.04187298,0.3992127286698541,1,0,0,True,203.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-23 13:19:33,2025-09-21 14:18:24
+kma8r0si.lat,phishtank,lat,0.019748516,0.039497018,0.371859037953761,1,0,0,True,213.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-12 16:52:37,2025-09-10 17:48:41
+8z3ac.lat,phishtank,lat,0.019070992,0.038141966,0.3653381262990532,1,0,0,True,215.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-11 14:56:36,2025-09-09 15:53:43
+9tmwoztguyyw.lat,phishtank,lat,0.01870942,0.037418842,0.3756783961352077,1,0,0,True,201.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-25 14:40:32,2025-09-23 15:39:04
+municipiofreire.cl,jpcert,cl,0.018377386,0.036754787,0.4629033893187586,1,0,0,True,262.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-25 16:16:03,2025-07-24 16:16:02
+cu1-users.icu,phishtank,icu,0.018335538,0.036671102,0.3655694936087034,1,0,0,True,199.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-26 23:59:02,2025-09-25 00:52:20
+isaacanicama.pe,phishtank,pe,0.0183322,0.036664426,0.5024441972005566,1,0,0,True,213.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-13 09:07:45,2025-09-11 09:07:44
+hikk.shop,certificates,shop,0.018115168,0.036230326,0.4380712710918807,1,0,0,True,277.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-04-09 23:24:11,2025-07-08 23:24:10
+riseco.me,phishtank,me,0.018082175,0.036164343,0.5430696820222294,1,0,0,True,238.0,Google Trust Services,False,2.0,False,False,False,89.0,2025-05-18 17:50:52,2025-08-16 17:50:51
+asdkk.icu,certificates,icu,0.017338367,0.03467673,0.3942609553277336,1,0,0,True,327.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-02-18 22:57:24,2025-05-19 23:53:34
+heiqi.xyz,certificates,xyz,0.015695708,0.03139144,0.416409860048519,1,0,0,True,233.0,Let's Encrypt,True,2.0,True,False,False,89.0,2025-05-24 10:41:40,2025-08-22 10:41:39
+hisashi.me,jpcert,me,0.015188829,0.030377686,0.4425670387460068,1,0,0,True,200.0,Let's Encrypt,True,2.0,False,False,False,89.0,2025-06-26 02:03:54,2025-09-24 02:03:53
+mass-gov-ttyi.icu,phishtank,icu,0.014822293,0.029644608,0.3030320649803967,1,0,0,False,,,,,,,,90.0,,
+acconttadvertisingsuportt.top,phishtank,top,0.0142622655,0.028524518,0.3871646915660642,1,0,1,True,219.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-06-06 17:52:39,2025-09-04 17:52:38
+yamzaklink.xyz,jpcert,xyz,0.013991662,0.027983308,0.3498690985987011,1,0,0,True,314.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-03-03 19:09:26,2025-06-01 20:08:07
+login-sagaccouplely.xyz,jpcert,xyz,0.013559719,0.027119458,0.3136023629063267,1,0,0,False,,,,,,,,90.0,,
+4uwtejd.lat,phishtank,lat,0.012447924,0.024895847,0.3153283389004311,1,0,0,True,205.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-21 06:33:11,2025-09-19 07:31:27
+kuronekoyamwmato.top,jpcert,top,0.0123463245,0.024692655,0.3393528094240666,1,0,0,True,276.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-04-10 17:37:35,2025-07-09 18:36:13
+shxieer.cn,jpcert,cn,0.011053975,0.022107959,0.334299562984685,1,0,0,True,198.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-28 14:24:56,2025-09-26 15:23:25
+getapps.vip,phishtank,vip,0.010971819,0.021943629,0.3175174747090828,1,0,0,True,210.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-16 10:29:03,2025-09-14 11:27:21
+qcwiale.cn,jpcert,cn,0.010532639,0.021065295,0.3250711567428219,1,0,0,True,229.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-05-28 09:35:24,2025-08-26 10:33:53
+aono.shop,certificates,shop,0.00875385,0.017507672,0.3014526118276607,1,0,0,False,,,,,,,,90.0,,
+wa.pe,phishtank,pe,0.007882906,0.015765786,0.3403608923981339,1,0,0,True,260.0,Let's Encrypt,True,1.0,False,False,False,89.0,2025-04-26 21:36:52,2025-07-25 21:36:51
+govix.vip,phishtank,vip,0.007841404,0.015682817,0.3032307256353082,1,0,0,True,200.0,Google Trust Services,False,2.0,False,False,False,90.0,2025-06-26 14:03:40,2025-09-24 15:02:19

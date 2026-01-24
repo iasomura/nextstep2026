@@ -1,8 +1,11 @@
 # 正規ドメインホワイトリスト
 # 主要ブランドの公式ドメインを定義
+# 変更履歴:
+#   - 2026-01-24: Tranco Top 100K リスト統合 (FP削減: ランクに応じた信頼度判定)
 from __future__ import annotations
 
-from typing import Dict, Any, Optional
+import os
+from typing import Dict, Any, Optional, Tuple
 
 
 # ---------------------------------------------------------------------------
@@ -72,6 +75,47 @@ LEGITIMATE_SUBDOMAINS = [
     "www.smbc.co.jp",
     "direct.smbc.co.jp",
 ]
+
+
+# ---------------------------------------------------------------------------
+# Tranco Top 100K ランキングデータ (2026-01-24追加)
+# ---------------------------------------------------------------------------
+# ファイルは順序付き (1行目=rank 1)。ランクに応じて confidence を調整。
+# frozenset でO(1)ルックアップ、dict でランク取得。
+
+_TRANCO_DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "tranco_top100k.txt")
+
+# ランク -> ドメイン のマッピング (rank は 1-indexed)
+_TRANCO_RANK: Dict[str, int] = {}
+_TRANCO_SET: frozenset = frozenset()
+
+def _load_tranco() -> Tuple[Dict[str, int], frozenset]:
+    """Tranco Top 100K リストを読み込む (モジュール初期化時に1回だけ)."""
+    rank_map: Dict[str, int] = {}
+    try:
+        path = os.path.normpath(_TRANCO_DATA_PATH)
+        if not os.path.isfile(path):
+            return {}, frozenset()
+        with open(path, "r", encoding="utf-8") as f:
+            for i, line in enumerate(f, start=1):
+                domain = line.strip().lower()
+                if domain:
+                    rank_map[domain] = i
+    except Exception:
+        return {}, frozenset()
+    return rank_map, frozenset(rank_map.keys())
+
+_TRANCO_RANK, _TRANCO_SET = _load_tranco()
+
+
+def _tranco_confidence(rank: int) -> Tuple[float, str]:
+    """ランクに応じた confidence と trust_level を返す."""
+    if rank <= 1000:
+        return 0.95, "strict"
+    elif rank <= 10000:
+        return 0.92, "moderate"
+    else:  # rank <= 100000
+        return 0.88, "moderate"
 
 
 # ---------------------------------------------------------------------------
@@ -229,6 +273,21 @@ def is_legitimate_domain(domain: str) -> Dict[str, Any]:
         )
         return result
 
+    # --- Tranco Top 100K チェック (2026-01-24追加) ----------------------
+    # registered_domain が Tranco リストに含まれる場合、ランクに応じて判定
+    if normalized and normalized in _TRANCO_SET:
+        rank = _TRANCO_RANK.get(normalized, 100001)
+        conf, trust = _tranco_confidence(rank)
+        result.update(
+            is_legitimate=True,
+            brand=None,
+            confidence=conf,
+            reason=f"tranco_top100k_rank_{rank}",
+            normalized_domain=normalized,
+            trust_level=trust,
+        )
+        return result
+
     # --- moderate: かなり正規に近いが、ややゆるいパターン ---------------
     # 例: amazon.co.jp / google.co.uk など country TLD バリエーション
     country_tlds = ["co.jp", "co.uk", "de", "fr", "ca", "in", "cn"]
@@ -334,6 +393,7 @@ __all__ = [
 # ---------------------------------------------------------------------------
 
 def _self_test() -> None:
+    print(f"Tranco list loaded: {len(_TRANCO_SET)} domains")
     tests = [
         ("google.com", 0.05),
         ("accounts.google.com", 0.30),
@@ -341,6 +401,8 @@ def _self_test() -> None:
         ("example.net", 0.02),
         ("my-ledger-secure.com", 0.02),
         ("paypal.com", 0.95),
+        ("dell.com", 0.10),       # Tranco Top 100K test
+        ("starwars.com", 0.10),   # Tranco Top 100K test
     ]
     for dom, p in tests:
         info = is_legitimate_domain(dom)

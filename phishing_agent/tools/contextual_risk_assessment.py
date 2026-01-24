@@ -13,6 +13,9 @@ from __future__ import annotations
 # - 2026-01-12: Added low-signal phishing detection based on Handoff analysis.
 #              Low-signal phishing has: low ML, short validity cert, low SAN count.
 #              Added benign_indicators check to avoid FP on legitimate sites.
+# - 2026-01-24: 多言語ソーシャルエンジニアリングキーワード追加 (MULTILINGUAL_RISK_WORDS)
+#              フランス語/ポルトガル語/スペイン語/ドイツ語/イタリア語のフィッシング
+#              頻出ワードを _count_high_risk_hits() で検出するよう拡張
 # ---------------------------------------------------------------------
 from typing import Any, Dict, List, Optional
 
@@ -107,12 +110,53 @@ WEAK_IDENTITY_TAGS: tuple = (
 # Multiple factors threshold
 MULTIPLE_FACTORS_MIN_ISSUES: int = 2
 
+# ---------------------------------------------------------------------------
+# 多言語ソーシャルエンジニアリングキーワード (2026-01-24追加)
+# ---------------------------------------------------------------------------
+# FN分析で検出されたドメイン名に多い多言語キーワード。
+# 英語の high_risk_words に加えて、フランス語/ポルトガル語/スペイン語/ドイツ語/
+# イタリア語のフィッシング頻出ワードを検出する。
+MULTILINGUAL_RISK_WORDS: frozenset = frozenset([
+    # フランス語
+    "connexion", "verification", "confirmer", "actualiser", "securite",
+    "authentification", "identifiant", "compte", "messagerie",
+    "dossier", "livraison", "colis", "facture", "renouvellement",
+    "debloquer", "reactiver", "espace",
+    # ポルトガル語
+    "verificar", "confirmar", "atualizar", "seguranca", "autenticacao",
+    "acesso", "conta", "pagamento", "fatura", "entrega",
+    "desbloqueio", "atualizacao", "validacao",
+    # スペイン語
+    "verificacion", "confirmar", "actualizar", "seguridad", "autenticacion",
+    "acceso", "cuenta", "pago", "factura", "envio",
+    "desbloquear", "reactivar", "validacion",
+    # ドイツ語
+    "anmeldung", "bestatigung", "sicherheit", "konto", "passwort",
+    "zugang", "lieferung", "rechnung", "aktualisierung",
+    "freischaltung", "verifizierung",
+    # イタリア語
+    "accesso", "verifica", "sicurezza", "pagamento",
+    "consegna", "fattura", "sblocco", "aggiornamento",
+    # 一般的な多言語フィッシングパターン
+    "webmail", "portail", "espace", "client", "membre",
+    "usuario", "utilisateur", "utente", "benutzer",
+    "recuperar", "recuperer", "ripristino",
+])
+
 
 def _count_high_risk_hits(tokens: List[str], high_risk_words: Optional[List[str]]) -> int:
-    """high_risk_words に含まれるトークンがいくつあるか数えるヘルパー."""
-    if not high_risk_words:
+    """high_risk_words + MULTILINGUAL_RISK_WORDS に含まれるトークンがいくつあるか数えるヘルパー.
+
+    変更履歴:
+      - 2026-01-24: MULTILINGUAL_RISK_WORDS も検索対象に追加
+    """
+    hr: set = set()
+    if high_risk_words:
+        hr = {w.strip().lower() for w in high_risk_words if w and str(w).strip()}
+    # 多言語キーワードを常に含める
+    hr.update(MULTILINGUAL_RISK_WORDS)
+    if not hr:
         return 0
-    hr = {w.strip().lower() for w in high_risk_words if w and str(w).strip()}
     return sum(1 for t in tokens if t in hr)
 
 
@@ -306,6 +350,8 @@ def contextual_risk_assessment(
             "short_random_combo",
             "random_with_high_tld_stat",
             "idn_homograph",
+            "consonant_cluster_random",   # 2026-01-24追加
+            "rare_bigram_random",          # 2026-01-24追加
         }
         if issue_set & _needs_extra:
             is_paradox_strong = True
@@ -366,6 +412,8 @@ def contextual_risk_assessment(
         "random_with_high_tld_stat",
         "very_short_dangerous_combo",
         "deep_chain_with_risky_tld",
+        "consonant_cluster_random",   # 2026-01-24追加
+        "rare_bigram_random",          # 2026-01-24追加
     }
     _cert_strong = {
         "self_signed",
@@ -487,6 +535,73 @@ def contextual_risk_assessment(
             score_components["low_signal_phishing"] = True
             score_components["low_signal_signals"] = low_signal_signals
 
+    # 4-3d. Old Certificate Phishing Detection (2026-01-17)
+    # Handoff分析から判明した「古い証明書」パターンによるフィッシング検出
+    # 特徴: FN平均449.8日 vs FP平均248.0日、効果量d=0.745***
+    #       old_cert (>365日): FN 49.3% vs FP 3.4%
+    #       very_old_cert (>730日): FN 26.9% vs FP 0.9%
+    #
+    # ルール（TLDリスクレベルに応じて閾値を調整）:
+    #   危険TLD:
+    #     - ml >= 0.20 AND cert_age > 365: 中MLかつ古い証明書 → フィッシング疑い
+    #     - ml >= 0.10 AND cert_age > 730: 低MLでも非常に古い証明書 → フィッシング疑い
+    #   非危険TLD（FP削減のため保守的）:
+    #     - ml >= 0.25 AND cert_age > 400: より厳しい閾値
+    #     - ml >= 0.15 AND cert_age > 730: 非常に古い場合のみ
+    #
+    # FP防止: benign_indicators (CRL, OV/EV) がある場合は完全スキップ
+    old_cert_phishing_detected = False
+    old_cert_signals: List[str] = []
+    cert_age_days = cert_details.get("cert_age_days", 0) or 0
+
+    # benign_indicatorsがある場合は old_cert 検出をスキップ
+    has_strong_benign = bool(cert_benign_indicators & {"has_crl_dp", "ov_ev_cert"})
+
+    # TLDが危険かどうかを判定（dom_issuesまたはissue_setから取得）
+    is_tld_dangerous = "dangerous_tld" in issue_set or "dangerous_tld" in dom_issues
+
+    if cert_age_days > 0 and not has_strong_benign:
+        score_components["cert_age_days"] = cert_age_days
+        score_components["is_old_cert"] = cert_age_days > 365
+        score_components["is_very_old_cert"] = cert_age_days > 730
+
+        # TLDリスクレベルに応じた閾値設定
+        if is_tld_dangerous:
+            # 危険TLD: 元の閾値を使用
+            ml_threshold_old = 0.20
+            age_threshold_old = 365
+            ml_threshold_very_old = 0.10
+        else:
+            # 非危険TLD: 保守的な閾値（FP削減）
+            ml_threshold_old = 0.25
+            age_threshold_old = 400
+            ml_threshold_very_old = 0.15
+
+        if p >= 0.50:
+            # 高ML（既存ルールで対応済みだが、old_cert信号も追加）
+            if cert_age_days > 365:
+                old_cert_signals.append("high_ml_old_cert")
+        elif p >= ml_threshold_old and cert_age_days > age_threshold_old:
+            # 中ML + 古い証明書
+            old_cert_signals.append("medium_ml_old_cert")
+            old_cert_phishing_detected = True
+        elif p >= ml_threshold_very_old and cert_age_days > 730:
+            # 低ML + 非常に古い証明書
+            old_cert_signals.append("low_ml_very_old_cert")
+            old_cert_phishing_detected = True
+
+        if old_cert_phishing_detected or old_cert_signals:
+            issues.append("old_cert_phishing")
+            score_components["old_cert_phishing"] = True
+            score_components["old_cert_signals"] = old_cert_signals
+            score_components["old_cert_tld_dangerous"] = is_tld_dangerous
+
+            # スコア底上げ（危険TLDの場合はより高く）
+            if is_tld_dangerous:
+                score = max(score, 0.55 + 0.03 * len(old_cert_signals))
+            else:
+                score = max(score, 0.50 + 0.02 * len(old_cert_signals))
+
     # 4-4. 既知ドメイン緩和（減点）
     # NOTE: apply mitigation ONLY for strict legitimate allowlist matches.
     if is_known_legit:
@@ -591,6 +706,8 @@ def contextual_risk_assessment(
         reasoning_bits.append("低MLセーフティキャップ適用")
     if "low_signal_phishing" in issues:
         reasoning_bits.append(f"低シグナルフィッシング検出({','.join(low_signal_signals)})")
+    if "old_cert_phishing" in issues:
+        reasoning_bits.append(f"古い証明書フィッシング検出(cert_age={cert_age_days}日,{','.join(old_cert_signals)})")
 
     # finalize score breakdown for logging
     try:

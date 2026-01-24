@@ -104,6 +104,12 @@ def _load_cert_config() -> Dict[str, Any]:
             "site", "club", "icu", "buzz", "monster",
             "cfd", "sbs", "rest",
         ],
+        # 古い証明書とみなす閾値（日数）- Handoff分析から導出
+        # FN: 49.3%が365日超、FP: 3.4%が365日超
+        "old_cert_days": 365,
+        # 非常に古い証明書とみなす閾値（日数）
+        # FN: 26.9%が730日超、FP: 0.9%が730日超
+        "very_old_cert_days": 730,
     }
 
 
@@ -120,6 +126,7 @@ def _normalize_issuer(issuer_data: Any) -> str:
 
 def _adapt_cert_meta(cert_meta: Dict[str, Any]) -> Dict[str, Any]:
     """証明書メタデータのキー揺れを吸収するアダプタ"""
+    from datetime import datetime
     adapted = copy.deepcopy(cert_meta or {})
 
     # issuer_org → issuer などの後方互換対応
@@ -130,35 +137,45 @@ def _adapt_cert_meta(cert_meta: Dict[str, Any]) -> Dict[str, Any]:
     if "has_org" not in adapted and "has_organization" in adapted:
         adapted["has_org"] = adapted["has_organization"]
 
+    not_before = adapted.get("not_before")
+    not_after = adapted.get("not_after")
+
+    # 文字列の場合はパース
+    def _parse_datetime(dt_val):
+        if dt_val is None:
+            return None
+        if hasattr(dt_val, 'timestamp'):
+            return dt_val
+        if isinstance(dt_val, str):
+            for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"):
+                try:
+                    return datetime.strptime(dt_val.split(".")[0], fmt)
+                except ValueError:
+                    continue
+        return None
+
+    not_before_dt = _parse_datetime(not_before)
+    not_after_dt = _parse_datetime(not_after)
+
     # not_before / not_after から valid_days を計算
     if "valid_days" not in adapted or not adapted.get("valid_days"):
-        not_before = adapted.get("not_before")
-        not_after = adapted.get("not_after")
-        if not_before and not_after:
+        if not_before_dt and not_after_dt:
             try:
-                from datetime import datetime
-                # 文字列の場合はパース
-                if isinstance(not_before, str):
-                    # ISO format or common date formats
-                    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"):
-                        try:
-                            not_before = datetime.strptime(not_before.split(".")[0], fmt)
-                            break
-                        except ValueError:
-                            continue
-                if isinstance(not_after, str):
-                    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"):
-                        try:
-                            not_after = datetime.strptime(not_after.split(".")[0], fmt)
-                            break
-                        except ValueError:
-                            continue
-                # datetime オブジェクトの場合
-                if hasattr(not_before, 'timestamp') and hasattr(not_after, 'timestamp'):
-                    delta = not_after - not_before
-                    adapted["valid_days"] = max(0, delta.days)
+                delta = not_after_dt - not_before_dt
+                adapted["valid_days"] = max(0, delta.days)
             except Exception:
                 pass  # パース失敗時はvalid_days=0のまま
+
+    # cert_age_days を計算（証明書発行からの経過日数）
+    # cert_full_info_map から直接提供される場合もあるが、なければ計算
+    if "cert_age_days" not in adapted or adapted.get("cert_age_days") is None:
+        if not_before_dt:
+            try:
+                now = datetime.now()
+                delta = now - not_before_dt
+                adapted["cert_age_days"] = max(0, delta.days)
+            except Exception:
+                adapted["cert_age_days"] = 0
 
     return adapted
 
@@ -246,6 +263,8 @@ def _analyze_certificate_core(domain: str, cert_meta: Optional[Dict[str, Any]], 
     many_san_threshold = int(config.get("many_san_threshold") or 10)
     long_validity_days = int(config.get("long_validity_days") or 180)
     high_san_threshold = int(config.get("high_san_threshold") or 10)
+    old_cert_days = int(config.get("old_cert_days") or 365)
+    very_old_cert_days = int(config.get("very_old_cert_days") or 730)
     is_dangerous_tld = _is_dangerous_tld(domain, config)
 
     details: Dict[str, Any] = {
@@ -271,6 +290,10 @@ def _analyze_certificate_core(domain: str, cert_meta: Optional[Dict[str, Any]], 
         "is_high_san": False,
         "is_dangerous_tld": is_dangerous_tld,
         "tld": _extract_tld(domain),
+        # 新規: cert_age_days 関連（Handoff分析から追加）
+        "cert_age_days": 0,
+        "is_old_cert": False,
+        "is_very_old_cert": False,
     }
 
     # --- 1. 証明書メタデータが無い場合（no_cert） --------------------------
@@ -391,6 +414,23 @@ def _analyze_certificate_core(domain: str, cert_meta: Optional[Dict[str, Any]], 
     # Handoff分析: FP Riskは平均SAN 13.2、低シグナルフィッシングは4.3
     is_high_san = bool(san_count >= high_san_threshold)
     details["is_high_san"] = is_high_san
+
+    # 2-11. 新規: cert_age_days（証明書発行からの経過日数）
+    # Handoff分析: FN平均449.8日 vs FP平均248.0日、効果量d=0.745***
+    cert_age_days = 0
+    try:
+        cert_age_days = int(meta.get("cert_age_days") or 0)
+    except Exception:
+        cert_age_days = 0
+    details["cert_age_days"] = cert_age_days
+
+    # 古い証明書判定（365日超: FN 49.3% vs FP 3.4%）
+    is_old_cert = bool(cert_age_days > old_cert_days)
+    details["is_old_cert"] = is_old_cert
+
+    # 非常に古い証明書判定（730日超: FN 26.9% vs FP 0.9%）
+    is_very_old_cert = bool(cert_age_days > very_old_cert_days)
+    details["is_very_old_cert"] = is_very_old_cert
 
     # --- 2-B. Benign Indicators 収集 -----------------------------------------
     # Stage2と同じ証明書特徴量をStage3でも活用

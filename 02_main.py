@@ -42,6 +42,9 @@ sys.path.insert(0, str(Path(__file__).parent / "02_stage1_stage2"))
 # Import feature extraction module
 from src.features import FEATURE_ORDER, extract_features
 
+# Import vLLM manager for automatic server lifecycle
+from scripts.vllm_manager import VLLMManager
+
 
 # ============================================================
 # Configuration
@@ -89,6 +92,10 @@ def get_default_config():
         'xgb_risk_use_upper': True,
         'xgb_risk_alpha': 0.05,
 
+        # Data Quality Filter (証明書データ品質フィルター)
+        # 証明書データが欠損しているサンプルをStage1から除外
+        'stage1_require_cert_data': True,
+
         # Stage2 (defaults match 02_original.ipynb Cell 37)
         'stage2_select_mode': 'threshold_cap',  # default in notebook
         'stage2_max_budget': 0,  # 0 = disabled (variable-size handoff)
@@ -109,6 +116,12 @@ def get_default_config():
         'stage2_safe_benign_enabled': True,
         'stage2_safe_benign_p1_max': 0.15,
         'stage2_safe_benign_defer_max': 0.40,
+
+        # Scenario 8: High ML Phishing (高ML フィッシング救済)
+        # ML >= threshold のサンプルは、defer_score/uncertainty に関わらずStage3へ送る
+        # これは「自信を持ってフィッシング」と予測されたサンプルがドロップされる問題を修正
+        'stage2_high_ml_phish_enabled': True,
+        'stage2_high_ml_phish_threshold': 0.50,  # ML >= 0.50 なら Stage3 へ
 
         # Scenario 6: Certificate-based early termination rules
         # These rules use certificate features to make early decisions
@@ -159,9 +172,13 @@ def get_default_config():
 
         # LLM (from config.json llm section)
         'llm_enabled': llm_cfg.get('enabled', True),
-        'llm_base_url': llm_cfg.get('base_url') or llm_cfg.get('vllm_base_url') or os.getenv('VLLM_BASE_URL', 'http://192.168.100.71:30000/v1'),
-        'llm_model': llm_cfg.get('model') or llm_cfg.get('vllm_model') or os.getenv('BRAND_LLM_MODEL', 'Qwen/Qwen3-14B-FP8'),
+        'llm_base_url': llm_cfg.get('base_url') or llm_cfg.get('vllm_base_url') or os.getenv('VLLM_BASE_URL', 'http://127.0.0.1:8000/v1'),
+        'llm_model': llm_cfg.get('model') or llm_cfg.get('vllm_model') or os.getenv('BRAND_LLM_MODEL', 'Qwen/Qwen3-4B'),
         'llm_api_key': llm_cfg.get('api_key') or os.getenv('VLLM_API_KEY', 'EMPTY'),
+        # vLLM auto management (自動起動・停止)
+        'vllm_auto_manage': llm_cfg.get('auto_manage', True),
+        'vllm_startup_timeout': llm_cfg.get('startup_timeout', 120),
+        'vllm_gpu_memory_utilization': llm_cfg.get('gpu_memory_utilization', 0.85),
 
         # Brand keywords (from config.json brand_keywords section)
         'brand_min_count': brand_cfg.get('min_count', 2),
@@ -1133,11 +1150,34 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
         n_safe_benign_cert = int(safe_benign_cert.sum())
         n_safe_phishing_cert = int(safe_phishing_cert.sum())
 
+        # ============================================================
+        # Scenario 8: High ML Phishing (高ML フィッシング救済)
+        # ML >= threshold のサンプルは defer_score に関わらず Stage3 へ送る
+        # ただし safe_benign_cert（証明書で正規と判定）は除外
+        # ============================================================
+        high_ml_phish_enabled = cfg.get('stage2_high_ml_phish_enabled', False)
+        high_ml_phish_threshold = float(cfg.get('stage2_high_ml_phish_threshold', 0.50))
+
+        if high_ml_phish_enabled:
+            # High ML samples (potential phishing) - exclude those marked benign by cert rules
+            high_ml_phish = (p1_defer >= high_ml_phish_threshold) & (~safe_benign_cert)
+            n_high_ml_phish = int(high_ml_phish.sum())
+        else:
+            high_ml_phish = np.zeros(n_defer, dtype=bool)
+            n_high_ml_phish = 0
+
+        high_ml_stats = {
+            'enabled': high_ml_phish_enabled,
+            'threshold': high_ml_phish_threshold,
+            'selected': n_high_ml_phish,
+        }
+
         # Exclude safe_benign AND safe_phishing_cert from selection
         # - safe_benign_combined: auto-classified as BENIGN (skip Stage3)
         # - safe_phishing_cert: auto-classified as PHISHING (skip Stage3)
         auto_decided = safe_benign_combined | safe_phishing_cert
-        picked = (override | gray) & (~auto_decided)
+        # Include high_ml_phish in selection (Scenario 8)
+        picked = (override | gray | high_ml_phish) & (~auto_decided)
         selected_idx = np.where(picked)[0]
 
         tau_final = tau
@@ -1152,7 +1192,8 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
                 _tau = min(0.999999, _tau + tau_step)
                 gray = (~clear) & (~override) & (defer_score >= _tau)
                 # Keep auto_decided exclusion during budget adjustment
-                selected_idx = np.where((override | gray) & (~auto_decided))[0]
+                # Include high_ml_phish (Scenario 8) - always selected regardless of budget
+                selected_idx = np.where((override | gray | high_ml_phish) & (~auto_decided))[0]
                 if len(selected_idx) <= max_budget or _tau >= 0.999999:
                     tau_final = _tau
                     break
@@ -1182,6 +1223,8 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
             'safe_benign_combined_filtered': n_safe_benign_combined,
             # Scenario 7 stats (TLD-based filtering)
             'tld_filtering': tld_filter_stats,
+            # Scenario 8 stats (High ML Phishing)
+            'high_ml_phish': high_ml_stats,
         }
 
     # ================================================================
@@ -1254,6 +1297,9 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
         is_neutral_tld = np.zeros(n_defer, dtype=bool)
     if 'is_other_tld' not in dir():
         is_other_tld = np.zeros(n_defer, dtype=bool)
+    # High ML Phishing (Scenario 8) - only defined in threshold_cap mode
+    if 'high_ml_phish' not in dir():
+        high_ml_phish = np.zeros(n_defer, dtype=bool)
 
     gate_trace = pd.DataFrame({
         'idx': np.arange(n_defer),
@@ -1282,6 +1328,8 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
         'tld_dangerous': is_dangerous_tld_s7.astype(int),
         'tld_neutral': is_neutral_tld.astype(int),
         'tld_other': is_other_tld.astype(int),
+        # Scenario 8: High ML Phishing
+        'high_ml_phish': high_ml_phish.astype(int),
     })
 
     return selected_mask, gate_trace, stage2_select_stats
@@ -1330,7 +1378,16 @@ def run_pipeline(run_id, cfg):
         print(f"   Loaded {len(brand_keywords)} brand keywords")
     else:
         print("   Extracting via LLM...")
-        brand_keywords = extract_brands_via_llm(cfg)
+        # Auto-manage vLLM server if configured
+        if cfg.get('vllm_auto_manage', True):
+            with VLLMManager(
+                cfg,
+                startup_timeout=cfg.get('vllm_startup_timeout', 120),
+                gpu_memory_utilization=cfg.get('vllm_gpu_memory_utilization', 0.85),
+            ):
+                brand_keywords = extract_brands_via_llm(cfg)
+        else:
+            brand_keywords = extract_brands_via_llm(cfg)
         with open(brand_path, 'w') as f:
             json.dump(brand_keywords, f, indent=2)
         print(f"   Saved: {brand_path.name}")
@@ -1378,6 +1435,224 @@ def run_pipeline(run_id, cfg):
     print(f"   Total samples: {len(all_data):,}")
     print(f"   Phishing: {len(all_data[all_data['label'] == 1]):,}")
     print(f"   Trusted:  {len(all_data[all_data['label'] == 0]):,}")
+
+    # ================================================================
+    # Generate cert_full_info_map from prepared_data (for Stage3)
+    # ================================================================
+    print("\n   Building cert_full_info_map from prepared_data...")
+    from cryptography import x509
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives.asymmetric import rsa, ec, dsa
+    from datetime import datetime as _dt, timezone as _tz
+
+    def _parse_cert_to_info(cert_data, domain=None):
+        """Parse certificate data and extract info for cert_full_info_map."""
+        info = {
+            # 既存フィールド
+            'issuer_org': None,
+            'cert_age_days': 0,
+            'is_free_ca': False,
+            'san_count': 1,
+            'is_wildcard': False,
+            'is_self_signed': False,
+            'has_organization': False,
+            'not_before': None,
+            'not_after': None,
+            'validity_days': 0,
+            'valid_days': 0,            # validity_days のエイリアス（互換性用）
+            'has_certificate': False,
+            'has_crl_dp': False,        # CRL Distribution Point 有無（互換性用）
+            # 追加フィールド（LLM/人間可読用）
+            'key_type': None,           # "RSA", "EC", "DSA", or None
+            'key_size': None,           # 2048, 4096, 256, etc.
+            'issuer_country': None,     # "US", "GB", etc.
+            'issuer_type': None,        # "Let's Encrypt", "Google", "Cloudflare", "Commercial", or None
+            'signature_algorithm': None, # "sha256WithRSAEncryption", etc.
+            'common_name': None,        # CN field value
+            'subject_org': None,        # Subject organization name (string, not just bool)
+        }
+        if cert_data is None:
+            return info
+
+        _cert_bytes = None
+        if isinstance(cert_data, (bytes, bytearray)):
+            _cert_bytes = bytes(cert_data)
+        elif isinstance(cert_data, dict):
+            for _k in ("der", "cert_der", "bytes", "data", "raw"):
+                if _k in cert_data and cert_data[_k]:
+                    _cert_bytes = bytes(cert_data[_k])
+                    break
+
+        if not _cert_bytes:
+            return info
+
+        try:
+            cert = x509.load_der_x509_certificate(_cert_bytes, default_backend())
+        except Exception:
+            try:
+                cert = x509.load_pem_x509_certificate(_cert_bytes, default_backend())
+            except Exception:
+                return info
+
+        info['has_certificate'] = True
+
+        # Issuer organization
+        try:
+            issuer_org_attrs = cert.issuer.get_attributes_for_oid(x509.NameOID.ORGANIZATION_NAME)
+            if issuer_org_attrs:
+                info['issuer_org'] = issuer_org_attrs[0].value
+        except Exception:
+            pass
+
+        # Validity
+        try:
+            not_before = cert.not_valid_before_utc.replace(tzinfo=None)
+            not_after = cert.not_valid_after_utc.replace(tzinfo=None)
+            info['not_before'] = not_before
+            info['not_after'] = not_after
+            info['cert_age_days'] = (_dt.now(_tz.utc).replace(tzinfo=None) - not_before).days
+            _validity = (not_after - not_before).days
+            info['validity_days'] = _validity
+            info['valid_days'] = _validity  # エイリアス（互換性用）
+        except Exception:
+            pass
+
+        # CRL Distribution Points
+        try:
+            crl_ext = cert.extensions.get_extension_for_oid(x509.ExtensionOID.CRL_DISTRIBUTION_POINTS)
+            info['has_crl_dp'] = crl_ext is not None
+        except x509.ExtensionNotFound:
+            info['has_crl_dp'] = False
+        except Exception:
+            pass
+
+        # Free CA detection
+        free_ca_list = ["let's encrypt", "zerosll", "cloudflare", "cpanel", "sectigo"]
+        if info['issuer_org']:
+            issuer_lower = info['issuer_org'].lower()
+            info['is_free_ca'] = any(ca in issuer_lower for ca in free_ca_list)
+
+        # SAN count
+        try:
+            san_ext = cert.extensions.get_extension_for_oid(x509.ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+            info['san_count'] = len(san_ext.value)
+        except Exception:
+            pass
+
+        # Wildcard, self-signed, has_organization
+        try:
+            cn_attrs = cert.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)
+            if cn_attrs:
+                cn = cn_attrs[0].value
+                info['is_wildcard'] = cn.startswith('*.')
+        except Exception:
+            pass
+
+        info['is_self_signed'] = (cert.issuer == cert.subject)
+
+        try:
+            org_attrs = cert.subject.get_attributes_for_oid(x509.NameOID.ORGANIZATION_NAME)
+            info['has_organization'] = bool(org_attrs)
+            if org_attrs:
+                info['subject_org'] = org_attrs[0].value
+        except Exception:
+            pass
+
+        # === 追加フィールドの抽出 ===
+
+        # Common Name (CN)
+        try:
+            cn_attrs = cert.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)
+            if cn_attrs:
+                info['common_name'] = cn_attrs[0].value
+        except Exception:
+            pass
+
+        # Key type and size
+        try:
+            pk = cert.public_key()
+            if isinstance(pk, rsa.RSAPublicKey):
+                info['key_type'] = 'RSA'
+                info['key_size'] = pk.key_size
+            elif isinstance(pk, ec.EllipticCurvePublicKey):
+                info['key_type'] = 'EC'
+                info['key_size'] = pk.key_size
+            elif isinstance(pk, dsa.DSAPublicKey):
+                info['key_type'] = 'DSA'
+                info['key_size'] = pk.key_size
+        except Exception:
+            pass
+
+        # Issuer country
+        try:
+            country_attrs = cert.issuer.get_attributes_for_oid(x509.NameOID.COUNTRY_NAME)
+            if country_attrs:
+                info['issuer_country'] = country_attrs[0].value
+        except Exception:
+            pass
+
+        # Issuer type (human-readable)
+        try:
+            issuer_l = (info['issuer_org'] or '').lower()
+            if "let's encrypt" in issuer_l or "letsencrypt" in issuer_l:
+                info['issuer_type'] = "Let's Encrypt"
+            elif 'google' in issuer_l:
+                info['issuer_type'] = 'Google'
+            elif 'cloudflare' in issuer_l:
+                info['issuer_type'] = 'Cloudflare'
+            elif 'amazon' in issuer_l or 'aws' in issuer_l:
+                info['issuer_type'] = 'Amazon'
+            elif 'microsoft' in issuer_l or 'azure' in issuer_l:
+                info['issuer_type'] = 'Microsoft'
+            elif any(ca in issuer_l for ca in ['digicert', 'comodo', 'sectigo', 'geotrust', 'thawte', 'entrust', 'globalsign', 'godaddy']):
+                info['issuer_type'] = 'Commercial CA'
+            elif 'zerossl' in issuer_l or 'cpanel' in issuer_l:
+                info['issuer_type'] = 'Free CA'
+        except Exception:
+            pass
+
+        # Signature algorithm
+        try:
+            sig_algo = cert.signature_algorithm_oid
+            # OIDから名前を取得
+            info['signature_algorithm'] = sig_algo._name if hasattr(sig_algo, '_name') else str(sig_algo.dotted_string)
+        except Exception:
+            pass
+
+        return info
+
+    # Build cert_full_info_map
+    cert_full_info_map = {}
+    parse_errors = 0
+    for _, row in all_data.iterrows():
+        domain = row['domain']
+        if domain not in cert_full_info_map:
+            info = _parse_cert_to_info(row['cert_data'], domain)
+            if info['has_certificate']:
+                cert_full_info_map[domain] = info
+            else:
+                parse_errors += 1
+
+    print(f"   cert_full_info_map: {len(cert_full_info_map):,} domains")
+    if parse_errors > 0:
+        print(f"   Parse errors: {parse_errors:,} (excluded from map)")
+
+    # Filter: Remove samples without valid certificate data (using cert_full_info_map)
+    if cfg['stage1_require_cert_data'] and parse_errors > 0:
+        print("\n   Filtering samples without valid certificate data...")
+        before_filter = len(all_data)
+        valid_cert_mask = all_data['domain'].isin(cert_full_info_map.keys())
+        filtered_domains = all_data[~valid_cert_mask]['domain'].tolist()
+        all_data = all_data[valid_cert_mask].reset_index(drop=True)
+        filtered_count = before_filter - len(all_data)
+
+        print(f"   Certificate data filter: {filtered_count:,} samples removed (unparseable cert)")
+        print(f"   After filter: {len(all_data):,} samples")
+        print(f"     Phishing: {len(all_data[all_data['label'] == 1]):,}")
+        print(f"     Trusted:  {len(all_data[all_data['label'] == 0]):,}")
+        # Log filtered domains for debugging
+        if filtered_count <= 50:
+            print(f"   Filtered domains: {filtered_domains}")
 
     # Feature extraction with progress display
     print("\n   Extracting features...")
@@ -1564,16 +1839,40 @@ def run_pipeline(run_id, cfg):
         np.where(p_test >= t_high, "auto_phishing", "handoff_to_agent")
     )
 
+    # === df_stage1 の構築（仕様書 SPEC-DATA-001 準拠） ===
+
+    # 基本情報カラム（8列）
     df_stage1 = pd.DataFrame({
         'domain': domain_test,
         'source': source_test,
+        'tld': tld_test,
         'ml_probability': p_test,
         'stage1_decision': stage1_decision,
+        'stage1_pred': (p_test >= 0.5).astype(int),
         'y_true': y_test.astype(int),
-        # Add raw certificate features for Stage2 cert rules
-        'cert_validity_days': X_test[:, 15],    # FEATURE_ORDER index 15
-        'cert_san_count': X_test[:, 17],         # FEATURE_ORDER index 17
+        'label': y_test.astype(int),  # y_true のエイリアス（互換性用）
     })
+
+    # ML特徴量カラム（42列、ml_ プレフィックス）
+    for i, feat_name in enumerate(FEATURE_ORDER):
+        df_stage1[f'ml_{feat_name}'] = X_test[:, i]
+
+    # 証明書情報カラム（20列、cert_ プレフィックス）
+    cert_info_fields = [
+        'issuer_org', 'cert_age_days', 'is_free_ca', 'san_count',
+        'is_wildcard', 'is_self_signed', 'has_organization',
+        'not_before', 'not_after', 'validity_days', 'valid_days',
+        'has_certificate', 'has_crl_dp',
+        'key_type', 'key_size', 'issuer_country', 'issuer_type',
+        'signature_algorithm', 'common_name', 'subject_org',
+    ]
+    for field in cert_info_fields:
+        df_stage1[f'cert_{field}'] = [
+            cert_full_info_map.get(d, {}).get(field)
+            for d in domain_test
+        ]
+
+    print(f"   df_stage1 columns: {len(df_stage1.columns)}")
 
     # Save stage1_decisions_latest.csv
     stage1_csv = results_dir / "stage1_decisions_latest.csv"
@@ -1645,6 +1944,10 @@ def run_pipeline(run_id, cfg):
         print(f"   TLD Filtering: blocked {blocked_total:,} (S5:{blocked_s5}, S6:{blocked_s6})")
         print(f"     S5: dangerous={tld_stats.get('s5_blocked_dangerous', 0)}, neutral(p1>={tld_stats['neutral_p1_max']})={tld_stats.get('s5_blocked_neutral', 0)}")
         print(f"     S6: dangerous={tld_stats['cert_rule_blocked_dangerous']}, neutral={tld_stats['cert_rule_blocked_neutral']}")
+    # Scenario 8: High ML Phishing
+    if stage2_stats.get('high_ml_phish', {}).get('enabled', False):
+        hml_stats = stage2_stats['high_ml_phish']
+        print(f"   High ML Phish: {hml_stats['selected']:,} (ML>={hml_stats['threshold']}) → Stage3へ救済")
     print(f"   Selected:      {stage2_stats['selected_final']:,}")
 
     # Save gate trace
@@ -1703,6 +2006,7 @@ def run_pipeline(run_id, cfg):
     # Build payload
     payload = {
         "analysis_df": df_handoff,
+        "cert_full_info_map": cert_full_info_map,  # Stage3用の証明書情報マップ
         "meta": {
             "t_low": float(t_low),
             "t_high": float(t_high),
@@ -1740,6 +2044,11 @@ def run_pipeline(run_id, cfg):
     joblib.dump(payload, compat_pkl)
     print(f"   Saved: {compat_pkl_primary}")
     print(f"   Saved: {compat_pkl}")
+
+    # Save cert_full_info_map separately for Stage3
+    cert_map_pkl = processed_dir / "cert_full_info_map.pkl"
+    joblib.dump(cert_full_info_map, cert_map_pkl)
+    print(f"   Saved: {cert_map_pkl.name} ({len(cert_full_info_map):,} domains)")
 
     # Evaluation metrics
     y_hat_test = (p_test >= 0.5).astype(int)

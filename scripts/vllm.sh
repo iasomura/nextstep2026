@@ -14,6 +14,7 @@ PID_FILE="${SCRIPT_DIR}/.vllm.pid"
 LOG_FILE="${SCRIPT_DIR}/vllm.log"
 
 # vLLM configuration
+# Qwen3-4B-Thinking: GPTQ-Int8 quantized model with thinking capability
 MODEL="JunHowie/Qwen3-4B-Thinking-2507-GPTQ-Int8"
 HOST="127.0.0.1"
 PORT="8000"
@@ -34,14 +35,14 @@ start_server() {
     echo "  Host:  $HOST:$PORT"
     echo "  Log:   $LOG_FILE"
 
+    # 変更履歴:
+    #   - 2026-01-24: max-model-len を 16384 → 4096 に変更（実測で4096で十分と確認、KVキャッシュ効率向上）
+    #   - 2026-01-18: max-model-len を 8192 → 16384 に変更（Qwen3 thinking mode対応）
     nohup vllm serve "$MODEL" \
-        --quantization gptq_marlin \
-        --dtype half \
+        --dtype auto \
         --max-model-len 4096 \
-        --max-num-seqs 4 \
-        --max-num-batched-tokens 2048 \
-        --enable-chunked-prefill \
-        --gpu-memory-utilization 0.5 \
+        --max-num-seqs 8 \
+        --gpu-memory-utilization 0.25 \
         --host "$HOST" --port "$PORT" \
         > "$LOG_FILE" 2>&1 &
 

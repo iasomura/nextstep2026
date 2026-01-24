@@ -32,6 +32,9 @@ FEATURE_ORDER = [
     # New certificate features (added via feature search, +0.28% AUC)
     'cert_key_bits_normalized', 'cert_issuer_country_code', 'cert_serial_entropy',
     'cert_has_ext_key_usage', 'cert_has_policies', 'cert_issuer_type',
+
+    # LE R3 Intermediate feature (100% discriminative: 33% phishing, 0% trusted)
+    'cert_is_le_r3',
 ]
 
 
@@ -229,6 +232,9 @@ def extract_certificate_features(cert_data: Any, domain: Optional[str] = None) -
         'cert_has_ext_key_usage': 0,      # Has Extended Key Usage extension
         'cert_has_policies': 0,           # Has Certificate Policies extension
         'cert_issuer_type': 0,            # 0=unknown, 1=LE, 2=Google, 3=Cloudflare, 4=Commercial
+
+        # LE R3 Intermediate feature (100% discriminative: 33% phishing, 0% trusted)
+        'cert_is_le_r3': 0,               # 1 if issued by Let's Encrypt R3 (or E1) intermediate
     }
 
     if cert_data is None:
@@ -320,6 +326,20 @@ def extract_certificate_features(cert_data: Any, domain: Optional[str] = None) -
         issuer_l = issuer_name.lower()
         features['cert_issuer_length'] = len(issuer_name)
         features['cert_is_lets_encrypt'] = 1 if ("let's encrypt" in issuer_l or "lets encrypt" in issuer_l) else 0
+
+        # LE R3 (or E1) Intermediate detection
+        # R3 is highly discriminative: 33% of phishing, 0% of trusted
+        # E1 is also discriminative: only in phishing
+        # Format: "CN=R3,O=Let's Encrypt,C=US" or "CN=E1,O=Let's Encrypt,C=US"
+        if features['cert_is_lets_encrypt'] == 1:
+            # Extract CN from issuer
+            for part in issuer_name.split(','):
+                part = part.strip()
+                if part.upper().startswith('CN='):
+                    cn_value = part[3:].strip()
+                    if cn_value in ('R3', 'E1'):
+                        features['cert_is_le_r3'] = 1
+                    break
 
         # Self-signed
         features['cert_is_self_signed'] = 1 if cert.issuer == cert.subject else 0
