@@ -844,18 +844,34 @@ Cloudflare名義の証明書を発行する。これは**CDNの組織名であ�
 | **メール/マーケティングプラットフォーム悪用** | 3件 | `app.getresponse.com`, `cl.s13.exct.net` |
 | **ラベルノイズの可能性** | 1件 | `www.bing.ma` |
 
-#### 詳細リスト
+#### 全24件の詳細リスト
 
-| ドメイン | 発行者 | 推定理由 |
-|---------|--------|----------|
-| cl.s13.exct.net | DigiCert Inc | Salesforce Marketing Cloud（フィッシングメール配信） |
-| onedrive.live.com | Microsoft Corporation | OneDrive上のフィッシングファイル共有 |
-| ezp-prod1.hul.harvard.edu | Internet2 | 大学サイト侵害 |
-| app.donorview.com | DigiCert Inc | 寄付プラットフォーム侵害 |
-| view.campanhasbradesco.com.br | DigiCert Inc | ブラジル大手銀行Bradescoの侵害 |
-| app.cgd.pt | MarketWare | ポルトガル銀行CGDの侵害 |
-| costco.ecope03.jp | GlobalSign nv-sa | Costco日本の侵害 |
-| yahoo.co.jp (複数) | Cybertrust Japan | Yahoo Japanがフィッシング踏み台に |
+| # | ドメイン | 発行者 | 推定理由 |
+|---|---------|--------|----------|
+| 1 | cl.s13.exct.net | DigiCert Inc | Salesforce Marketing Cloud（フィッシングメール配信） |
+| 2 | onedrive.live.com | Microsoft Corporation | OneDrive上のフィッシングファイル共有 |
+| 3 | lognormal.io | GoDaddy.com, Inc. | パフォーマンス監視サービス悪用 |
+| 4 | ezp-prod1.hul.harvard.edu | Internet2 | ハーバード大学サイト侵害 |
+| 5 | app.donorview.com | DigiCert Inc | 寄付プラットフォーム侵害 |
+| 6 | www.malabs.com | VeriSign, Inc. | ITディストリビューター侵害 |
+| 7 | web.osc.state.ny.us | DigiCert Inc | ニューヨーク州政府サイト侵害 |
+| 8 | go.uniwue.de | GEANT Vereniging | ドイツ・ヴュルツブルク大学侵害 |
+| 9 | w-mt.co | GlobalSign nv-sa | 短縮URL/リダイレクトサービス |
+| 10 | om.no | Viking Cloud, Inc. | ノルウェードメイン侵害 |
+| 11 | www.proprofs.com | Equifax | オンラインクイズサービス悪用 |
+| 12 | loyaltygateway.com | DigiCert Inc | ポイントプログラムサービス侵害 |
+| 13 | www5.homecu.net | DigiCert Inc | 信用組合サイト侵害 |
+| 14 | view.campanhasbradesco.com.br | DigiCert Inc | ブラジル大手銀行Bradesco侵害 |
+| 15 | app.cgd.pt | MarketWare | ポルトガル銀行CGD侵害 |
+| 16 | assets-eur.mkt.dynamics.com | Microsoft Corporation | Microsoft Dynamics マーケティング悪用 |
+| 17 | www.bing.ma | Microsoft Corporation | Bingモロッコドメイン（ラベルノイズ？） |
+| 18 | inochinokagaku.life-is-long.com | Cybertrust Japan | 日本のサイト侵害 |
+| 19 | costco.ecope03.jp | GlobalSign nv-sa | Costco日本関連サイト侵害 |
+| 20 | mp.weixinbridge.com | DigiCert, Inc. | WeChat関連サービス悪用 |
+| 21 | app.getresponse.com | GoDaddy.com, Inc. | メールマーケティングプラットフォーム悪用 |
+| 22 | rm.grmtrez.yahoo.co.jp | Cybertrust Japan | Yahoo Japan関連サービス踏み台 |
+| 23 | jp.mg2.mail.yahoo.co.jp | Cybertrust Japan | Yahoo Japanメールサービス踏み台 |
+| 24 | www.e-rent.com.tw | StartCom Ltd. | 台湾レンタルサービス侵害 |
 
 **重要**: これらは**専用のフィッシングドメインにOV/EV証明書を取得したケースは0件**である。
 全て「正規サービスの悪用」または「侵害」によるものである。
