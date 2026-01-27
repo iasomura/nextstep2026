@@ -63,6 +63,24 @@ llm_final_decision.py (Phase6 v1.4.7-dvguard4)
         - 対象: g-jp.top, jwaveyj.top 等（8件救済見込み）
         - POST_LLM_FLIP_GATEでブロックされていたケースを救済
 
+  - 2026-01-25: v1.6.4-random-pattern-rescue
+      - POST_LLM_FLIP_GATEバイパス強化
+        - ハードトリガー(ctx>=0.65)はゲートをバイパス
+          - 対象: etherwallet.mobilelab.vn 等の ctx が高いドメインがブロックされていた
+        - ブランド検出時はゲートをバイパス
+          - 対象: ブランド偽装が検出されたドメインがMLスコアでブロックされていた
+        - random_pattern + short/very_short等 の強証拠 + ctx>=0.50 の場合はゲートをバイパス
+          - 対象: gzkuyc.com 等の明らかなランダムドメインがFNになっていた問題を修正
+
+  - 2026-01-27: v1.6.5-very-high-ml-fix
+      - HIGH_ML_OVERRIDEのバグ修正
+        - 問題: ML >= 0.9 のドメインが random_pattern/dangerous_tld なしだと
+                "low risk" 判定のままになり FN が発生していた
+        - 修正: VERY_HIGH_ML_TH = 0.85 を追加し、この閾値以上の場合は
+                追加トリガーなしで即座にオーバーライド
+        - ML 0.40-0.85: 従来通り random_pattern/dangerous_tld が必要
+        - ML >= 0.85: 無条件でオーバーライド (allowlist/gov/edu は除外)
+
 既存方針:
   - no_org 単体で True になり得る経路は持たない（複合条件のみ）
   - decision_trace を graph_state に埋め込み、risk_factors に policyタグを追記
@@ -85,7 +103,7 @@ except Exception:
 
 
 # ------------------------- phase6 meta -------------------------
-PHASE6_POLICY_VERSION = "v1.6.3-fn-rescue"
+PHASE6_POLICY_VERSION = "v1.6.5-very-high-ml-fix"
 
 # ------------------------- TLD classification (2026-01-14) -------------------------
 # 高危険TLD: フィッシングに特に多用され、正規利用が少ないTLD
@@ -590,6 +608,47 @@ def _apply_policy_adjustments(
     tld_cat = pre.get("tld_category")
     dom_len = pre.get("domain_length_category")
 
+    # ---- 2026-01-25: 政府/教育ドメイン保護ゲート ----
+    # 政府/教育ドメインはフィッシングサイトである可能性が極めて低い
+    # ブランド偽装がない限り、phishing判定をbenignに変更する
+    # 例: estyn.gov.wales (ウェールズ教育監察機関)
+    _gov_tld_suffix = (pre.get("etld1", {}).get("suffix", "") or "").lower().strip(".")
+    _gov_registered = (pre.get("etld1", {}).get("registered_domain", "") or "").lower()
+    _is_gov_edu_domain = (
+        _gov_tld_suffix.startswith("gov.")
+        or _gov_tld_suffix == "gov"
+        or _gov_tld_suffix.startswith("go.")
+        or _gov_tld_suffix.startswith("gob.")
+        or _gov_tld_suffix.startswith("gouv.")
+        or ".gov." in _gov_tld_suffix
+        or _gov_tld_suffix.endswith(".gov")
+        or _gov_tld_suffix == "mil"
+        or _gov_tld_suffix.startswith("mil.")
+        or _gov_tld_suffix == "edu"
+        or _gov_tld_suffix.startswith("edu.")
+        or _gov_tld_suffix.startswith("ac.")
+        or _gov_registered.startswith("gov.")
+        or _gov_registered == "gov"
+    )
+
+    if ip and _is_gov_edu_domain and not brand_detected:
+        # 政府/教育ドメインでブランド偽装がない → benign に変更
+        tr.append({
+            "rule": "GOV_EDU_BENIGN_GATE",
+            "reason": "government_or_education_domain_without_brand_impersonation",
+            "tld_suffix": _gov_tld_suffix,
+            "registered_domain": _gov_registered,
+        })
+        return PhishingAssessment(
+            is_phishing=False,
+            confidence=0.90,
+            risk_level="low",
+            detected_brands=list(getattr(asmt, "detected_brands", []) or []),
+            risk_factors=[f"mitigated:gov_edu_domain"],
+            reasoning=f"Government/education domain detected ({_gov_registered or _gov_tld_suffix}). "
+                      "These domains are highly trusted and unlikely to be phishing.",
+        )
+
     # ---- brand × cert （維持） ----
     if brand_detected and ({"no_cert","no_org","free_ca"} & cert_issues):
         ip = True
@@ -638,9 +697,36 @@ def _apply_policy_adjustments(
         if "dangerous_tld" in ctx_issues:
             return True
 
+        # 2026-01-25: 政府ドメインは除外（略語が多いため random_pattern で誤検出しやすい）
+        # 例: sscsr.gov.in (母音なしだが正当な政府ドメイン)
+        # 変更履歴:
+        #   - 2026-01-25: gov.wales のようなケースに対応 (suffix="wales", domain="gov")
+        _tld_suffix = pre.get("etld1", {}).get("suffix", "") or ""
+        _tld_suffix_lower = _tld_suffix.lower().strip(".")
+        _registered_domain = pre.get("etld1", {}).get("registered_domain", "") or ""
+        _registered_domain_lower = _registered_domain.lower()
+        _is_gov_tld = (
+            _tld_suffix_lower.startswith("gov.")  # gov.in, gov.uk, etc.
+            or _tld_suffix_lower == "gov"
+            or _tld_suffix_lower.startswith("go.")   # go.jp, go.kr, etc.
+            or _tld_suffix_lower.startswith("gob.")  # gob.mx, gob.es, etc.
+            or _tld_suffix_lower.startswith("gouv.") # gouv.fr, etc.
+            or ".gov." in _tld_suffix_lower          # state.gov.xx
+            or _tld_suffix_lower.endswith(".gov")    # xx.gov
+            or _tld_suffix_lower == "mil"            # military
+            or _tld_suffix_lower.startswith("mil.")  # mil.xx
+            or _tld_suffix_lower == "edu"            # education
+            or _tld_suffix_lower.startswith("edu.")  # edu.xx
+            or _tld_suffix_lower.startswith("ac.")   # ac.uk, ac.jp (academic)
+            # 2026-01-25追加: registered_domain が gov.xx の形式 (例: gov.wales, gov.scot)
+            or _registered_domain_lower.startswith("gov.")
+            or _registered_domain_lower == "gov"
+        )
+
         # random_pattern becomes "strong" only when combined with other domain red flags.
         # (random_pattern-only は誤検知が多い: cryptpad.org など)
-        if "random_pattern" in domain_issues:
+        # 政府/教育ドメインは除外（略語が多いため）
+        if "random_pattern" in domain_issues and not _is_gov_tld:
             if domain_issues & {
                 "short",
                 "very_short",
@@ -655,12 +741,27 @@ def _apply_policy_adjustments(
             }:
                 return True
 
+        # 2026-01-25: ランダム系シグナル単体でも強証拠として扱う
+        # 理由: DNSの目的は人間が理解できる名前を付けること。
+        #       意味不明なドメイン名を正当なビジネスが使用する理由がない。
+        #       nbmikjerunh15ng.com のようなドメインは明らかに疑わしい。
+        # 政府/教育ドメインは除外
+        _random_signals = {"digit_mixed_random", "consonant_cluster_random", "rare_bigram_random"}
+        if (domain_issues & _random_signals) and not _is_gov_tld:
+            return True
+
         # Cert strong evidence (rare; DV/NoOrg alone is NOT strong).
         if cert_issues & _strong_cert:
             return True
 
         # Context strong evidence: paradox flags are meaningful; dv_suspicious_combo alone is not.
         if ctx_issues & _strong_ctx:
+            return True
+
+        # 2026-01-26: high_risk_words (フィッシングキーワード) は強証拠として扱う
+        # livraison-monrelais.com 等のフィッシングドメインは、ブランド偽装ではないが
+        # フィッシングキーワードを含むため、強証拠として扱う
+        if "high_risk_words" in ctx_issues:
             return True
 
         # dv_suspicious_combo は単体では弱いが、ドメイン側の強シグナルと組み合わせると強証拠として扱う
@@ -808,11 +909,14 @@ def _apply_policy_adjustments(
     #   - ml >= 0.60 に閾値を引き上げ（0.50-0.60帯のFPを削減）
     #   - 証明書のbenign indicatorsがある場合は強制しない
     #   - 非危険TLDで contextual score < 0.45 の場合は強制しない
+    # 変更履歴:
+    #   - 2026-01-25: Tranco Top 100K 対応のため confidence 閾値を 0.95 → 0.85 に緩和
+    #     (Tranco rank > 10K は confidence=0.88 のため、0.95 では allowlist されなかった)
     is_allowlisted = False
     try:
         dom_details = dict((tsum.get("domain") or {}).get("details", {}) or {})
         lc = dict(dom_details.get("legitimate_check", {}) or {})
-        is_allowlisted = bool(lc.get("is_legitimate")) and float(lc.get("confidence", 0.0) or 0.0) >= 0.95
+        is_allowlisted = bool(lc.get("is_legitimate")) and float(lc.get("confidence", 0.0) or 0.0) >= 0.85
     except Exception:
         is_allowlisted = False
 
@@ -841,12 +945,19 @@ def _apply_policy_adjustments(
     # 強制PHISHINGの条件（2026-01-15再調整）
     # NOTE: 0.60に引き上げたことで0.50-0.60帯のフィッシングが見逃された
     # → 0.50に戻しつつ、証明書benign indicatorsのみで緩和
+    # 変更履歴:
+    #   - 2026-01-25: CRL証明書の緩和をML<0.70に制限
+    #     - 問題: 高MLフィッシングサイト（susuan339.com等）がCRL証明書で検出回避
+    #     - 対策: ML>=0.70の場合はCRL/OV/EV緩和を無効化
     ML_FORCE_PHISHING_TH = 0.50  # 0.60 → 0.50 に戻す
+    ML_OVERRIDE_BENIGN_CERT_TH = 0.70  # この閾値以上ならbenign cert緩和を無視
+    # CRL/OV/EV証明書は緩和するが、非常に高いMLスコアの場合は無視
+    cert_mitigation_applies = has_strong_benign_cert and (ml < ML_OVERRIDE_BENIGN_CERT_TH)
     should_force_phishing = (
         (ml >= ML_FORCE_PHISHING_TH)
         and (not ip)
         and (not is_allowlisted)
-        and (not has_strong_benign_cert)  # OV/EV/CRL証明書は除外
+        and (not cert_mitigation_applies)  # OV/EV/CRL証明書は除外（ただしML>=0.70は例外）
     )
     # 非危険TLDで contextual score が非常に低い場合のみスキップ
     if should_force_phishing and is_non_dangerous_tld and ctx_score < 0.30:
@@ -907,6 +1018,97 @@ def _apply_policy_adjustments(
     if is_high_danger_tld and has_dangerous_tld_signal:
         should_block = False
 
+    # 2026-01-25 追加: ハードトリガー(ctx>=0.65)はゲートバイパス
+    # ハードトリガーは強いシグナルなので、MLが低くてもブロックすべきでない
+    if should_block and ctx_score >= HARD_CTX:
+        should_block = False
+        tr.append({
+            "rule": "POST_LLM_FLIP_GATE_BYPASS",
+            "reason": "hard_ctx_trigger",
+            "ctx_score": round(ctx_score, 4),
+            "ml": round(ml, 4),
+        })
+
+    # 2026-01-25 追加: ブランド検出時はゲートバイパス
+    # brand_detectedは強い証拠なので、MLが低くてもブロックすべきでない
+    if should_block and brand_detected:
+        should_block = False
+        tr.append({
+            "rule": "POST_LLM_FLIP_GATE_BYPASS",
+            "reason": "brand_detected",
+            "brands": list(b_names),
+            "ml": round(ml, 4),
+        })
+
+    # 2026-01-25 追加: 政府/教育ドメイン判定（ランダムパターンバイパスで除外するため）
+    # 変更履歴:
+    #   - 2026-01-25: gov.wales のようなケースに対応 (suffix="wales", registered_domain="gov.wales")
+    _tld_suffix_for_gov = tld_suffix.lower().strip(".")
+    _reg_domain_for_gov = (pre.get("etld1", {}).get("registered_domain", "") or "").lower()
+    _is_gov_edu_tld = (
+        _tld_suffix_for_gov.startswith("gov.")  # gov.in, gov.uk, etc.
+        or _tld_suffix_for_gov == "gov"
+        or _tld_suffix_for_gov.startswith("go.")   # go.jp, go.kr, etc.
+        or _tld_suffix_for_gov.startswith("gob.")  # gob.mx, gob.es, etc.
+        or _tld_suffix_for_gov.startswith("gouv.") # gouv.fr, etc.
+        or ".gov." in _tld_suffix_for_gov          # state.gov.xx
+        or _tld_suffix_for_gov.endswith(".gov")    # xx.gov
+        or _tld_suffix_for_gov == "mil"            # military
+        or _tld_suffix_for_gov.startswith("mil.")  # mil.xx
+        or _tld_suffix_for_gov == "edu"            # education
+        or _tld_suffix_for_gov.startswith("edu.")  # edu.xx
+        or _tld_suffix_for_gov.startswith("ac.")   # ac.uk, ac.jp (academic)
+        # 2026-01-25追加: registered_domain が gov.xx の形式 (例: gov.wales, gov.scot)
+        or _reg_domain_for_gov.startswith("gov.")
+        or _reg_domain_for_gov == "gov"
+    )
+
+    # 2026-01-25 追加: random_pattern + short/very_short の強証拠 + ctx>=0.50 の場合はゲートバイパス
+    # FN分析: gzkuyc.com 等の明らかなランダムドメインが非危険TLDのためブロックされていた
+    # random_pattern単体はノイズが多いが、shortとの組み合わせは強い証拠
+    # 政府/教育ドメインは除外（略語が多いため）
+    _random_pattern_combo = (
+        "random_pattern" in domain_issues
+        and (domain_issues & {"short", "very_short", "consonant_cluster_random", "rare_bigram_random", "digit_mixed_random"})
+        and not _is_gov_edu_tld
+    )
+    if should_block and _random_pattern_combo and ctx_score >= SOFT_CTX:
+        should_block = False
+        tr.append({
+            "rule": "POST_LLM_FLIP_GATE_BYPASS",
+            "reason": "random_pattern_combo_with_soft_ctx",
+            "domain_issues": list(domain_issues),
+            "ctx_score": round(ctx_score, 4),
+            "ml": round(ml, 4),
+        })
+
+    # 2026-01-25 追加: ランダム系シグナル単体 + ctx>=0.50 の場合はゲートバイパス
+    # 理由: nbmikjerunh15ng.com のような意味不明なドメインは正当なビジネスが使用しない
+    # 政府/教育ドメインは除外
+    _random_signals = {"digit_mixed_random", "consonant_cluster_random", "rare_bigram_random"}
+    if should_block and (domain_issues & _random_signals) and ctx_score >= SOFT_CTX and not _is_gov_edu_tld:
+        should_block = False
+        tr.append({
+            "rule": "POST_LLM_FLIP_GATE_BYPASS",
+            "reason": "random_signal_with_soft_ctx",
+            "domain_issues": list(domain_issues),
+            "ctx_score": round(ctx_score, 4),
+            "ml": round(ml, 4),
+        })
+
+    # 2026-01-26 追加: high_risk_words (フィッシングキーワード) + ctx>=0.50 の場合はゲートバイパス
+    # 理由: livraison-monrelais.com 等、フィッシングキーワードを含むドメインは
+    # ブランド偽装ではないが、フィッシング目的の可能性が高い
+    if should_block and ("high_risk_words" in ctx_issues) and ctx_score >= SOFT_CTX:
+        should_block = False
+        tr.append({
+            "rule": "POST_LLM_FLIP_GATE_BYPASS",
+            "reason": "high_risk_words_with_soft_ctx",
+            "ctx_issues": list(ctx_issues),
+            "ctx_score": round(ctx_score, 4),
+            "ml": round(ml, 4),
+        })
+
     if should_block:
         ip = False
         # 反転ブロック時は「安全」だが警戒は残す（confidence を過大にしない）
@@ -926,6 +1128,102 @@ def _apply_policy_adjustments(
             "has_dangerous_tld_signal": has_dangerous_tld_signal,
             "threshold": LOW_ML_FLIP_GATE_TH,
         })
+
+    # ------------------------------------------------------------------
+    # Ultra-Low ML Block (2026-01-26追加):
+    # - ML < 0.05 で、ブランド検出なし、危険TLDなしの場合は phishing をブロック
+    # - FP分析: ML < 0.1 での AI 過検知が 165件 (54%) あり、その大半を削減
+    # 変更履歴:
+    #   - 2026-01-26: FP分析に基づき追加
+    # ------------------------------------------------------------------
+    ULTRA_LOW_ML_TH = 0.05
+    if ip and ml < ULTRA_LOW_ML_TH and (not brand_detected) and (not has_dangerous_tld_signal):
+        # 信頼TLD (.org, .edu, .gov) の場合はさらに厳しくブロック
+        _trusted_tlds = {"org", "edu", "gov", "mil", "int"}
+        _is_trusted_tld = tld_suffix.lower() in _trusted_tlds or any(tld_suffix.lower().endswith(f".{t}") for t in _trusted_tlds)
+
+        ip = False
+        c = max(min(c, 0.60), 0.40)
+        rl = "low"
+        try:
+            reasoning_text = (reasoning_text + f" | Phase6 gate: blocked ultra-low-ML phishing (ml={ml:.3f} < {ULTRA_LOW_ML_TH}, no brand, no dangerous TLD)")
+        except Exception:
+            pass
+        tr.append({
+            "rule": "ULTRA_LOW_ML_BLOCK",
+            "action": "block_ultra_low_ml_phishing",
+            "ml": round(ml, 4),
+            "threshold": ULTRA_LOW_ML_TH,
+            "brand_detected": brand_detected,
+            "has_dangerous_tld_signal": has_dangerous_tld_signal,
+            "is_trusted_tld": _is_trusted_tld,
+        })
+
+    # ------------------------------------------------------------------
+    # High ML Override (2026-01-26追加):
+    # - ML >= 0.4 でAIが benign/low risk と判定した場合
+    # - random_pattern または 危険TLD がある場合は phishing にオーバーライド
+    # - FN分析: ML >= 0.4 でも AI が "low risk" として見逃した FN が 80件以上
+    # 変更履歴:
+    #   - 2026-01-26: FN分析に基づき追加
+    #   - 2026-01-27: バグ修正 - ML >= 0.85 の場合は追加トリガーなしでオーバーライド
+    #                 (高MLドメインがrandom_pattern/dangerous_tldなしで見逃されていた)
+    # ------------------------------------------------------------------
+    VERY_HIGH_ML_TH = 0.85   # 非常に高いML: 無条件オーバーライド
+    HIGH_ML_OVERRIDE_TH = 0.40  # 高ML: トリガー条件付きオーバーライド
+    if not ip and ml >= HIGH_ML_OVERRIDE_TH and rl in {"low", "medium"}:
+        # ランダム系シグナル（短ドメイン分析から）
+        _random_override_signals = domain_issues & _random_signals
+        # 信頼TLD（.org, .edu, .gov等）は除外
+        _override_trusted_tlds = {"org", "edu", "gov", "mil", "int"}
+        _is_override_trusted = (
+            tld_suffix.lower() in _override_trusted_tlds
+            or any(tld_suffix.lower().endswith(f".{t}") for t in _override_trusted_tlds)
+        )
+        # オーバーライドトリガー: ランダムシグナル OR 危険TLD
+        _has_override_trigger = bool(_random_override_signals) or has_dangerous_tld_signal
+
+        # 2026-01-27: 非常に高いML (>= 0.85) の場合は追加トリガーなしでオーバーライド
+        # 理由: Stage1 XGBoost が 0.85+ を出す場合、それ自体が強い phishing シグナル
+        #       AI Agent が "low risk" と判定しても、ML の判断を尊重すべき
+        _is_very_high_ml = (ml >= VERY_HIGH_ML_TH)
+
+        # 条件: (非常に高いML OR トリガーあり)、allowlist外、信頼TLD外、gov/edu TLD外
+        _should_override = (
+            (_is_very_high_ml or _has_override_trigger)
+            and not is_allowlisted
+            and not _is_override_trusted
+            and not _is_gov_edu_tld
+        )
+
+        if _should_override:
+            ip = True
+            # 非常に高いMLの場合はconfidenceも高く設定
+            c = max(c, 0.80 if _is_very_high_ml else 0.65)
+            rl = "high"
+            if _is_very_high_ml:
+                _trigger_desc = ["very_high_ml"]
+            elif _random_override_signals:
+                _trigger_desc = list(_random_override_signals)
+            else:
+                _trigger_desc = ["dangerous_tld"]
+            try:
+                if _is_very_high_ml:
+                    reasoning_text = (reasoning_text + f" | Phase6 gate: VERY_HIGH_ML_OVERRIDE (ml={ml:.3f} >= {VERY_HIGH_ML_TH}, unconditional)")
+                else:
+                    reasoning_text = (reasoning_text + f" | Phase6 gate: HIGH_ML_OVERRIDE (ml={ml:.3f} >= {HIGH_ML_OVERRIDE_TH}, trigger={_trigger_desc})")
+            except Exception:
+                pass
+            tr.append({
+                "rule": "VERY_HIGH_ML_OVERRIDE" if _is_very_high_ml else "HIGH_ML_OVERRIDE",
+                "action": "override_very_high_ml_to_phishing" if _is_very_high_ml else "override_high_ml_to_phishing",
+                "ml": round(ml, 4),
+                "threshold": VERY_HIGH_ML_TH if _is_very_high_ml else HIGH_ML_OVERRIDE_TH,
+                "trigger_signals": _trigger_desc,
+                "has_dangerous_tld": has_dangerous_tld_signal,
+                "random_signals": list(_random_override_signals),
+                "is_very_high_ml": _is_very_high_ml,
+            })
 
     # ------------------------------------------------------------------
     # Post-Policy flip gate (dvguard4):

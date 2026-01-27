@@ -50,7 +50,13 @@
 
 | ファイル | 概要 |
 |----------|------|
-| `phishing_agent/stage2_decider_v2.py` | Stage2ゲート実装。ロジスティック回帰ベースのML→Agent振り分け。セグメントベース優先度ルーティング、バジェット制約付きサンプル選択 |
+| `02_main.py` 内 `run_stage2_gate()` | **現行Stage2実装**。LRベースのp_error予測 + 証明書ルール + TLDルール。Scenario 5-8の複合フィルタリング |
+
+### 将来実装 (未統合)
+
+| ファイル | 概要 |
+|----------|------|
+| `future/stage2_v2/stage2_decider_v2.py` | 新設計Stage2。XGBoostベースのp2(フィッシング確率)予測。Wilson boundによる統計的閾値選択 |
 
 ### 関連分析
 
@@ -212,7 +218,7 @@
                             ▼ handoff_to_agent
 ┌─────────────────────────────────────────────────────────────┐
 │  Stage2 (Gate/LR + Certificate Rules)                       │
-│  phishing_agent/stage2_decider_v2.py                        │
+│  02_main.py 内 run_stage2_gate()                            │
 │  → benign確定(却下) / handoff候補(通過)                       │
 └───────────────────────────┬─────────────────────────────────┘
                             ▼ handoff候補
@@ -256,17 +262,19 @@ nextstep/
 │   ├── phase6_wiring.py          # Phase6接続
 │   ├── llm_final_decision.py     # 最終判定ポリシー
 │   ├── precheck_module.py        # 前処理ヒント
-│   ├── stage2_decider_v2.py      # Stage2ゲート
 │   ├── agent_foundations.py      # データ構造
 │   ├── foundations.py            # 拡張基盤
 │   ├── tools_module.py           # ツール統合
 │   ├── batch.py                  # バッチ処理
+│   ├── rules/                    # ルールエンジン (モジュール化)
 │   └── tools/                    # 個別ツール
 │       ├── brand_impersonation_check.py
 │       ├── certificate_analysis.py
 │       ├── contextual_risk_assessment.py
 │       ├── short_domain_analysis.py
 │       └── legitimate_domains.py
+├── future/                       # 将来実装予定
+│   └── stage2_v2/                # 新設計Stage2 (未統合)
 ├── scripts/                      # 評価・メンテナンス
 │   ├── run_full_pipeline.sh      # パイプライン実行
 │   ├── vllm.sh                   # vLLM管理

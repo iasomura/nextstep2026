@@ -2,6 +2,9 @@
 オーケストレーターモジュール
 
 並列評価の全体制御を行う
+
+変更履歴:
+    - 2026-01-26: 証明書データ統合 - cert_features_fileをworkerに渡すように変更
 """
 
 import os
@@ -50,7 +53,8 @@ class ParallelOrchestrator:
         artifacts_dir: Path,
         base_dir: Path,
         additional_gpus: Optional[List[int]] = None,
-        skip_confirmation: bool = False
+        skip_confirmation: bool = False,
+        cert_features_file: Optional[Path] = None
     ):
         """
         Args:
@@ -60,12 +64,14 @@ class ParallelOrchestrator:
             base_dir: プロジェクトベースディレクトリ
             additional_gpus: 追加で使用するGPU/Worker ID
             skip_confirmation: 確認プロンプトをスキップ
+            cert_features_file: 証明書特徴量CSVファイル
         """
         self.config = config
         self.skip_confirmation = skip_confirmation
         self.run_id = run_id
         self.artifacts_dir = Path(artifacts_dir)
         self.base_dir = Path(base_dir)
+        self.cert_features_file = Path(cert_features_file) if cert_features_file else None
 
         # 使用するWorker設定
         self.active_workers = config.get_active_workers(additional_gpus)
@@ -86,6 +92,12 @@ class ParallelOrchestrator:
         # 状態
         self._worker_processes: Dict[int, multiprocessing.Process] = {}
         self._shutdown_requested = False
+
+        # 証明書データ確認
+        if self.cert_features_file and self.cert_features_file.exists():
+            print(f"[Orchestrator] Certificate features: {self.cert_features_file}")
+        elif self.cert_features_file:
+            print(f"[Orchestrator] Warning: Certificate file not found: {self.cert_features_file}")
 
     def check_gpus(self) -> Dict[int, Dict[str, Any]]:
         """GPU状態を確認"""
@@ -319,7 +331,8 @@ class ParallelOrchestrator:
                     self.results_dir,
                     self.base_dir,
                     start_index,
-                    self.config.evaluation.timeout_per_domain
+                    self.config.evaluation.timeout_per_domain,
+                    self.cert_features_file
                 )
             )
             process.start()
@@ -384,7 +397,8 @@ class ParallelOrchestrator:
         checkpoint_dir: Path,
         base_dir: Path,
         start_index: int,
-        timeout_per_domain: int
+        timeout_per_domain: int,
+        cert_features_file: Optional[Path] = None
     ):
         """Workerプロセスのエントリポイント"""
         from .worker import run_worker_process
@@ -397,7 +411,8 @@ class ParallelOrchestrator:
             checkpoint_dir=checkpoint_dir,
             base_dir=base_dir,
             start_index=start_index,
-            timeout_per_domain=timeout_per_domain
+            timeout_per_domain=timeout_per_domain,
+            cert_features_file=cert_features_file
         )
 
     # 変更履歴:

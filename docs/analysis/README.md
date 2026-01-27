@@ -7,6 +7,7 @@
 ```
 docs/analysis/
 ├── README.md                          # このファイル
+├── baseline_fnfp_analysis_20260128.md # Stage3ベースラインFN/FP分析
 ├── certificate_analysis_report.md     # 証明書特徴量の分析レポート
 ├── feature_candidates_memo.md         # 特徴量候補メモ
 ├── fn_gsb_verification/               # False Negative のGoogle Safe Browsing検証
@@ -16,7 +17,26 @@ docs/analysis/
 
 ## 各分析の詳細
 
-### 1. certificate_analysis_report.md
+### 1. baseline_fnfp_analysis_20260128.md
+
+**目的**: Stage3 AI Agentベースライン評価のFN/FP詳細分析
+
+**データソース**: `artifacts/00-baseline/2026-01-27_f1_0.6426/`
+- 評価データ: 15,670件
+- F1: 0.6426, FN: 899件, FP: 1,148件
+
+**主な発見** (2026-01-28):
+- **FNの80.2%（721件）はシグナル無し** - 特徴量ベースでは検出困難
+- **FPの39.0%（448件）はシグナル無し** - AIの過剰検出
+- **エラー全体の57.1%がシグナル無し** - 外部データ連携が必要
+- phishtankのRecallが最低（56.2%）- 国際フィッシングの検出が課題
+- 証明書特徴量はFN/TN区別に有効でない
+
+**関連**: `docs/specs/rules_modularization_spec.md`
+
+---
+
+### 3. certificate_analysis_report.md
 
 **目的**: SSL/TLS証明書特徴量の識別力を分析
 
@@ -28,7 +48,7 @@ docs/analysis/
 
 ---
 
-### 2. stage2_independent_eval/
+### 4. stage2_independent_eval/
 
 **目的**: Stage2証明書ルールの過学習検証
 
@@ -56,7 +76,7 @@ python docs/analysis/stage2_independent_eval/evaluate_stage2_rules.py
 
 ---
 
-### 3. fn_gsb_verification/
+### 5. fn_gsb_verification/
 
 **目的**: Stage1 False NegativeのGoogle Safe Browsingでの検証
 
@@ -64,7 +84,7 @@ python docs/analysis/stage2_independent_eval/evaluate_stage2_rules.py
 
 ---
 
-### 4. stage3_experiments/
+### 6. stage3_experiments/
 
 **目的**: Stage3 AI Agentの各種実験結果
 

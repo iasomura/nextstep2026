@@ -38,13 +38,15 @@ nextstep/
 │   ├── langgraph_module.py         # LangGraph状態管理
 │   ├── precheck_module.py          # 事前チェック
 │   ├── tools_module.py             # ツール定義
-│   ├── stage2_decider_v2.py        # Stage2決定器
 │   ├── llm_final_decision.py       # LLM最終判定
+│   ├── rules/                      # ルールエンジン (モジュール化)
 │   └── tools/                      # 分析ツール群
 │       ├── brand_impersonation_check.py
 │       ├── certificate_analysis.py
 │       ├── short_domain_analysis.py
 │       └── contextual_risk_assessment.py
+├── future/                         # 将来実装予定
+│   └── stage2_v2/                  # 新設計Stage2 (未統合)
 ├── _compat/
 │   ├── config.json                 # システム設定
 │   └── paths.py                    # パス管理
@@ -130,10 +132,22 @@ theta_high = 0.85  # AUTO_PHISH閾値
 
 ### 4.1 概要
 - **目的**: Stage1のDEFERをさらにフィルタリング
-- **入力**: Stage1 DEFER集合
-- **出力**: p2 → AUTO_PHISH_2 / AUTO_BENIGN_2 / DEFER2
+- **入力**: Stage1 DEFER集合 (60,974件)
+- **出力**: handoff_to_agent / drop_to_auto
+- **実装**: `02_main.py` 内の `run_stage2_gate()` 関数
 
-### 4.2 証明書ルール (`stage2_decider_v2.py`)
+### 4.2 Stage2の処理内容
+
+Stage2は以下のシナリオを組み合わせてフィルタリングを行う：
+
+| シナリオ | 内容 | 効果 |
+|----------|------|------|
+| Scenario 5 | Safe BENIGN filter (低p1 + 低p_error) | 自動benign判定 |
+| Scenario 6 | 証明書ルール (CRL/OV/EV/Wildcard) | 自動benign判定 |
+| Scenario 7 | TLD分類 (危険TLD → 証明書ルール無効) | FN削減 |
+| Scenario 8 | 高ML救済 (ML >= 0.50) | Stage3へ強制送信 |
+
+### 4.3 証明書ルール (Scenario 6)
 
 以下のいずれかを満たす場合、Benign（正規）と判定：
 
@@ -144,14 +158,24 @@ theta_high = 0.85  # AUTO_PHISH閾値
 | Wildcard | cert_is_wildcard = True | 11.0% |
 | Long Validity | cert_validity_days > 180 | 19.4% |
 
-### 4.3 独立評価結果 (2026-01-12)
+### 4.4 フィルタリング実績
 
-| 指標 | 元の評価 | 独立評価 |
-|------|----------|----------|
-| フィルタリング率 | 93.0% | **53.3%** |
-| 精度 | 96.6% | 90.7% |
+| 指標 | 値 |
+|------|-----|
+| Stage1 DEFER | 60,974件 |
+| Stage2 通過 (handoff) | 15,670件 |
+| **削減率** | **74.3%** |
 
-**注意**: 93%フィルタリングは過学習の結果。独立データでは53%程度。
+### 4.5 将来実装 (Stage2 v2)
+
+新設計のStage2実装が `future/stage2_v2/` に格納されています。
+現時点では未統合ですが、以下の改善を目指しています：
+
+- LR → XGBoost への変更
+- p_error (誤り確率) → p2 (フィッシング確率) への変更
+- Wilson boundによる統計的閾値選択
+
+詳細は `future/stage2_v2/README.md` を参照。
 
 ## 5. Stage3: AI Agent (LangGraph)
 
@@ -329,7 +353,14 @@ ARTIFACTS = f"artifacts/{RUN_ID}/"
   - `evaluate(domain, ml_probability, cert_data)` → dict
   - `_build_graph()` → StateGraph
 
-### 11.3 Stage2決定器 (`phishing_agent/stage2_decider_v2.py`)
+### 11.3 Stage2決定器
+
+**現行実装**: `02_main.py` 内の `run_stage2_gate()` 関数
+- Logistic Regression ベース
+- p_error (Stage1誤り確率) を予測
+- 証明書ルール + TLDルール + シナリオ群
+
+**将来実装 (未統合)**: `future/stage2_v2/stage2_decider_v2.py`
 - `train_stage2_xgb(X2_train, y_train)` → XGBClassifier
 - `Stage2Thresholds` データクラス
 
@@ -370,6 +401,7 @@ ARTIFACTS = f"artifacts/{RUN_ID}/"
 | phishing_agent/langgraph_module.py | LangGraph状態管理 |
 | phishing_agent/precheck_module.py | 事前チェック |
 | phishing_agent/tools_module.py | ツール定義 |
-| phishing_agent/stage2_decider_v2.py | Stage2決定器 |
 | phishing_agent/llm_final_decision.py | LLM最終判定 |
+| phishing_agent/rules/ | ルールエンジン (モジュール化) |
 | phishing_agent/tools/*.py | 分析ツール群 |
+| future/stage2_v2/ | 将来実装予定のStage2 v2 |

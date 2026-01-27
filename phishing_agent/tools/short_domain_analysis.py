@@ -1,5 +1,7 @@
 # phishing_agent/tools/short_domain_analysis.py
 # 変更履歴:
+#   - 2026-01-27: ccTLD解釈機能追加（FP削減）
+#     - ccTLDでは短いドメインが一般的という情報をLLMに提供
 #   - 2026-01-24: ランダム文字列検出強化
 #     - 子音クラスター検出 (_count_consonant_clusters)
 #     - レアバイグラム分析 (_rare_bigram_ratio)
@@ -38,6 +40,109 @@ RARE_BIGRAMS: frozenset = frozenset([
 ])
 
 _CONSONANTS = frozenset("bcdfghjklmnpqrstvwxyz")
+
+# ---------------------------------------------------------------------------
+# ccTLD (Country Code TLD) 解釈機能 (2026-01-27追加)
+# FP分析より、ccTLDでの短いドメイン（cndp.fr, rvp.cz等）が誤検知されていた
+# ccTLDでは政府機関・企業の略称として短いドメインが一般的
+# ---------------------------------------------------------------------------
+
+# 主要なccTLDと国名のマッピング
+CCTLD_COUNTRIES: Dict[str, str] = {
+    # ヨーロッパ
+    "fr": "France", "de": "Germany", "uk": "United Kingdom", "it": "Italy",
+    "es": "Spain", "nl": "Netherlands", "be": "Belgium", "at": "Austria",
+    "ch": "Switzerland", "pl": "Poland", "cz": "Czech Republic", "se": "Sweden",
+    "no": "Norway", "dk": "Denmark", "fi": "Finland", "pt": "Portugal",
+    "gr": "Greece", "ie": "Ireland", "hu": "Hungary", "ro": "Romania",
+    "ua": "Ukraine", "sk": "Slovakia", "hr": "Croatia", "si": "Slovenia",
+    "bg": "Bulgaria", "lt": "Lithuania", "lv": "Latvia", "ee": "Estonia",
+    # アジア太平洋
+    "jp": "Japan", "kr": "South Korea", "au": "Australia", "nz": "New Zealand",
+    "in": "India", "sg": "Singapore", "hk": "Hong Kong", "tw": "Taiwan",
+    "th": "Thailand", "my": "Malaysia", "id": "Indonesia", "ph": "Philippines",
+    "vn": "Vietnam",
+    # 南北アメリカ
+    "ca": "Canada", "mx": "Mexico", "br": "Brazil", "ar": "Argentina",
+    "cl": "Chile", "co": "Colombia", "pe": "Peru",
+    # 中東・アフリカ
+    "il": "Israel", "ae": "UAE", "za": "South Africa", "eg": "Egypt",
+    "tr": "Turkey",
+    # ロシア・CIS
+    "ru": "Russia", "by": "Belarus", "kz": "Kazakhstan",
+}
+
+# 危険とみなすccTLD（フィッシング率が高い）
+DANGEROUS_CCTLDS: frozenset = frozenset([
+    "cn",  # 中国 - フィッシング率86.9%
+    "cc",  # ココス諸島 - 実質的にgTLD的使用
+    "tk", "ml", "ga", "cf", "gq",  # Freenom無料TLD
+    "pw",  # パラオ - 悪用多い
+])
+
+
+def _interpret_cctld(tld: str, domain_length: int) -> Dict[str, Any]:
+    """
+    ccTLD（国別コードTLD）の解釈を生成（LLM判断材料用）
+
+    研究知見:
+    - ccTLDでは政府機関・企業の略称として短いドメインが一般的
+    - 例: cndp.fr (フランス国立教育資料センター), rvp.cz (チェコ教育ポータル)
+    - ただし、cn, cc等の危険ccTLDは例外
+    """
+    interpretation = {
+        "is_cctld": False,
+        "country": None,
+        "is_dangerous_cctld": False,
+        "short_domain_common": False,
+        "explanation": "",
+    }
+
+    tld_lower = tld.lower().lstrip(".")
+
+    # 2文字TLDかどうか確認
+    if len(tld_lower) != 2:
+        interpretation["explanation"] = "Not a country-code TLD (length != 2)"
+        return interpretation
+
+    # 危険ccTLDかどうか
+    if tld_lower in DANGEROUS_CCTLDS:
+        interpretation["is_cctld"] = True
+        interpretation["is_dangerous_cctld"] = True
+        interpretation["country"] = CCTLD_COUNTRIES.get(tld_lower, "Unknown")
+        interpretation["explanation"] = (
+            f".{tld_lower} is a high-risk country-code TLD. "
+            "Short domains on this TLD should still be treated with caution."
+        )
+        return interpretation
+
+    # 通常のccTLD
+    if tld_lower in CCTLD_COUNTRIES:
+        country = CCTLD_COUNTRIES[tld_lower]
+        interpretation["is_cctld"] = True
+        interpretation["country"] = country
+
+        # 短いドメイン（6文字以下）は一般的
+        if domain_length <= 6:
+            interpretation["short_domain_common"] = True
+            interpretation["explanation"] = (
+                f".{tld_lower} is the country-code TLD for {country}. "
+                f"Short domains ({domain_length} chars) are common on ccTLDs "
+                "for government agencies, corporations, and established organizations. "
+                "This reduces the suspicion of random_pattern detection."
+            )
+        else:
+            interpretation["explanation"] = (
+                f".{tld_lower} is the country-code TLD for {country}."
+            )
+        return interpretation
+
+    # 2文字だがリストにない（新しいccTLD等）
+    interpretation["explanation"] = (
+        f".{tld_lower} appears to be a country-code TLD (2 characters) "
+        "but is not in the known list."
+    )
+    return interpretation
 
 
 def _count_consonant_clusters(text: str) -> int:
@@ -103,15 +208,30 @@ def short_domain_analysis(
     issues: List[str] = []
     score = 0.0
 
+    # 2026-01-26追加: 信頼TLDの判定（短ドメインペナルティ緩和用）
+    # 変更履歴:
+    #   - 2026-01-26: FP分析より .org 等の誤検知が多いため、ペナルティを緩和
+    _trusted_tlds = {"org", "edu", "gov", "mil", "int", "ac.jp", "go.jp", "co.jp", "ne.jp"}
+    _is_trusted_tld = suffix.lower() in _trusted_tlds or any(
+        suffix.lower().endswith(f".{t}") for t in ["gov", "edu", "mil", "ac", "go"]
+    )
+
     # 1. 長さチェック（元ロジック踏襲＋short をやや弱め）
+    # 2026-01-26: 信頼TLDの場合はペナルティをさらに緩和
     if n <= 3:
         cat = "very_short"
         issues.append("very_short")
-        score += 0.30
+        if _is_trusted_tld:
+            score += 0.10  # 信頼TLD: 0.30 → 0.10
+        else:
+            score += 0.30
     elif n <= 6:
         cat = "short"
         issues.append("short")
-        score += 0.10  # 0.15 → 0.10 に調整
+        if _is_trusted_tld:
+            score += 0.03  # 信頼TLD: 0.10 → 0.03
+        else:
+            score += 0.10  # 0.15 → 0.10 に調整
     elif n <= 10:
         cat = "normal"
     else:
@@ -148,8 +268,11 @@ def short_domain_analysis(
     is_random = (vowel_ratio < vowel_threshold and digit_ratio < 0.5)
 
     # 2026-01-24: 子音クラスター検出
+    # 2026-01-27: 長いドメイン（15文字以上）では無効化（FP削減）
+    #   - directsellingnews.com (18文字) のような長い英単語組み合わせで
+    #     偶発的に子音クラスター ("llings", "ctsell") が発生するため
     consonant_clusters = _count_consonant_clusters(base)
-    is_consonant_cluster_random = consonant_clusters >= 2
+    is_consonant_cluster_random = consonant_clusters >= 2 and n < 15
 
     # 2026-01-24: レアバイグラム検出
     rare_bigram_r = _rare_bigram_ratio(base)
@@ -181,6 +304,65 @@ def short_domain_analysis(
         else:
             score += 0.05  # 既にランダム検出されている場合は追加ボーナス
 
+    # 2026-01-25: 数字混在ランダムパターン検出
+    # FN分析より、nbmikjerunh15ng.com のような数字が混在したランダムドメインが
+    # 検出されていなかった。digit_ratio > 0 + 低母音率 + 子音クラスターで検出。
+    is_digit_mixed_random = (
+        digit_ratio > 0
+        and digit_ratio < 0.3  # 純粋な数字ドメインは除外
+        and vowel_ratio <= 0.25
+        and consonant_clusters >= 1
+        and len(base) >= 8  # 短いドメインは誤検出リスク
+        and not is_random  # 既存のrandom_patternでは検出されなかった場合
+        and not is_rare_bigram_random
+    )
+    if is_digit_mixed_random:
+        issues.append("digit_mixed_random")
+        if "high_entropy" not in issues and "random_pattern" not in issues:
+            score += 0.20
+        else:
+            score += 0.05
+
+    # 2026-01-26: 母音なしドメイン検出（危険TLD限定）
+    # FN分析より、"xyz", "kltd" 等の母音なしドメインが検出漏れ
+    # 正規の略語（"fbi", "nhs" 等）もあるため、危険TLD限定で検出
+    is_no_vowel_suspicious = (
+        vowel_ratio == 0  # 母音が1つもない
+        and len(base) >= 3
+        and len(base) <= 8
+        and tld_category == "dangerous"
+        and not is_high_entropy
+        and not is_random
+    )
+    if is_no_vowel_suspicious:
+        issues.append("no_vowel_dangerous_tld")
+        score += 0.15
+
+    # 2026-01-26: 連続文字パターン検出（機械生成ドメイン）
+    # "aaabbcc.com", "112233.com" のようなパターンを検出
+    def _has_repeating_pattern(s: str) -> bool:
+        if len(s) < 4:
+            return False
+        # 3文字以上の同じ文字の連続
+        for i in range(len(s) - 2):
+            if s[i] == s[i+1] == s[i+2]:
+                return True
+        # 連続する数字/文字のシーケンス (abc, 123)
+        seq_count = 0
+        for i in range(len(s) - 1):
+            if ord(s[i+1]) - ord(s[i]) == 1:
+                seq_count += 1
+            else:
+                seq_count = 0
+            if seq_count >= 3:  # 4文字以上の連続シーケンス
+                return True
+        return False
+
+    is_repeating_pattern = _has_repeating_pattern(base.lower())
+    if is_repeating_pattern and tld_category == "dangerous":
+        issues.append("repeating_pattern_dangerous_tld")
+        score += 0.15
+
     # 4. TLD統計ウェイト（既存ロジック）
     stat_weight = _tld_stat_weight(suffix, phishing_tld_stats)
     score += stat_weight
@@ -207,11 +389,13 @@ def short_domain_analysis(
         combo_flags.append("very_short_dangerous_combo")
 
     # 2026-01-24: 新ランダム検出フラグも含めたヘルパー
+    # 2026-01-25: digit_mixed_random を追加
     _any_random = (
         "high_entropy" in issues
         or "random_pattern" in issues
         or "consonant_cluster_random" in issues
         or "rare_bigram_random" in issues
+        or "digit_mixed_random" in issues
     )
 
     # 6-2. short + (any random flag) + TLD が dangerous / neutral
@@ -298,6 +482,9 @@ def short_domain_analysis(
     # 最後にクリップ
     score = max(0.0, min(1.0, float(score)))
 
+    # ccTLD解釈を生成（2026-01-27追加）
+    cctld_interpretation = _interpret_cctld(suffix, n)
+
     details: Dict[str, Any] = {
         "domain_length": n,
         "domain_length_category": cat,
@@ -323,6 +510,8 @@ def short_domain_analysis(
         "combo_flags": combo_flags,
         # 正規ドメイン判定結果
         "legitimate_check": legit_result,
+        # ccTLD解釈（2026-01-27追加）
+        "cctld_interpretation": cctld_interpretation,
     }
 
     # ------------------------------------------------------
@@ -378,12 +567,24 @@ def short_domain_analysis(
     if not reasons:
         reasons.append("短いドメインの顕著な問題なし")
 
+    # ccTLD解釈をreasoningに追加（2026-01-27）
+    # 短いドメイン + 非危険ccTLD の場合、LLMに文脈情報を提供
+    cctld_reasoning = ""
+    if cctld_interpretation.get("is_cctld") and not cctld_interpretation.get("is_dangerous_cctld"):
+        if cctld_interpretation.get("short_domain_common"):
+            country = cctld_interpretation.get("country", "Unknown")
+            cctld_reasoning = (
+                f" || [CCTLD CONTEXT] .{suffix} is the country-code TLD for {country}. "
+                f"Short domains ({n} chars) are common on ccTLDs for government/corporate abbreviations. "
+                "This context should reduce suspicion of random_pattern detection."
+            )
+
     return {
         "tool_name": "short_domain_analysis",
         "detected_issues": issues,
         "risk_score": score,
         "details": details,
-        "reasoning": " / ".join(reasons),
+        "reasoning": " / ".join(reasons) + cctld_reasoning,
     }
 
 

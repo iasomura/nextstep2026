@@ -197,6 +197,248 @@ def _is_dangerous_tld(domain: str, config: Dict[str, Any]) -> bool:
     return tld in dangerous_tlds
 
 
+# ------------------------------------------------------------
+# Feature Interpretation Functions (LLM向け解釈生成)
+# 変更履歴:
+#   - 2026-01-26: 新規追加。SAN数/CA/有効期間/ワイルドカードの解釈をLLMに提供
+# ------------------------------------------------------------
+
+def _interpret_san_count(san_count: int, is_dangerous_tld: bool) -> Dict[str, Any]:
+    """
+    SAN数の解釈を生成（LLM判断材料用）
+
+    研究知見:
+    - SAN=1: 単独サイト向け。Phishing分布の32.9%、Phishing率27.1%。リスクあり。
+    - SAN=2: 標準的な正規サイト構成。Benign分布の61.5%、Phishing率11.3%。Benign指標。
+    - SAN 3-10: 一般的な範囲。明確な傾向なし。
+    - SAN≥11: CDN/大規模サービスで使用されるが、Phishing率35-45%と予想外に高リスク。
+    """
+    interpretation = {
+        "san_count": san_count,
+        "risk_level": "unknown",
+        "explanation": "",
+        "is_benign_indicator": False,
+        "is_risk_indicator": False,
+    }
+
+    if san_count == 0:
+        interpretation["risk_level"] = "elevated"
+        interpretation["explanation"] = "No SAN entries. Unusual for modern certificates."
+        interpretation["is_risk_indicator"] = True
+    elif san_count == 1:
+        # SAN=1: Phishing分布32.9%、Phishing率27.1%
+        if is_dangerous_tld:
+            interpretation["risk_level"] = "high"
+            interpretation["explanation"] = (
+                "SAN=1 on dangerous TLD: High risk combination. "
+                "79.6% of such domains are phishing in dataset."
+            )
+            interpretation["is_risk_indicator"] = True
+        else:
+            interpretation["risk_level"] = "moderate"
+            interpretation["explanation"] = (
+                "SAN=1: Single-site certificate. 27.1% phishing rate in dataset. "
+                "Common for small legitimate sites but also for phishing."
+            )
+    elif san_count == 2:
+        # SAN=2: Benign分布61.5%、Phishing率11.3%（最も安全）
+        interpretation["risk_level"] = "low"
+        interpretation["explanation"] = (
+            "SAN=2: Standard configuration (domain + www). "
+            "61.5% of benign sites use this. Only 11.3% phishing rate. "
+            "Strong benign indicator."
+        )
+        interpretation["is_benign_indicator"] = True
+    elif san_count <= 10:
+        interpretation["risk_level"] = "neutral"
+        interpretation["explanation"] = (
+            f"SAN={san_count}: Within normal range. "
+            "No strong signal either way."
+        )
+    else:
+        # SAN≥11: 予想外に高リスク（35-45% Phishing率）
+        if is_dangerous_tld:
+            interpretation["risk_level"] = "high"
+            interpretation["explanation"] = (
+                f"SAN={san_count} on dangerous TLD: Suspicious combination. "
+                "High SAN count unexpectedly correlates with 35-45% phishing rate."
+            )
+            interpretation["is_risk_indicator"] = True
+        else:
+            interpretation["risk_level"] = "elevated"
+            interpretation["explanation"] = (
+                f"SAN={san_count}: Large certificate (CDN/shared hosting). "
+                "Unexpectedly, 35-45% phishing rate for SAN≥11. Requires other context."
+            )
+
+    return interpretation
+
+
+def _interpret_ca(issuer: str, is_free_ca: bool) -> Dict[str, Any]:
+    """
+    CA（発行者）の解釈を生成（LLM判断材料用）
+
+    研究知見:
+    - Let's Encrypt: 無料CA。正規サイト57.9%、フィッシング92.4%で使用。単独では判別困難。
+    - Cloudflare: CDN/WAF経由。比較的信頼できる。
+    - DigiCert, GlobalSign, Comodo: 有料CA。フィッシングでは稀。
+    - ZeroSSL, cPanel: 無料/自動発行。フィッシングで多用。
+    """
+    interpretation = {
+        "issuer": issuer,
+        "is_free_ca": is_free_ca,
+        "trust_level": "unknown",
+        "explanation": "",
+    }
+
+    issuer_lower = issuer.lower() if issuer else ""
+
+    if not issuer:
+        interpretation["trust_level"] = "unknown"
+        interpretation["explanation"] = "Issuer information not available."
+    elif "let's encrypt" in issuer_lower or "letsencrypt" in issuer_lower:
+        interpretation["trust_level"] = "neutral"
+        interpretation["explanation"] = (
+            "Let's Encrypt: Free, automated CA. Used by 57.9% of benign sites "
+            "but also 92.4% of phishing sites. Not discriminative alone."
+        )
+    elif "cloudflare" in issuer_lower:
+        interpretation["trust_level"] = "moderate"
+        interpretation["explanation"] = (
+            "Cloudflare: CDN-issued certificate. Indicates use of Cloudflare proxy. "
+            "Generally more trustworthy than raw Let's Encrypt."
+        )
+    elif "digicert" in issuer_lower or "globalSign" in issuer_lower or "entrust" in issuer_lower:
+        interpretation["trust_level"] = "high"
+        interpretation["explanation"] = (
+            "Premium CA (DigiCert/GlobalSign/Entrust): Paid certificate. "
+            "Rarely used by phishing sites due to cost and verification."
+        )
+    elif "comodo" in issuer_lower or "sectigo" in issuer_lower:
+        interpretation["trust_level"] = "moderate"
+        interpretation["explanation"] = (
+            "Comodo/Sectigo: Mixed offerings (free and paid). "
+            "Moderate trust level depending on certificate type."
+        )
+    elif "zerossl" in issuer_lower or "cpanel" in issuer_lower:
+        interpretation["trust_level"] = "low"
+        interpretation["explanation"] = (
+            "ZeroSSL/cPanel: Free, automated issuance. "
+            "Commonly used by phishing sites for quick setup."
+        )
+    elif "google trust services" in issuer_lower:
+        interpretation["trust_level"] = "moderate"
+        interpretation["explanation"] = (
+            "Google Trust Services: Used by Google-hosted services. "
+            "Generally legitimate but can be abused on hosting platforms."
+        )
+    elif is_free_ca:
+        interpretation["trust_level"] = "low"
+        interpretation["explanation"] = (
+            f"Free/low-assurance CA detected ({issuer}). "
+            "Lower barrier for phishing site creation."
+        )
+    else:
+        interpretation["trust_level"] = "moderate"
+        interpretation["explanation"] = (
+            f"CA: {issuer}. Standard certificate authority."
+        )
+
+    return interpretation
+
+
+def _interpret_validity(valid_days: int, is_free_ca: bool) -> Dict[str, Any]:
+    """
+    証明書有効期間の解釈を生成（LLM判断材料用）
+
+    研究知見:
+    - 90日: Let's Encrypt標準。自動更新前提。正規サイトでもフィッシングでも最多。
+    - 365日: 従来の有料CA標準。やや信頼度高い。
+    - 180日超: 長期有効。正規サイトの27%、フィッシングの1%（Benign indicator）。
+    - データ: 正規サイト平均113.2日、フィッシング平均112.7日。有効期間単独では判別困難。
+    """
+    interpretation = {
+        "valid_days": valid_days,
+        "category": "unknown",
+        "explanation": "",
+        "is_benign_indicator": False,
+    }
+
+    if valid_days <= 0:
+        interpretation["category"] = "unknown"
+        interpretation["explanation"] = "Validity period not available or invalid."
+    elif valid_days <= 90:
+        interpretation["category"] = "short_term"
+        interpretation["explanation"] = (
+            f"Short-term certificate ({valid_days} days). "
+            "Standard for Let's Encrypt (90 days). Used by both benign and phishing sites. "
+            "Not discriminative alone."
+        )
+    elif valid_days <= 180:
+        interpretation["category"] = "standard"
+        interpretation["explanation"] = (
+            f"Standard validity ({valid_days} days). "
+            "Common for various CA types. No strong signal."
+        )
+    elif valid_days <= 365:
+        interpretation["category"] = "extended"
+        interpretation["explanation"] = (
+            f"Extended validity ({valid_days} days). "
+            "Often indicates paid certificate. Slightly more trustworthy."
+        )
+        interpretation["is_benign_indicator"] = True
+    else:
+        interpretation["category"] = "long_term"
+        interpretation["explanation"] = (
+            f"Long-term certificate ({valid_days} days). "
+            "Rare for phishing (1%). 27% of benign sites use long-term certs. "
+            "Benign indicator."
+        )
+        interpretation["is_benign_indicator"] = True
+
+    return interpretation
+
+
+def _interpret_wildcard(is_wildcard: bool, san_count: int, is_dangerous_tld: bool) -> Dict[str, Any]:
+    """
+    ワイルドカード証明書の解釈を生成（LLM判断材料用）
+
+    研究知見:
+    - 正規サイトの55.1%がワイルドカード証明書を使用
+    - フィッシングサイトの1.5%のみがワイルドカード証明書を使用
+    - 危険TLDでのワイルドカードは例外的にリスク
+    """
+    interpretation = {
+        "is_wildcard": is_wildcard,
+        "trust_implication": "neutral",
+        "explanation": "",
+        "is_benign_indicator": False,
+        "is_risk_indicator": False,
+    }
+
+    if not is_wildcard:
+        interpretation["trust_implication"] = "neutral"
+        interpretation["explanation"] = (
+            "Not a wildcard certificate. No specific implication."
+        )
+    elif is_dangerous_tld:
+        interpretation["trust_implication"] = "suspicious"
+        interpretation["explanation"] = (
+            "Wildcard certificate on dangerous TLD: Unusual and suspicious. "
+            "Phishing rarely uses wildcards, but dangerous TLDs add risk."
+        )
+        interpretation["is_risk_indicator"] = True
+    else:
+        interpretation["trust_implication"] = "trustworthy"
+        interpretation["explanation"] = (
+            "Wildcard certificate (*.domain): 55.1% of benign sites use this, "
+            "but only 1.5% of phishing sites. Strong benign indicator."
+        )
+        interpretation["is_benign_indicator"] = True
+
+    return interpretation
+
+
 def _mitigate_score_for_legit_domain(
     domain: str,
     detected_issues: List[str],
@@ -432,11 +674,26 @@ def _analyze_certificate_core(domain: str, cert_meta: Optional[Dict[str, Any]], 
     is_very_old_cert = bool(cert_age_days > very_old_cert_days)
     details["is_very_old_cert"] = is_very_old_cert
 
+    # --- 2-12. 新規: Feature Interpretations for LLM --------------------------
+    # 変更履歴:
+    #   - 2026-01-26: SAN数/CA/有効期間/ワイルドカードの解釈をLLMに提供
+    san_interpretation = _interpret_san_count(san_count, is_dangerous_tld)
+    ca_interpretation = _interpret_ca(issuer, is_free_ca)
+    validity_interpretation = _interpret_validity(valid_days, is_free_ca)
+    wildcard_interpretation = _interpret_wildcard(is_wildcard, san_count, is_dangerous_tld)
+
+    details["san_interpretation"] = san_interpretation
+    details["ca_interpretation"] = ca_interpretation
+    details["validity_interpretation"] = validity_interpretation
+    details["wildcard_interpretation"] = wildcard_interpretation
+
     # --- 2-B. Benign Indicators 収集 -----------------------------------------
     # Stage2と同じ証明書特徴量をStage3でも活用
 
     # B1. CRL Distribution Points（正規81.7%が保有、フィッシング1.6%）
-    if has_crl_dp:
+    # 変更履歴:
+    #   - 2026-01-26: 危険TLDの場合はCRL DP効果を無効化（FN 444件対策）
+    if has_crl_dp and not is_dangerous_tld:
         benign_indicators.append("has_crl_dp")
 
     # B2. OV/EV証明書（Subject Organization有り）
@@ -591,6 +848,38 @@ def _analyze_certificate_core(domain: str, cert_meta: Optional[Dict[str, Any]], 
             reasoning = f"BENIGN: {benign_str}"
     if issuer:
         reasoning += f" / Issuer: {issuer}"
+
+    # --- 5-B. 新規: Feature Interpretations を reasoning に追加 ---------------
+    # 変更履歴:
+    #   - 2026-01-26: LLM判断材料として詳細な解釈を追加
+    interpretation_bits: List[str] = []
+
+    # SAN解釈（リスク/benign indicatorがある場合のみ）
+    if san_interpretation.get("is_risk_indicator"):
+        interpretation_bits.append(f"[SAN RISK] {san_interpretation['explanation']}")
+    elif san_interpretation.get("is_benign_indicator"):
+        interpretation_bits.append(f"[SAN SAFE] {san_interpretation['explanation']}")
+
+    # CA解釈（trust_levelがhighまたはlowの場合）
+    ca_trust = ca_interpretation.get("trust_level", "")
+    if ca_trust == "high":
+        interpretation_bits.append(f"[CA TRUSTED] {ca_interpretation['explanation']}")
+    elif ca_trust == "low":
+        interpretation_bits.append(f"[CA CAUTION] {ca_interpretation['explanation']}")
+
+    # 有効期間解釈（benign indicatorの場合）
+    if validity_interpretation.get("is_benign_indicator"):
+        interpretation_bits.append(f"[VALIDITY SAFE] {validity_interpretation['explanation']}")
+
+    # ワイルドカード解釈（リスク/benign indicatorがある場合）
+    if wildcard_interpretation.get("is_risk_indicator"):
+        interpretation_bits.append(f"[WILDCARD RISK] {wildcard_interpretation['explanation']}")
+    elif wildcard_interpretation.get("is_benign_indicator"):
+        interpretation_bits.append(f"[WILDCARD SAFE] {wildcard_interpretation['explanation']}")
+
+    if interpretation_bits:
+        interpretation_str = " | ".join(interpretation_bits)
+        reasoning += f" || INTERPRETATIONS: {interpretation_str}"
 
     # details に benign_indicators を追加
     details["benign_indicators"] = benign_indicators

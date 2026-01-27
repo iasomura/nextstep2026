@@ -257,9 +257,17 @@ class ExternalVLLMManager(BaseVLLMManager):
         self.stop_cmd = stop_cmd
 
     def start(self) -> Tuple[bool, str]:
-        """vLLMを起動（start_cmdがあれば実行）"""
-        if self.health_check():
-            return True, f"External vLLM on port {self.port} is reachable"
+        """vLLMを起動（start_cmdがあれば実行）
+
+        変更履歴:
+          - 2026-01-25: SSH tunnel不安定対策としてリトライロジック追加 (3回, 2秒間隔)
+        """
+        # リトライ付きヘルスチェック（SSH tunnel不安定対策）
+        for attempt in range(3):
+            if self.health_check():
+                return True, f"External vLLM on port {self.port} is reachable"
+            if attempt < 2:
+                time.sleep(2)
 
         if self.start_cmd:
             try:

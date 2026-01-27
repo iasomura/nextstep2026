@@ -16,6 +16,15 @@ from __future__ import annotations
 # - 2026-01-24: 多言語ソーシャルエンジニアリングキーワード追加 (MULTILINGUAL_RISK_WORDS)
 #              フランス語/ポルトガル語/スペイン語/ドイツ語/イタリア語のフィッシング
 #              頻出ワードを _count_high_risk_hits() で検出するよう拡張
+# - 2026-01-25: 危険TLD組み合わせスコアリング追加 (DANGEROUS_TLDS_CTX)
+#              FN分析より164件 (22.2%) が危険TLDで見逃し → 他シグナルとの
+#              組み合わせ (ランダム/短ドメイン/ブランド検出) でリスク底上げ
+# - 2026-01-25: FN分析に基づく追加改善 (4-3b3〜4-3b6)
+#              - 4-3b3: critical_brand 最低スコア強制 (smbceco.net等)
+#              - 4-3b4: 複数ブランド検出ボーナス (etherwallet.mobilelab.vn等)
+#              - 4-3b5: ランダム+高ML相乗効果 (jcvuzh.com等)
+#              - 4-3b6: サブドメイン+ブランド検出 (etherwallet.mobilelab.vn等)
+#              - MULTILINGUAL_RISK_WORDS に英語アクション系追加 (update, renew等)
 # ---------------------------------------------------------------------
 from typing import Any, Dict, List, Optional
 
@@ -62,9 +71,11 @@ WEIGHT_TOOLS: float = 0.35
 BONUS_MULTIPLE_FACTORS: float = 0.12
 
 # High-risk words bonus
-HIGH_RISK_WORD_BASE: float = 0.12
-HIGH_RISK_WORD_STEP: float = 0.04
-HIGH_RISK_WORD_MAX: float = 0.28
+# 2026-01-26: FN分析に基づき強化 (livraison-monrelais.com等のフィッシングが検出されなかった)
+# 複数のhigh_risk_wordsはフィッシングの強いシグナル
+HIGH_RISK_WORD_BASE: float = 0.18  # 0.12 → 0.18
+HIGH_RISK_WORD_STEP: float = 0.06  # 0.04 → 0.06
+HIGH_RISK_WORD_MAX: float = 0.38   # 0.28 → 0.38
 
 # Known domain mitigation (slightly weaker than old logic)
 KNOWN_DOMAIN_MITIGATION_LOW: float = 0.08   # applied when score < 0.7
@@ -101,6 +112,24 @@ HIGH_DANGER_TLDS_CTX = frozenset([
     'pw', 'buzz', 'lat',  # 高フィッシング率
 ])
 
+# ---------------------------------------------------------------------------
+# 危険TLD (2026-01-25追加)
+# ---------------------------------------------------------------------------
+# FN分析より、164件 (22.2%) が危険TLDに属するがAI Agentが見逃していた。
+# HIGH_DANGER_TLDS_CTXより広範囲のTLDをカバーし、他シグナルとの組み合わせで
+# リスクスコアを底上げする。
+DANGEROUS_TLDS_CTX: frozenset = frozenset([
+    # 超危険 (>50% フィッシング率) - HIGH_DANGER_TLDS_CTXと同じ
+    "top", "xyz", "icu", "buzz", "cfd", "cyou", "rest", "sbs",
+    "tk", "ml", "ga", "cf", "gq", "pw",
+    # 高危険 (>20% フィッシング率)
+    "cn", "cc", "asia", "vip", "shop", "club", "one", "click", "link",
+    "online", "site", "website", "lat", "ws", "wang", "bar", "mw", "live",
+    # 中危険 (フィッシング利用が増加傾向)
+    "info", "biz", "mobi", "work", "email", "date", "party", "review",
+    "stream", "download", "men", "win", "loan", "science", "kim",
+])
+
 # ただし free_ca/no_org 自体は risk 要因としては引き続き有効（スコア寄与は残す）。
 WEAK_IDENTITY_TAGS: tuple = (
     "free_ca",
@@ -117,11 +146,15 @@ MULTIPLE_FACTORS_MIN_ISSUES: int = 2
 # 英語の high_risk_words に加えて、フランス語/ポルトガル語/スペイン語/ドイツ語/
 # イタリア語のフィッシング頻出ワードを検出する。
 MULTILINGUAL_RISK_WORDS: frozenset = frozenset([
-    # フランス語
+    # フランス語 (2026-01-26: FN分析に基づき拡充)
     "connexion", "verification", "confirmer", "actualiser", "securite",
     "authentification", "identifiant", "compte", "messagerie",
     "dossier", "livraison", "colis", "facture", "renouvellement",
     "debloquer", "reactiver", "espace",
+    # 2026-01-26追加: フランス語 配送/税金/銀行詐欺で頻出
+    "suivi", "remboursement", "virement", "paiement", "bancaire",
+    "impots", "amende", "douane", "carte", "retrait", "depot",
+    "chronopost", "laposte", "colissimo", "relais", "infos",
     # ポルトガル語
     "verificar", "confirmar", "atualizar", "seguranca", "autenticacao",
     "acesso", "conta", "pagamento", "fatura", "entrega",
@@ -141,6 +174,17 @@ MULTILINGUAL_RISK_WORDS: frozenset = frozenset([
     "webmail", "portail", "espace", "client", "membre",
     "usuario", "utilisateur", "utente", "benutzer",
     "recuperar", "recuperer", "ripristino",
+    # 2026-01-25追加: 英語のアクション系フィッシングキーワード (FN分析: updateza.top等)
+    "update", "renew", "suspend", "suspended",
+    "expire", "expired", "expiring",
+    "unlock", "reactivate", "restore",
+    "verify", "validate", "confirm",
+    "alert", "urgent", "warning", "notice",
+    # 2026-01-26追加: サービス関連キーワード (FN分析: service偽装ドメイン)
+    "service", "services", "support", "customer", "helpdesk",
+    "technical", "billing", "invoice", "receipt", "refund",
+    "activation", "registration", "subscription", "membership",
+    "notification", "delivery", "shipping", "tracking", "parcel",
 ])
 
 
@@ -149,6 +193,8 @@ def _count_high_risk_hits(tokens: List[str], high_risk_words: Optional[List[str]
 
     変更履歴:
       - 2026-01-24: MULTILINGUAL_RISK_WORDS も検索対象に追加
+      - 2026-01-25: 部分一致も検出するよう修正 (updateza → update)
+                   ただし4文字未満のキーワードは除外（誤検知防止）
     """
     hr: set = set()
     if high_risk_words:
@@ -157,7 +203,19 @@ def _count_high_risk_hits(tokens: List[str], high_risk_words: Optional[List[str]
     hr.update(MULTILINGUAL_RISK_WORDS)
     if not hr:
         return 0
-    return sum(1 for t in tokens if t in hr)
+
+    hits = 0
+    for t in tokens:
+        # 完全一致
+        if t in hr:
+            hits += 1
+            continue
+        # 部分一致（4文字以上のキーワードのみ）
+        for kw in hr:
+            if len(kw) >= 4 and kw in t:
+                hits += 1
+                break  # 1トークンにつき1ヒットまで
+    return hits
 
 
 @safe_tool_wrapper("contextual_risk_assessment")
@@ -465,6 +523,10 @@ def contextual_risk_assessment(
     except Exception:
         pass
 
+    # 変更履歴:
+    #   - 2026-01-27: ML < 0.10 の場合はスキップ (FP削減)
+    #     理由: ML < 0.10 は「非常にbenign」を意味し、DV cert + dangerous TLD
+    #     だけでphishing判定するとFPが増加（分析: 61%のFPがこのルール起因）
     if (
         ("free_ca_no_org" in issue_set or ("free_ca" in issue_set and "no_org" in issue_set))
         and (
@@ -474,6 +536,7 @@ def contextual_risk_assessment(
             or "short_random_combo" in issue_set
             or "random_with_high_tld_stat" in issue_set
         )
+        and p >= 0.10  # 2026-01-27: ML < 0.10 の場合はスキップ
     ):
         issues.append("dv_suspicious_combo")
         # TLD危険度に応じてスコア底上げ幅を調整
@@ -494,18 +557,291 @@ def contextual_risk_assessment(
             score = max(score, 0.42)
             score_components["dv_suspicious_combo"] = True
 
+    # 4-3b2. Dangerous TLD Combination Scoring (2026-01-25)
+    # FN分析より、164件 (22.2%) が危険TLDに属するがAI Agentが見逃していた。
+    # 危険TLD + 他のシグナル（ランダムパターン/短ドメイン/ブランド検出）の組み合わせで
+    # リスクスコアを底上げする。
+    #
+    # ルール:
+    #   危険TLD + random_pattern/high_entropy/consonant_cluster/rare_bigram → +0.20
+    #   危険TLD + short/very_short → +0.15
+    #   危険TLD + brand_detected → +0.25 (最も強い組み合わせ)
+    #   複数組み合わせの場合は加算（上限0.50）
+    dangerous_tld_combo_boost = 0.0
+    dangerous_tld_combo_signals: List[str] = []
+
+    # TLDが危険リスト（DANGEROUS_TLDS_CTX）に含まれるか確認
+    is_dangerous_tld = _tld_suffix_ctx in DANGEROUS_TLDS_CTX
+
+    if is_dangerous_tld:
+        # 2026-01-26追加: 危険TLD + 低ML のベースブースト
+        # 変更履歴:
+        #   - 2026-01-26: FN分析より、危険TLDで他シグナルなしの見逃しが29件
+        #   - 正規ドメインが .buzz, .icu, .top 等を使うことは稀
+        #   - ML < 0.15 でも危険TLDならベースブーストを適用
+        #   - 2026-01-27: ML < 0.10 の場合はスキップ (FP削減)
+        #     理由: ML < 0.10 はMLが「明確にbenign」と判断しているため、
+        #     危険TLDだけでブーストするとFPが増加する（分析: 35%のFP原因）
+        if 0.10 <= p < 0.15:
+            dangerous_tld_combo_boost += 0.12
+            dangerous_tld_combo_signals.append("dangerous_tld_low_ml")
+
+        # ランダムパターン検出との組み合わせ
+        _random_signals = {
+            "random_pattern", "high_entropy", "very_high_entropy",
+            "consonant_cluster_random", "rare_bigram_random",
+            "short_random_combo", "random_with_high_tld_stat",
+        }
+        if issue_set & _random_signals:
+            dangerous_tld_combo_boost += 0.20
+            dangerous_tld_combo_signals.append("dangerous_tld_random")
+
+        # 短ドメインとの組み合わせ
+        if "short" in issue_set or "very_short" in issue_set:
+            dangerous_tld_combo_boost += 0.15
+            dangerous_tld_combo_signals.append("dangerous_tld_short")
+
+        # ブランド検出との組み合わせ（最も強いシグナル）
+        if "brand_detected" in issue_set:
+            dangerous_tld_combo_boost += 0.25
+            dangerous_tld_combo_signals.append("dangerous_tld_brand")
+
+        # 2026-01-25追加: high_risk_words との組み合わせ (updateza.top等)
+        # ソーシャルエンジニアリングキーワード + 危険TLD は強い組み合わせ
+        if hr_hits > 0:
+            dangerous_tld_combo_boost += 0.28
+            dangerous_tld_combo_signals.append("dangerous_tld_high_risk_words")
+
+        # 2026-01-26追加: .cn TLD 強化 (FN分析: 50件の見逃し)
+        # .cn は正規サイトも多いが、フィッシングも多用される
+        # 追加シグナルがある場合のみ強化（FP防止）
+        if _tld_suffix_ctx == "cn":
+            _cn_additional_signals = 0
+            if issue_set & _random_signals:
+                _cn_additional_signals += 1
+            if "short" in issue_set or "very_short" in issue_set:
+                _cn_additional_signals += 1
+            if hr_hits > 0:
+                _cn_additional_signals += 1
+            if "brand_detected" in issue_set:
+                _cn_additional_signals += 2  # ブランド偽装は強いシグナル
+            # 2つ以上のシグナルがある場合、追加ブースト
+            if _cn_additional_signals >= 2:
+                dangerous_tld_combo_boost += 0.15
+                dangerous_tld_combo_signals.append("cn_tld_high_risk")
+
+        # 上限0.50でクリップ
+        dangerous_tld_combo_boost = min(dangerous_tld_combo_boost, 0.50)
+
+        if dangerous_tld_combo_boost > 0:
+            issues.append("dangerous_tld_combo")
+            # 現在のスコアに加算（他のボーナスとは独立）
+            score = max(score, score + dangerous_tld_combo_boost * 0.5)  # 半分を加算
+            # または最低スコアを底上げ
+            min_score_for_combo = 0.35 + dangerous_tld_combo_boost * 0.3
+            score = max(score, min_score_for_combo)
+            # 2026-01-25: high_risk_words + dangerous_tld は特に強い組み合わせ
+            # (updateza.top等: ソーシャルエンジニアリング + 危険TLD)
+            if "dangerous_tld_high_risk_words" in dangerous_tld_combo_signals:
+                score = max(score, 0.50)
+            score_components["dangerous_tld_combo"] = {
+                "boost": round(dangerous_tld_combo_boost, 3),
+                "signals": dangerous_tld_combo_signals,
+                "tld": _tld_suffix_ctx,
+            }
+
+    # 4-3b3. Critical Brand Minimum Score Enforcement (2026-01-25)
+    # FN分析より、brand_impersonation_check で has_critical_brand=True を返しても
+    # contextual_risk_assessment の重み付けで希釈され、閾値0.5に届かないケースが多発。
+    # (例: smbceco.net → smbc検出, risk=0.4 だが最終スコア0.34)
+    # critical_brand が検出された場合、最終スコアを強制的に底上げする。
+    brand_details_ctx = brand_data.get("details", {}) or {}
+    has_critical_brand = brand_details_ctx.get("has_critical_brand", False)
+
+    if has_critical_brand and "brand_detected" in issue_set:
+        if is_dangerous_tld:
+            # 危険TLD + critical_brand → 高リスク確定
+            score = max(score, 0.55)
+            if "critical_brand_dangerous_tld" not in issues:
+                issues.append("critical_brand_dangerous_tld")
+            score_components["critical_brand_enforcement"] = "dangerous_tld"
+        else:
+            # critical_brand のみ → 中〜高リスク
+            score = max(score, 0.50)
+            if "critical_brand_minimum" not in issues:
+                issues.append("critical_brand_minimum")
+            score_components["critical_brand_enforcement"] = "standard"
+
+    # 4-3b4. Multiple Brand Keywords Boost (2026-01-25)
+    # FN分析より、複数ブランドキーワードが検出されても単一ブランドと同じ扱いだった。
+    # (例: etherwallet.mobilelab.vn → eth, ether, wallet の3つ検出だが low risk)
+    # 複数ブランド検出時は追加ボーナスを付与する。
+    detected_brands_list = brand_details_ctx.get("detected_brands", []) or []
+    brand_count = len(detected_brands_list)
+
+    if brand_count >= 2:
+        multi_brand_boost = min(0.15, 0.05 * brand_count)
+        score += multi_brand_boost
+        if "multiple_brands_detected" not in issues:
+            issues.append("multiple_brands_detected")
+        score_components["multi_brand_boost"] = round(multi_brand_boost, 3)
+        score_components["brand_count"] = brand_count
+
+    # 4-3b5. Random Pattern + High ML Synergy (2026-01-25)
+    # FN分析より、random_pattern検出 + 高ML (>0.5) でも最終スコアが低いケースがあった。
+    # (例: jcvuzh.com → random_pattern, ML=0.57 だが最終スコア0.32)
+    # MLが高い（モデルがphishingと疑っている）+ ランダムパターン → 相乗効果を付与。
+    _random_indicators = {
+        "random_pattern", "rare_bigram_random",
+        "consonant_cluster_random", "high_entropy", "very_high_entropy"
+    }
+
+    if issue_set & _random_indicators and p > 0.50:
+        # MLが0.5超 + ランダムパターン → 相乗効果
+        # 2026-01-25: 閾値調整 (jcvuzh.com ML=0.57 が 0.5 を超えるよう)
+        synergy_score = 0.46 + (p - 0.50) * 0.6  # ML=0.57 → 0.502, ML=0.7 → 0.58
+        if score < synergy_score:
+            score = synergy_score
+            if "random_high_ml_synergy" not in issues:
+                issues.append("random_high_ml_synergy")
+            score_components["random_high_ml_synergy"] = {
+                "ml_prob": round(p, 3),
+                "synergy_score": round(synergy_score, 3),
+            }
+
+    # 4-3b6. Subdomain + Brand Keyword Detection (2026-01-25)
+    # FN分析より、サブドメイン部分にブランドキーワードがあるケースが見逃されていた。
+    # (例: etherwallet.mobilelab.vn → サブドメイン "etherwallet" に wallet, ether)
+    # サブドメインラベルに CRITICAL_BRAND_KEYWORDS が含まれる場合、追加リスクを付与。
+    try:
+        domain_labels = domain.split('.') if domain else []
+        # 最後の2ラベル (registered_domain) を除いたサブドメイン部分
+        subdomain_labels = domain_labels[:-2] if len(domain_labels) > 2 else []
+
+        # CRITICAL_BRAND_KEYWORDS を使用してサブドメインをチェック
+        # (brand_impersonation_check からインポートが重いため、主要キーワードのみ)
+        _critical_subdomain_keywords = {
+            "wallet", "ether", "ethereum", "bitcoin", "crypto", "metamask",
+            "binance", "coinbase", "ledger", "phantom", "solana",
+            "paypal", "bank", "secure", "login", "account",
+            "apple", "amazon", "google", "microsoft", "netflix",
+        }
+
+        subdomain_brand_found = False
+        for label in subdomain_labels:
+            label_lower = label.lower()
+            for kw in _critical_subdomain_keywords:
+                if kw in label_lower and len(kw) >= 4:  # 短すぎるキーワードは除外
+                    subdomain_brand_found = True
+                    break
+            if subdomain_brand_found:
+                break
+
+        if subdomain_brand_found and not is_known_legit:
+            # 2026-01-25: ブースト増加 + brand_detected との組み合わせボーナス
+            subdomain_boost = 0.15
+            # brand_detected も同時に検出されている場合、より強い組み合わせ
+            if "brand_detected" in issue_set:
+                subdomain_boost = 0.22
+                # さらに、最低スコアを保証
+                score = max(score, 0.48)
+            score += subdomain_boost
+            if "brand_in_subdomain" not in issues:
+                issues.append("brand_in_subdomain")
+            score_components["brand_in_subdomain"] = {
+                "subdomain_labels": subdomain_labels,
+                "boost": round(subdomain_boost, 3),
+            }
+    except Exception:
+        pass  # サブドメイン解析エラーは無視
+
+    # 4-3b7. Random Pattern Minimum Score (2026-01-25)
+    # FN分析より、random_pattern/rare_bigram_random が検出されても、
+    # 低ML + 非危険TLD の場合にスコアが低すぎるケースが判明。
+    # (例: gzkuyc.com → random_pattern, rare_bigram_random だが最終スコア0.117)
+    # ランダムパターン検出時は最低スコアを保証する。
+    _random_pattern_indicators = {
+        "random_pattern", "rare_bigram_random", "consonant_cluster_random",
+        "digit_mixed_random"  # 2026-01-25追加
+    }
+    if issue_set & _random_pattern_indicators and not is_known_legit:
+        # ランダムパターン検出 + 非正規ドメイン → 最低スコア保証
+        # short ドメイン（6文字以下）の場合はより高いスコアを付与
+        is_short = "short" in issue_set or dom_data.get("details", {}).get("domain_length", 99) <= 6
+        # 2026-01-25: digit_mixed_random は数字が混在した明確なランダムなので高めに設定
+        has_digit_mixed = "digit_mixed_random" in issue_set
+        if is_short:
+            # 短い + ランダム → より疑わしい
+            random_min_score = 0.50
+        elif has_digit_mixed:
+            # 長め + 数字混在ランダム → 明確に怪しい
+            random_min_score = 0.50
+        else:
+            # 長め + ランダム
+            random_min_score = 0.45
+
+        # 危険TLDの場合はさらにブースト
+        if is_dangerous_tld:
+            random_min_score = max(random_min_score, 0.55)
+
+        if score < random_min_score:
+            score = random_min_score
+            if "random_pattern_minimum" not in issues:
+                issues.append("random_pattern_minimum")
+            score_components["random_pattern_minimum"] = {
+                "min_score": round(random_min_score, 3),
+                "is_short": is_short,
+                "is_dangerous_tld": is_dangerous_tld,
+            }
+
+    # 4-3b7a. Random Pattern + CRL DP Benign Override
+    # 変更履歴:
+    #   - 2026-01-27: 追加 (FN対策)
+    #   - 2026-01-27: 削除 (FP増加のため) - 26%のFPに寄与していた
+    # 理由: random_pattern検出が正規略語/頭字語にも誤検出するため、
+    #       CRL DP overrideは過度にFPを増加させる。
+    # → 削除: random_crl_override ロジックを無効化
+
+    # 4-3b8. Dangerous TLD + Suspicious Domain Pattern (2026-01-25)
+    # FN分析より、危険TLD + ランダム的なドメイン名（ただしrandom_pattern未検出）
+    # のケースが見逃されていた。
+    # (例: uwuwhsghs.icu → vowel_ratio=0.22で random_pattern未検出だが明らかに怪しい)
+    # 危険TLD + 子音クラスター1以上 + 低母音率 → リスク付与
+    dom_details = dom_data.get("details", {}) or {}
+    consonant_clusters = dom_details.get("consonant_clusters", 0)
+    vowel_ratio = dom_details.get("vowel_ratio", 0.5)
+
+    if is_dangerous_tld and not is_known_legit:
+        # 危険TLD + やや低い母音率 (< 0.25) + 子音クラスター1以上
+        if vowel_ratio < 0.25 and consonant_clusters >= 1:
+            suspicious_tld_min = 0.50
+            if score < suspicious_tld_min:
+                score = suspicious_tld_min
+                if "dangerous_tld_suspicious_pattern" not in issues:
+                    issues.append("dangerous_tld_suspicious_pattern")
+                score_components["dangerous_tld_suspicious_pattern"] = {
+                    "vowel_ratio": round(vowel_ratio, 3),
+                    "consonant_clusters": consonant_clusters,
+                    "min_score": suspicious_tld_min,
+                }
+
     # 4-3c. Low-Signal Phishing Detection (2026-01-12)
     # Handoff分析から判明した低シグナルフィッシングのパターンを検出
     # 特徴: 低ML(<0.30) + 短期証明書(≤90日) + 低SAN数(≤5) + benign_indicatorsなし
     #
     # FP防止: benign_indicators (CRL, OV/EV, wildcard, high_san) がある場合はスキップ
+    # 変更履歴:
+    #   - 2026-01-27: ML < 0.10 の場合はスキップ (FP削減)
+    #     理由: ML < 0.10 は「非常にbenign寄り」を意味し、構造的シグナルのみで
+    #     phishing判定するとFPが増加する。78%のFPがこのルールに起因していた。
     low_signal_phishing_detected = False
     low_signal_signals: List[str] = []
     cert_details = cert_data.get("details", {}) or {}
     cert_benign_indicators = set(cert_details.get("benign_indicators", []) or [])
 
     # benign_indicatorsがある場合は低シグナルフィッシング検出をスキップ
-    if not cert_benign_indicators and p < 0.30:
+    # 2026-01-27: ML < 0.10 の場合もスキップ（MLの判断を尊重）
+    if not cert_benign_indicators and 0.10 <= p < 0.30:
         # 短期証明書（90日以下）
         valid_days = cert_details.get("valid_days", 0) or 0
         if valid_days > 0 and valid_days <= 90:
@@ -614,6 +950,36 @@ def contextual_risk_assessment(
         issues.append("known_domain")
         score_components["known_domain_mitigation"] = round(float(mitigation), 4)
 
+    # 4-4b. 信頼TLD緩和（2026-01-26追加）
+    # 変更履歴:
+    #   - 2026-01-26: FP分析より .org (32件, 10.5%) の誤検知が多いため緩和
+    # .org, .edu, .gov 等の信頼TLDはリスクスコアを軽減
+    _trusted_tld_mitigation = {
+        "org": 0.08,   # .org: 正規団体の可能性が高い
+        "edu": 0.12,   # .edu: 教育機関
+        "gov": 0.15,   # .gov: 政府機関
+        "mil": 0.15,   # .mil: 軍事機関
+        "int": 0.10,   # .int: 国際機関
+    }
+    _tld_for_mitigation = _tld_suffix_ctx.lower()
+    _trusted_mitigation_value = _trusted_tld_mitigation.get(_tld_for_mitigation, 0.0)
+
+    # サブTLD（.gov.xx, .edu.xx）の場合も緩和
+    if _trusted_mitigation_value == 0.0:
+        if ".gov" in _tld_for_mitigation or _tld_for_mitigation.startswith("gov."):
+            _trusted_mitigation_value = 0.12
+        elif ".edu" in _tld_for_mitigation or _tld_for_mitigation.startswith("edu.") or _tld_for_mitigation.startswith("ac."):
+            _trusted_mitigation_value = 0.10
+
+    # ブランド検出がない場合のみ緩和を適用（ブランド偽装は除外）
+    if _trusted_mitigation_value > 0 and "brand_detected" not in issue_set:
+        score = max(0.0, score - _trusted_mitigation_value)
+        issues.append("trusted_tld_mitigation")
+        score_components["trusted_tld_mitigation"] = {
+            "tld": _tld_for_mitigation,
+            "mitigation": round(_trusted_mitigation_value, 3),
+        }
+
     # 4-5. ツール整合性ボーナス
     if avg_tool_risk >= CONSISTENCY_THRESHOLD_TOOL_RISK and len(uniq_issues) >= CONSISTENCY_THRESHOLD_ISSUES:
         consistency_boost = CONSISTENCY_BONUS
@@ -652,7 +1018,12 @@ def contextual_risk_assessment(
 
         # 「本当にヤバい」系フラグ（必要に応じて拡張）
         strong_cert_flags = {"mismatched_name", "expired", "revoked", "invalid_chain"}
-        strong_dom_flags = {"idn_homograph", "very_short", "extreme_random_pattern"}
+        # 2026-01-25: random_pattern系を追加（FN削減）
+        strong_dom_flags = {
+            "idn_homograph", "very_short", "extreme_random_pattern",
+            "random_pattern", "rare_bigram_random", "consonant_cluster_random",
+            "digit_mixed_random"  # 2026-01-25追加
+        }
 
         has_strong_cert = bool(cert_issues & strong_cert_flags)
         has_strong_dom = bool(dom_issues & strong_dom_flags)
@@ -670,6 +1041,7 @@ def contextual_risk_assessment(
             and not has_strong_cert
             and not has_strong_dom
             and not is_known_suspicious
+            and not has_critical_brand  # 2026-01-25: critical_brand検出時は cap 対象外
         ):
             # Guard: dangerous_tld は強シグナルのため cap 対象外
             if "dangerous_tld" not in dom_issues and score > 0.49:
@@ -708,6 +1080,8 @@ def contextual_risk_assessment(
         reasoning_bits.append(f"低シグナルフィッシング検出({','.join(low_signal_signals)})")
     if "old_cert_phishing" in issues:
         reasoning_bits.append(f"古い証明書フィッシング検出(cert_age={cert_age_days}日,{','.join(old_cert_signals)})")
+    if "dangerous_tld_combo" in issues:
+        reasoning_bits.append(f"危険TLD組み合わせ検出({','.join(dangerous_tld_combo_signals)})")
 
     # finalize score breakdown for logging
     try:

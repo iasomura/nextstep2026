@@ -2,6 +2,9 @@
 Worker実装モジュール
 
 AI Agentによるドメイン評価を実行する
+
+変更履歴:
+    - 2026-01-26: 証明書データ統合 - cert_features_mapをAgentに渡すように変更
 """
 
 import json
@@ -45,7 +48,8 @@ class EvaluationWorker:
         checkpoint_manager: 'CheckpointManager',
         result_writer: 'ResultWriter',
         config_path: Optional[Path] = None,
-        model_name: str = "Qwen/Qwen3-4B"
+        model_name: str = "Qwen/Qwen3-4B",
+        cert_features_map: Optional[Dict[str, Dict[str, Any]]] = None
     ):
         """
         Args:
@@ -56,6 +60,7 @@ class EvaluationWorker:
             result_writer: 結果書き込み
             config_path: 元のconfig.jsonパス
             model_name: モデル名
+            cert_features_map: 証明書特徴量マップ {domain -> cert_info}
         """
         self.worker_id = worker_id
         self.vllm_port = vllm_port
@@ -64,6 +69,7 @@ class EvaluationWorker:
         self.result_writer = result_writer
         self.config_path = config_path or (base_dir / "config.json")
         self.model_name = model_name
+        self.cert_features_map = cert_features_map or {}
 
         self._agent = None
         self._temp_config_path: Optional[Path] = None
@@ -305,9 +311,14 @@ class EvaluationWorker:
         result = [None]
         exception = [None]
 
+        # 証明書データを準備
+        external_data = {}
+        if self.cert_features_map:
+            external_data["cert_full_info_map"] = self.cert_features_map
+
         def target():
             try:
-                result[0] = self._agent.evaluate(domain, ml_prob)
+                result[0] = self._agent.evaluate(domain, ml_prob, external_data=external_data)
             except Exception as e:
                 exception[0] = e
 
@@ -366,7 +377,8 @@ def run_worker_process(
     checkpoint_dir: Path,
     base_dir: Path,
     start_index: int = 0,
-    timeout_per_domain: int = 60
+    timeout_per_domain: int = 60,
+    cert_features_file: Optional[Path] = None
 ):
     """
     Worker をサブプロセスとして実行
@@ -380,12 +392,37 @@ def run_worker_process(
         base_dir: プロジェクトベースディレクトリ
         start_index: 開始インデックス
         timeout_per_domain: タイムアウト
+        cert_features_file: 証明書特徴量CSVファイル
     """
     from .checkpoint import CheckpointManager, ResultWriter
 
     # ドメイン読み込み
     with open(domains_file) as f:
         domains = json.load(f)
+
+    # 証明書データ読み込み
+    cert_features_map = {}
+    if cert_features_file:
+        cert_path = Path(cert_features_file)
+        try:
+            if cert_path.suffix == '.pkl' and cert_path.exists():
+                # PKLファイルを直接読み込み
+                import pickle
+                with open(cert_path, 'rb') as f:
+                    cert_features_map = pickle.load(f)
+                print(f"[Worker {worker_id}] Loaded {len(cert_features_map)} certificate records from PKL")
+            elif cert_path.suffix == '.csv' and cert_path.exists():
+                # CSVファイルを読み込み
+                cert_df = pd.read_csv(cert_path)
+                for _, row in cert_df.iterrows():
+                    domain = row.get("domain", "")
+                    if domain:
+                        cert_features_map[domain] = row.to_dict()
+                print(f"[Worker {worker_id}] Loaded {len(cert_features_map)} certificate records from CSV")
+            else:
+                print(f"[Worker {worker_id}] Warning: Cert file not found: {cert_path}")
+        except Exception as e:
+            print(f"[Worker {worker_id}] Warning: Failed to load cert features: {e}")
 
     # チェックポイント・結果ライター初期化
     checkpoint_mgr = CheckpointManager(checkpoint_dir, run_id="")
@@ -403,7 +440,8 @@ def run_worker_process(
         vllm_port=vllm_port,
         base_dir=base_dir,
         checkpoint_manager=checkpoint_mgr,
-        result_writer=result_writer
+        result_writer=result_writer,
+        cert_features_map=cert_features_map
     )
 
     # シグナルハンドラ

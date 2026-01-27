@@ -36,9 +36,11 @@ workers:
 
   - id: 2
     port: 8002
-    type: external          # ポートフォワード済み + SSH起動/停止
-    start_cmd: "ssh asomura@192.168.100.70 'bash -lc \"/home/asomura/src/vllm.sh start\"'"
-    stop_cmd: "ssh asomura@192.168.100.70 'bash -lc \"/home/asomura/src/vllm.sh stop\"'"
+    type: external          # ポートフォワード済み（手動管理）
+    # 2026-01-25: SSH経由の自動起動/停止が不安定なため、手動管理に変更
+    # 起動: ssh asomura@192.168.100.70 'bash -lc "/home/asomura/src/vllm.sh start"'
+    # トンネル: ssh -fNT -L 8002:127.0.0.1:8000 asomura@192.168.100.70
+    stop_on_complete: false  # 手動管理のため停止しない
     speed_weight: 1.00      # RTX 4000 Ada (実測 5.6 dom/min)
 
 # vLLM設定 (Worker 0/local用。external Workerは各自のスクリプトで管理)

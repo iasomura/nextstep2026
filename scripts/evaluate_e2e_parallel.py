@@ -73,6 +73,8 @@ def parse_args() -> argparse.Namespace:
                         help="評価サンプル数 (default: ALL)")
     parser.add_argument("--random-state", type=int, default=42,
                         help="乱数シード (default: 42)")
+    parser.add_argument("--shuffle", action="store_true",
+                        help="データをシャッフルする (default: False)")
 
     return parser.parse_args()
 
@@ -207,6 +209,11 @@ def main():
     handoff_df = load_handoff_data(env["handoff_dir"])
 
     # サンプリング
+    # シャッフル（--shuffle オプション）
+    if args.shuffle:
+        handoff_df = handoff_df.sample(frac=1, random_state=args.random_state).reset_index(drop=True)
+        print(f"[INFO] Shuffled {len(handoff_df)} domains (random_state={args.random_state})")
+
     n_sample = args.n_sample.strip().upper()
     if n_sample != "ALL":
         try:
@@ -217,6 +224,23 @@ def main():
         except ValueError:
             pass
 
+    # 証明書特徴量ファイルを検索（PKLを優先）
+    cert_features_file = None
+
+    # 1. PKLファイルを優先（完全な証明書データを含む）
+    cert_pkl_path = env["artifacts_dir"] / "processed" / "cert_full_info_map.pkl"
+    if cert_pkl_path.exists():
+        cert_features_file = cert_pkl_path
+        print(f"[INFO] Certificate features (PKL): {cert_features_file}")
+    else:
+        # 2. CSVファイルにフォールバック
+        cert_csv_path = env["artifacts_dir"] / "results" / "stage3_analysis" / "handoff_cert_features.csv"
+        if cert_csv_path.exists():
+            cert_features_file = cert_csv_path
+            print(f"[INFO] Certificate features (CSV): {cert_features_file}")
+        else:
+            print("[INFO] No certificate features file found (optional)")
+
     # ドライラン
     if args.dry_run:
         from parallel.orchestrator import ParallelOrchestrator
@@ -226,11 +250,12 @@ def main():
             run_id=env["run_id"],
             artifacts_dir=env["artifacts_dir"],
             base_dir=env["base_dir"],
-            additional_gpus=additional_gpus
+            additional_gpus=additional_gpus,
+            cert_features_file=cert_features_file
         )
 
         print("\n[DRY RUN] Data split:")
-        splits = orchestrator._split_domains(handoff_df, len(orchestrator.active_workers))
+        splits = orchestrator._split_domains(handoff_df, orchestrator.active_workers)
         for i, split in enumerate(splits):
             print(f"  Worker {orchestrator.active_workers[i].id}: {len(split)} domains")
 
@@ -271,7 +296,8 @@ def main():
         artifacts_dir=env["artifacts_dir"],
         base_dir=env["base_dir"],
         additional_gpus=additional_gpus,
-        skip_confirmation=args.yes
+        skip_confirmation=args.yes,
+        cert_features_file=cert_features_file
     ) as orchestrator:
 
         # セットアップ

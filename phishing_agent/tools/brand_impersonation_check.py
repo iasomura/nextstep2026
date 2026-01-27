@@ -34,6 +34,12 @@ compatible arguments and returns {"success": True/False, "data": {...}}.
 #   - COMMON_TLDS_FOR_FUZZY_EXCLUSION を追加
 # - 2026-01-24: CRITICAL_BRAND_KEYWORDS に国際ブランド追加 (FN削減)
 #   - ポルトガル/フランス/スペイン/北米/配送/暗号通貨/欧州銀行/セキュリティ
+# - 2026-01-25: ブランド検出→phishing判定強化 (FN削減)
+#   - _base_score_from_match() に has_critical_brand フラグ追加
+#   - CRITICAL_BRAND_KEYWORDS検出 + 非正規ドメインで最低リスクスコア保証
+#   - 危険TLD + critical_brand で最低0.50、それ以外で最低0.40
+# - 2026-01-25: CRITICAL_BRAND_KEYWORDS に日本の銀行追加 (FN分析: meiosbi-jp.icu等)
+#   - sbi, mufg, mizuho, resona, suruga を追加
 # ---------------------------------------------------------------------
 
 from __future__ import annotations
@@ -124,6 +130,63 @@ COMMON_TLDS_FOR_FUZZY_EXCLUSION = frozenset([
 ])
 
 # ---------------------------------------------------------------------------
+# Boundary-required brand keywords (FP対策) - 2026-01-26
+# ---------------------------------------------------------------------------
+# These short brand keywords frequently cause false positives when matched
+# as substrings of common English words:
+#   - "line" → "online", "frontlines", "doxycycline"
+#   - "ing" → "dating", "learning", "finishing"
+#   - "au" → "auto", "australia", "glaucoma"
+#   - "ups" → "pushups", "startups", "upshift"
+#   - "visa" → "visajourney", "advisor"
+#   - "ana" → "banana", "analysis", "americana"
+#   - "chase" → "purchase"
+# For these keywords, we require word boundary matching (preceded/followed by
+# non-alphanumeric or string boundary) to reduce FP.
+# Note: exact token match (e.g., token="line" brand="line") is always allowed.
+
+BOUNDARY_REQUIRED_BRANDS = frozenset([
+    "line", "ing", "au", "ups", "visa", "ana", "chase",
+])
+
+# Common words that contain these brands as substrings (FP exclusion list)
+# If the token matches one of these common words, we skip the brand match.
+BRAND_FP_EXCLUSION_WORDS = frozenset([
+    # "line" false positives
+    "online", "frontline", "frontlines", "hotline", "pipeline", "deadline",
+    "headline", "guideline", "timeline", "streamline", "airline", "outline",
+    "baseline", "byline", "dateline", "beeline", "mainline", "hairline",
+    "feline", "canine", "bovine", "equine", "saline", "oline", "aline",
+    "doxycycline", "gasoline", "trampoline", "crystalline", "discipline",
+    # "ing" false positives (common -ing words)
+    "dating", "learning", "finishing", "sporting", "changing", "building",
+    "marketing", "shopping", "banking", "trading", "hosting", "listing",
+    "meeting", "parking", "betting", "booking", "cooking", "drinking",
+    "working", "spring", "string", "thing", "king", "ring", "wing", "sing",
+    # "au" false positives
+    "auto", "audio", "australia", "australian", "austria", "authentic",
+    "author", "authority", "autumn", "beautiful", "because", "caught",
+    "daughter", "fault", "fraud", "gauge", "haul", "launch", "laundry",
+    "pause", "sauce", "vault", "restaurant", "bureau", "plateau", "chateau",
+    "glaucoma", "aurora", "aurus", "audit", "audience",
+    # "ups" false positives
+    "pushups", "situps", "pullups", "startups", "backups", "checkups",
+    "coverups", "followups", "grownups", "lineups", "linkups", "makeups",
+    "markups", "meetups", "mixups", "pickups", "pileups", "popups",
+    "roundups", "setups", "signups", "standups", "upshift", "upstream",
+    "upside", "upstate", "update", "upgrade", "upload", "upscale",
+    # "visa" false positives
+    "advisor", "advisory", "ivisable", "advisable", "visar", "visage",
+    "visajourney", "visapro",
+    # "ana" false positives
+    "banana", "analysis", "analyst", "analyze", "americana", "manager",
+    "manage", "management", "anagram", "analog", "analogy", "anatomy",
+    "anarchy", "panacea", "canadapost", "montana", "indiana", "louisiana",
+    # "chase" false positives
+    "purchase", "purchaser", "purchases",
+])
+
+# ---------------------------------------------------------------------------
 # Critical brand keywords (static fallback) - 2026-01-18
 # ---------------------------------------------------------------------------
 # These brands are always checked, even if not in the dynamic brand_keywords list.
@@ -137,8 +200,21 @@ CRITICAL_BRAND_KEYWORDS = frozenset([
     "aiful",               # アイフル
     "acom",                # アコム
     "promise", "smbc",     # プロミス/SMBC
-    "rakutenbank",         # 楽天銀行
+    "rakutenbank", "rakuten",  # 楽天銀行/楽天
     "paypay",              # PayPay
+    # 2026-01-25追加: FN分析 (meiosbi-jp.icu等)
+    # 2026-01-26更新: "sbi" を短いキーワード許可リストから除外、代替追加
+    "sbi", "sbisec", "sbinet", "sbibank", "netbksbi",  # SBI証券/住信SBIネット銀行
+    "mufg",                # 三菱UFJ銀行
+    "mizuho",              # みずほ銀行
+    "resona",              # りそな銀行
+    "suruga",              # スルガ銀行
+    # 2026-01-26追加: FN分析より (vpass, shinkansen, mercari等)
+    "vpass", "vpasso",     # 三井住友VISAカード VPass
+    "shinkansen",          # 新幹線 (JR偽装)
+    "mercari", "merucari", # メルカリ (typo含む)
+    "ekinet", "eki-net",   # えきねっと
+    "coincheck",           # コインチェック
 
     # グローバルサービス（FN分析より）
     "telegram",            # Telegram
@@ -196,6 +272,9 @@ CRITICAL_BRAND_KEYWORDS = frozenset([
     "phantom", "solana", "uniswap", "opensea",
     "trezor", "kucoin", "bybit", "okx",
     "pancakeswap", "raydium",
+    # 2026-01-25追加: FN分析 (etherwallet.mobilelab.vn等)
+    "etherwallet", "myetherwallet", "ethereum", "ether",
+    "trustwallet", "atomicwallet", "exoduswallet",
 
     # 欧州銀行
     "barclays", "natwest", "nationwide", "halifax",
@@ -203,6 +282,68 @@ CRITICAL_BRAND_KEYWORDS = frozenset([
 
     # セキュリティ・認証
     "okta", "lastpass", "protonmail",
+
+    # --- 2026-01-25 追加: 主要ブランド欠落の修正 ---
+    # 変更履歴:
+    #   - 2026-01-25: amazon-account-server.com FN発見により追加
+
+    # Amazon/AWS
+    "amazon", "aws", "amazonprime", "amazonseller",
+
+    # Apple
+    "apple", "icloud", "appleid", "itunes", "appstore",
+
+    # Microsoft
+    "microsoft", "outlook", "office365", "onedrive", "azure",
+    "hotmail", "msn", "skype", "xbox", "linkedin",
+
+    # Google
+    "google", "gmail", "googledrive", "googlecloud", "gcp",
+    "youtube", "android",
+
+    # Meta/Facebook
+    "facebook", "meta", "messenger",
+
+    # Other major tech
+    "netflix", "spotify", "twitter", "dropbox", "adobe",
+    "salesforce", "oracle", "sap", "servicenow",
+
+    # PayPal & major payment
+    "paypal", "stripe", "square",
+
+    # US banks
+    "chase", "jpmorgan", "bankofamerica", "bofa",
+    "wellsfargo", "citibank", "citi", "usbank",
+    "capitalone", "pnc", "truist",
+
+    # HSBC & global banks
+    "hsbc", "ubs", "creditsuisse", "ing", "santander",
+
+    # Shipping (major)
+    "ups", "fedex", "dhl", "usps",
+
+    # E-commerce
+    "ebay", "aliexpress", "alibaba", "shopify", "etsy",
+
+    # Yahoo
+    "yahoo", "aol",
+
+    # --- 2026-01-26 追加: FN分析より ---
+    # 変更履歴:
+    #   - 2026-01-26: citifinanceswiftbank.com, whatsapp-jq.com 等のFN対応
+
+    # 金融機関追加
+    "citi", "citibank", "citigroup", "swift",
+
+    # 政府機関偽装パターン
+    # 注: "ato" は aviator, elevator 等で誤検出するため除外
+    # "irs" は短すぎて first,airs 等で誤検出の可能性あり
+    "courts", "judiciary", "hmrc", "revenue",
+
+    # 通信/SNS追加
+    # 注: "line" は "online" と誤検出するため除外
+    # LINE は "linemessenger", "lineapp", "linepay" 等で検出
+    "linemessenger", "lineapp", "linepay", "viber", "signal",
 ])
 
 # ---------------------------------------------------------------------------
@@ -307,6 +448,11 @@ def _check_brand_substring(token: str, brand: str, *, is_tld: bool = False) -> T
         token: The token from the domain to check
         brand: The brand keyword to match against
         is_tld: If True, skip fuzzy matching to prevent false positives like "com" → "acom"
+
+    変更履歴:
+      - 2026-01-26: BOUNDARY_REQUIRED_BRANDS による FP 削減
+                   "line", "ing", "au" 等の短いキーワードは一般英単語に含まれやすいため、
+                   BRAND_FP_EXCLUSION_WORDS に該当するトークンではマッチをスキップ
     """
     token = token or ""
     brand = brand or ""
@@ -320,8 +466,23 @@ def _check_brand_substring(token: str, brand: str, *, is_tld: bool = False) -> T
     # dvguard4: For very short brand keywords (<=3 chars),
     # avoid substring/compound matches inside unrelated words (e.g., "att" in "attack").
     # Only exact token matches are considered reliable at this length.
-    if len(brand) <= 3:
+    # 2026-01-25: CRITICAL_BRAND_KEYWORDS に含まれる短いブランド (sbi等) は例外的に許可
+    # 2026-01-26: FP分析より "sbi" を除外 (sbigblog, sbiketraders等で誤検出)
+    #             "ups" は BOUNDARY_REQUIRED_BRANDS でカバー
+    _short_critical_brands = {"dhl", "irs", "nhs", "rbc", "bmo", "td"}
+    if len(brand) <= 3 and brand not in _short_critical_brands:
         return False, ""
+
+    # 2026-01-26: FP削減 - BOUNDARY_REQUIRED_BRANDS のキーワードは境界チェック厳格化
+    # トークンが一般的な英単語に含まれる場合はマッチをスキップ
+    if brand in BOUNDARY_REQUIRED_BRANDS:
+        # トークン全体が FP 除外リストに含まれる場合はスキップ
+        if token in BRAND_FP_EXCLUSION_WORDS:
+            return False, ""
+        # トークンが除外リストの単語を含む場合もスキップ (e.g., "onlinestore" contains "online")
+        for excl_word in BRAND_FP_EXCLUSION_WORDS:
+            if excl_word in token and brand in excl_word:
+                return False, ""
 
     # 2026-01-19: Skip fuzzy matching for TLDs to prevent false positives
     # (e.g., "com" → "acom" with edit distance 1)
@@ -338,7 +499,17 @@ def _check_brand_substring(token: str, brand: str, *, is_tld: bool = False) -> T
             return True, "substring"
 
     # fuzzy (strict) - edit distance 1
-    if not skip_fuzzy and _ed_le1(token, brand):
+    # 2026-01-26: 短いブランド(< 6文字)でのFPを防ぐため、最低6文字を要求
+    # 例: "gonzo" → "monzo" は誤検出のため除外
+    # ただし、先頭文字が一致する場合は5文字でも許可 (例: "paypl" → "paypal")
+    _fuzzy_allowed = (
+        not skip_fuzzy
+        and (
+            len(brand) >= 6
+            or (len(brand) >= 5 and len(token) >= 5 and token[0] == brand[0])
+        )
+    )
+    if _fuzzy_allowed and _ed_le1(token, brand):
         return True, "fuzzy"
 
     # fuzzy2 (2026-01-18追加) - edit distance 2 for longer brands
@@ -650,10 +821,17 @@ def _compute_rule_matches(
 
     return rule_hits, detected_brands
 
-def _base_score_from_match(rule_hits: List[Dict[str, Any]]) -> Tuple[float, str]:
+def _base_score_from_match(rule_hits: List[Dict[str, Any]]) -> Tuple[float, str, bool]:
     """
     Decide base risk score and dominant match_type from rule hits.
     Priority: exact > substring/compound > fuzzy > fuzzy2.
+
+    Returns:
+        (base_score, match_type, has_critical_brand)
+        has_critical_brand: True if any matched brand is in CRITICAL_BRAND_KEYWORDS
+
+    変更履歴:
+      - 2026-01-25: CRITICAL_BRAND_KEYWORDS検出フラグを戻り値に追加（FN削減）
     """
     has_exact = any(h.get("match_type") == "exact" for h in rule_hits)
     has_sub = any(h.get("match_type") == "substring" for h in rule_hits)
@@ -661,16 +839,24 @@ def _base_score_from_match(rule_hits: List[Dict[str, Any]]) -> Tuple[float, str]
     has_fuzzy = any(h.get("match_type") == "fuzzy" for h in rule_hits)
     has_fuzzy2 = any(h.get("match_type") == "fuzzy2" for h in rule_hits)
 
+    # 2026-01-25: CRITICAL_BRAND_KEYWORDS に含まれるブランドが検出されたかチェック
+    has_critical_brand = False
+    for h in rule_hits:
+        brand_norm = _normalize_token(h.get("brand", "") or "")
+        if brand_norm in CRITICAL_BRAND_KEYWORDS:
+            has_critical_brand = True
+            break
+
     if has_exact:
-        return 0.40, "exact"
+        return 0.40, "exact", has_critical_brand
     if has_sub or has_comp:
-        return 0.35, "substring" if has_sub else "compound"
+        return 0.35, "substring" if has_sub else "compound", has_critical_brand
     if has_fuzzy:
-        return 0.30, "fuzzy"
+        return 0.30, "fuzzy", has_critical_brand
     # fuzzy2: 編集距離2のタイポスクワッティング（やや弱めのスコア）
     if has_fuzzy2:
-        return 0.28, "fuzzy2"
-    return 0.0, "none"
+        return 0.28, "fuzzy2", has_critical_brand
+    return 0.0, "none", False
 
 def _apply_precheck_boosts(
     base_score: float,
@@ -807,7 +993,7 @@ def _brand_impersonation_check_core(
 
     # --- Rule-based detection -----------------------------------------------
     rule_hits, detected_brands = _compute_rule_matches(domain, brands_norm)
-    base_score, match_type = _base_score_from_match(rule_hits)
+    base_score, match_type, has_critical_brand = _base_score_from_match(rule_hits)
 
     detected_issues: List[str] = []
     issue_flags: List[str] = []
@@ -841,6 +1027,21 @@ def _brand_impersonation_check_core(
             quick_risk=quick_risk,
         )
         risk_score *= risk_adjustment
+
+        # 2026-01-25: CRITICAL_BRAND_KEYWORDS検出時の最低リスクフロア強化
+        # FN分析より、ブランド検出 + 非正規ドメインなのにphishing判定に至らなかったケースが26件。
+        # CRITICAL_BRAND_KEYWORDS に該当するブランドが検出された場合、
+        # 非正規ドメインでは最低リスクスコアを保証する。
+        if has_critical_brand and risk_adjustment >= 1.0:
+            # 危険TLDの場合はさらに高い最低スコア
+            if tld_category == "dangerous":
+                risk_score = max(risk_score, 0.50)
+                if "critical_brand_dangerous_tld" not in detected_issues:
+                    detected_issues.append("critical_brand_dangerous_tld")
+            else:
+                risk_score = max(risk_score, 0.40)
+            if "critical_brand" not in detected_issues:
+                detected_issues.append("critical_brand")
     else:
         risk_score = 0.0
 
@@ -1017,6 +1218,7 @@ def _brand_impersonation_check_core(
         # convenience flags
         "brand_detected": brand_detected_flag,
         "brand_suspected": brand_suspected_flag,
+        "has_critical_brand": has_critical_brand,
         "no_brand_keywords": bool(no_brand_keywords),
         "issue_flags": issue_flags,
         "precheck": {
