@@ -1,5 +1,10 @@
 # phishing_agent/tools/short_domain_analysis.py
 # 変更履歴:
+#   - 2026-01-28: FP分析に基づくロールバック
+#     - random_pattern（低母音比率）を無効化: Precision 39%、FP 55件の主犯
+#     - digit_mixed_random を削除: Precision 45%、効果薄い
+#     - no_vowel_dangerous_tld を削除: Precision 43%、効果薄い
+#     - 維持: consonant_cluster_random (68%), rare_bigram_random (54%), dangerous_tld (75%)
 #   - 2026-01-27: ccTLD解釈機能追加（FP削減）
 #     - ccTLDでは短いドメインが一般的という情報をLLMに提供
 #   - 2026-01-24: ランダム文字列検出強化
@@ -263,9 +268,12 @@ def short_domain_analysis(
 
     vowel_ratio = (sum(1 for c in base.lower() if c in "aeiou") / len(base)) if base else 0.0
     digit_ratio = (sum(1 for c in base if c.isdigit()) / len(base)) if base else 0.0
-    # 2026-01-24: dangerous TLD限定でvowel_ratio閾値を引き下げ (0.2→0.15)
-    vowel_threshold = 0.15 if tld_category == "dangerous" else 0.2
-    is_random = (vowel_ratio < vowel_threshold and digit_ratio < 0.5)
+    # 2026-01-28: random_pattern (低母音比率) を無効化
+    # 理由: Precision 39%、FP 55件（主犯）。略語（frmtr, fncdg等）を誤検出
+    # 旧コード: vowel_threshold = 0.15 if tld_category == "dangerous" else 0.2
+    #          is_random = (vowel_ratio < vowel_threshold and digit_ratio < 0.5)
+    vowel_threshold = 0.2  # 参照用に残す
+    is_random = False  # 無効化
 
     # 2026-01-24: 子音クラスター検出
     # 2026-01-27: 長いドメイン（15文字以上）では無効化（FP削減）
@@ -304,39 +312,24 @@ def short_domain_analysis(
         else:
             score += 0.05  # 既にランダム検出されている場合は追加ボーナス
 
-    # 2026-01-25: 数字混在ランダムパターン検出
-    # FN分析より、nbmikjerunh15ng.com のような数字が混在したランダムドメインが
-    # 検出されていなかった。digit_ratio > 0 + 低母音率 + 子音クラスターで検出。
-    is_digit_mixed_random = (
-        digit_ratio > 0
-        and digit_ratio < 0.3  # 純粋な数字ドメインは除外
-        and vowel_ratio <= 0.25
-        and consonant_clusters >= 1
-        and len(base) >= 8  # 短いドメインは誤検出リスク
-        and not is_random  # 既存のrandom_patternでは検出されなかった場合
-        and not is_rare_bigram_random
-    )
-    if is_digit_mixed_random:
-        issues.append("digit_mixed_random")
-        if "high_entropy" not in issues and "random_pattern" not in issues:
-            score += 0.20
-        else:
-            score += 0.05
+    # 2026-01-28: digit_mixed_random を無効化
+    # 理由: Precision 45%、効果薄い
+    # 旧コード:
+    # is_digit_mixed_random = (
+    #     digit_ratio > 0 and digit_ratio < 0.3 and vowel_ratio <= 0.25
+    #     and consonant_clusters >= 1 and len(base) >= 8
+    #     and not is_random and not is_rare_bigram_random
+    # )
+    is_digit_mixed_random = False  # 無効化
 
-    # 2026-01-26: 母音なしドメイン検出（危険TLD限定）
-    # FN分析より、"xyz", "kltd" 等の母音なしドメインが検出漏れ
-    # 正規の略語（"fbi", "nhs" 等）もあるため、危険TLD限定で検出
-    is_no_vowel_suspicious = (
-        vowel_ratio == 0  # 母音が1つもない
-        and len(base) >= 3
-        and len(base) <= 8
-        and tld_category == "dangerous"
-        and not is_high_entropy
-        and not is_random
-    )
-    if is_no_vowel_suspicious:
-        issues.append("no_vowel_dangerous_tld")
-        score += 0.15
+    # 2026-01-28: no_vowel_dangerous_tld を無効化
+    # 理由: Precision 43%、効果薄い
+    # 旧コード:
+    # is_no_vowel_suspicious = (
+    #     vowel_ratio == 0 and len(base) >= 3 and len(base) <= 8
+    #     and tld_category == "dangerous" and not is_high_entropy and not is_random
+    # )
+    is_no_vowel_suspicious = False  # 無効化
 
     # 2026-01-26: 連続文字パターン検出（機械生成ドメイン）
     # "aaabbcc.com", "112233.com" のようなパターンを検出
@@ -388,14 +381,12 @@ def short_domain_analysis(
             issues.append("very_short_dangerous_combo")
         combo_flags.append("very_short_dangerous_combo")
 
-    # 2026-01-24: 新ランダム検出フラグも含めたヘルパー
-    # 2026-01-25: digit_mixed_random を追加
+    # 2026-01-28: ランダム検出フラグのヘルパー（ロールバック後）
+    # random_pattern と digit_mixed_random は無効化済み
     _any_random = (
         "high_entropy" in issues
-        or "random_pattern" in issues
         or "consonant_cluster_random" in issues
         or "rare_bigram_random" in issues
-        or "digit_mixed_random" in issues
     )
 
     # 6-2. short + (any random flag) + TLD が dangerous / neutral

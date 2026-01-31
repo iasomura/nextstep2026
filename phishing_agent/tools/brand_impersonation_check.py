@@ -144,9 +144,45 @@ COMMON_TLDS_FOR_FUZZY_EXCLUSION = frozenset([
 # For these keywords, we require word boundary matching (preceded/followed by
 # non-alphanumeric or string boundary) to reduce FP.
 # Note: exact token match (e.g., token="line" brand="line") is always allowed.
+#
+# 変更履歴:
+#   - 2026-01-28: FP分析より追加
+#     - "citi" → "cities", "twincities" などの一般英単語にマッチ
+#     - "swift" → "swifterm" (正規ターミナルソフト) にマッチ
+#     - "meta" → "metaflow" (Netflix製MLフレームワーク) にマッチ
 
 BOUNDARY_REQUIRED_BRANDS = frozenset([
     "line", "ing", "au", "ups", "visa", "ana", "chase",
+    # 2026-01-28追加
+    "citi",   # Citibank - "cities" にマッチするFP
+    "swift",  # SWIFT - "swifterm", "swiftly" にマッチするFP
+    "meta",   # Meta/Facebook - "metaflow", "metadata" にマッチするFP
+    "hermes",    # Hermes - "hermesonlineshop" 等の正規店舗にマッチするFP
+    "appstore",  # App Store - "educationalappstore" 等にマッチするFP
+    # 2026-01-29追加: fuzzy match FP対策
+    "costco",    # costco - "costa", "custo" にfuzzy2マッチするFP
+    "youtube",   # youtube - "yourule" にfuzzy2マッチするFP
+    "laposte",   # La Poste - "lacoste" にfuzzyマッチするFP
+    "sbinet",    # SBIネット - "biznet", "rinet" にfuzzy2マッチするFP
+    # 2026-01-29追加: v2評価で発見したFP
+    "steam",     # steam - "stream" にfuzzyマッチするFP (sharp-stream.com)
+    "roblox",    # roblox - "oblog" にfuzzy2マッチするFP (noblog.net)
+    "eshop",     # eshop - compound matchでFP (pennysnoodleshop.info)
+    # 2026-01-29追加: #10 fuzzy2 FP対策
+    "bestbuy",   # bestbuy - "bitbuy" にfuzzy2マッチするFP (bitbuy.ca)
+    "binance",   # binance - "balance", "finance" にfuzzy2マッチするFP
+    "usbank",    # usbank - "unisbank" にfuzzy2マッチするFP (unisbank.ac.id)
+    "signal",    # signal - "sigsac" にfuzzy2マッチするFP (sigsac.org)
+    "nordea",    # nordea - "norge" にfuzzy2マッチするFP (curasept-norge.no)
+    "shopify",   # shopify - "shoppy" にfuzzy2マッチするFP (shoppy.gg)
+    # 2026-01-29追加: #11 compound/substring FP対策
+    "acom",      # acom - "comunicar", "comedicale" にcompoundマッチするFP
+    "wise",      # wise - "worldwise" にcompoundマッチするFP
+    "stripe",    # stripe - "stripes" (stars and stripes) にcompoundマッチするFP
+    "tmobile",   # tmobile - "xtmobile" にsubstringマッチするFP
+    "promise",   # promise - "americaspromise" にcompoundマッチするFP
+    "disney",    # disney - "disneydriven" 等のファンサイトにcompoundマッチするFP
+    "mastercard",  # mastercard - "mastercardfdn" (正規財団) にsubstringマッチするFP
 ])
 
 # Common words that contain these brands as substrings (FP exclusion list)
@@ -184,6 +220,72 @@ BRAND_FP_EXCLUSION_WORDS = frozenset([
     "anarchy", "panacea", "canadapost", "montana", "indiana", "louisiana",
     # "chase" false positives
     "purchase", "purchaser", "purchases",
+    # 2026-01-28追加: "citi" false positives
+    "cities", "city", "twincities", "citiesorg", "changingcities",
+    "publicities", "electricity", "municipality", "velocities", "capacities",
+    "simplicities", "atrocities", "audacities", "ferocities",
+    # 2026-01-28追加: "swift" false positives
+    "swifterm", "swiftly", "swiftness", "swiftui", "swiftkey",
+    "swiftmailer", "swiftlang", "swiftpm",
+    # 2026-01-28追加: "meta" false positives
+    "metaflow", "metadata", "metalwork", "metaphor", "metamorphosis",
+    "metasploit", "metatag", "metaverse", "metabase", "metabolism",
+    "metacritic", "metallic", "metaprotection", "metalprotection",
+    "asmetalwork", "metal",
+    # Note: "metamask" は暗号通貨ウォレットなので除外しない（ブランド検出すべき）
+    # 2026-01-28追加: "hermes" false positives
+    # hermès (高級ブランド) は検出すべきだが、正規ショップ名への誤検出を防ぐ
+    "hermesonlineshop", "hermesshop", "hermesstore", "hermescourier",
+    "hermesdelivery", "hermesparcel", "hermesuk", "hermesworld",
+    # 2026-01-28追加: "appstore" false positives
+    "educationalappstore", "iosappstore", "androidappstore",
+    "appstoreconnect", "appstorereview",
+    # 2026-01-29追加: fuzzy match FP対策 (分析結果より)
+    # "costco" false positives
+    "costa", "costarica", "custo", "costumer", "costume",
+    # "hermes" false positives (追加分)
+    "hires", "highres", "lozanohemmer", "hemmer",
+    # "sbinet" false positives
+    "rinet", "biznet",
+    # "laposte" false positives
+    "lacoste",
+    # "youtube" false positives
+    "yourule", "yourtube",
+    # 2026-01-29追加: v2評価で発見したFP
+    # "steam" false positives
+    "stream", "upstream", "downstream", "mainstream", "livestream",
+    # "roblox" false positives
+    "oblog", "noblog", "blog",
+    # "eshop" false positives
+    "noodleshop", "coffeeshop", "workshop", "bookshop",
+    # 2026-01-29追加: #10 fuzzy2 FP対策
+    # "bestbuy" false positives
+    "bitbuy", "buybuy", "buybit",
+    # "binance" false positives
+    "balance", "finance", "refinance", "alliance", "vigilance",
+    # "usbank" false positives
+    "unisbank", "unibank",
+    # "signal" false positives
+    "sigsac", "sigact", "sigmod", "sigchi", "sigplan", "sigops",  # ACM SIG系
+    # "nordea" false positives
+    "norge", "nordic", "nordia",
+    # "shopify" false positives
+    "shoppy", "shoppie", "shopping",
+    # 2026-01-29追加: #11 compound/substring FP対策
+    # "acom" false positives (トークン全体を追加 - "acom"がsubstringとして含まれるため)
+    "revistacomunicar", "pharmacomedicale", "comunicar", "comedicale", "pharmacom", "telecom", "dotcom", "intercom",
+    # "wise" false positives
+    "worldwise", "otherwise", "likewise", "clockwise", "pairwise", "stepwise",
+    # "stripe" false positives
+    "stripes", "starsandstripes", "pinstripe", "pinstripes",
+    # "tmobile" false positives
+    "xtmobile", "automobileモバイル",
+    # "promise" false positives
+    "americaspromise", "compromise", "compromises",
+    # "disney" false positives
+    "disneydriven", "disneyfan", "disneylife",
+    # "mastercard" false positives
+    "mastercardfdn", "mastercardfoundation",
 ])
 
 # ---------------------------------------------------------------------------
@@ -327,6 +429,21 @@ CRITICAL_BRAND_KEYWORDS = frozenset([
 
     # Yahoo
     "yahoo", "aol",
+
+    # --- 2026-01-29 追加: FN分析より ---
+
+    # 日本モバイル決済 (FN分析: aupayfirmisco.shop)
+    "aupay", "auwallet",         # au PAY / au Wallet
+    "dpay", "dpoint", "docomo",  # d払い / dポイント / ドコモ
+    "linepay",                   # LINE Pay
+
+    # ギフトカード (FN分析: vanillagift.remadet.com)
+    "vanillagift", "vanilla",    # Vanilla Gift Card
+    "googleplay",                # Google Play Gift Card
+    "steam", "steamcommunity",   # Steam
+    "playstation", "psn",        # PlayStation
+    "nintendo", "eshop",         # Nintendo eShop
+    "roblox",                    # Roblox
 
     # --- 2026-01-26 追加: FN分析より ---
     # 変更履歴:

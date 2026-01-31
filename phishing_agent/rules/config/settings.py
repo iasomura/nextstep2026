@@ -64,9 +64,14 @@ class RulesConfig:
     ))
 
     # Random pattern minimum score
+    # 2026-01-28: FP分析に基づき無効化
+    # random_pattern (低母音比率) はPrecision 39%でFP 55件の主犯だったため、
+    # short_domain_analysis.py の検出ロジック自体を無効化済み。
+    # この最低スコアルールも連動して無効化。
     random_pattern_minimum: RuleSettings = field(default_factory=lambda: RuleSettings(
-        enabled=True,
+        enabled=False,
         description="ランダムパターン検出時の最低スコア保証",
+        disabled_reason="2026-01-28: random_pattern検出が無効化されたため連動して無効化",
         version="1.0.0"
     ))
 
@@ -113,6 +118,11 @@ class RulesConfig:
     ))
 
     # Random pattern detection
+    # 2026-01-28: FP分析に基づく部分的無効化
+    # 低母音比率による random_pattern は無効化したが、
+    # consonant_cluster_random (Precision 68%) と rare_bigram_random (54%) は維持。
+    # このルール設定は consonant_cluster/rare_bigram の最低スコアにも影響するため、
+    # 有効のまま維持する。
     random_pattern: RuleSettings = field(default_factory=lambda: RuleSettings(
         enabled=True,
         description="ランダムパターン（エントロピー/子音クラスター等）検出",

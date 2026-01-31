@@ -1,7 +1,7 @@
 # Stage3 AI Agent 仕様書
 
-**バージョン**: v1.6.3
-**更新日**: 2026-01-24
+**バージョン**: v1.6.5
+**更新日**: 2026-01-28
 **対象モジュール**: `phishing_agent/`
 
 ---
@@ -140,6 +140,20 @@ class FinalAssessmentSO(BaseModel):
 
 ## 5. ツール仕様
 
+### 5.0 共通出力フォーマット
+
+全ツールは以下の共通フォーマットで出力する:
+
+```python
+{
+    "domain": str,              # 分析対象ドメイン
+    "detected_issues": List[str],  # 検出された問題フラグ
+    "risk_score": float,        # リスクスコア (0.0-1.0)
+    "details": Dict[str, Any],  # ツール固有の詳細情報
+    "reasoning": str,           # 人間可読な判定理由 (一部ツール)
+}
+```
+
 ### 5.1 brand_impersonation_check
 
 **目的**: ドメイン名に含まれるブランド偽装の検出
@@ -152,8 +166,39 @@ class FinalAssessmentSO(BaseModel):
 | Fuzzy TLD除外 | TLD部分のfuzzy matchを除外 |
 | 日本語ブランド | jibunbank, aiful, rakuten等 |
 | JPCERT連携 | JPCERTフィードからのブランド抽出 |
+| CRITICAL_BRAND_KEYWORDS | 高リスクブランド110キーワード |
+| LLM補完検出 | ルールで未検出時のLLM補完 |
 
-**出力**: `brand_detected`, `matched_brand`, `match_type`, `confidence`
+**detected_issues例**:
+- `brand_detected`, `brand_exact_match`, `brand_substring`, `brand_compound`
+- `brand_fuzzy`, `brand_fuzzy2`, `brand_typosquat`, `brand_tld_mismatch`
+- `brand_llm`, `brand_llm_confirmed`, `brand_suspected`, `brand_llm_candidate`
+- `critical_brand`, `critical_brand_dangerous_tld`, `ml_paradox_brand`
+
+**details構造**:
+```python
+{
+    "detected_brands": List[str],    # 検出されたブランド名
+    "match_type": str,               # "exact"/"substring"/"compound"/"fuzzy"/"none"
+    "rule_hits": List[str],          # マッチしたルール
+    "whitelist": Dict,               # ホワイトリスト情報
+    "used_llm": bool,                # LLMを使用したか
+    "llm_confidence": float,         # LLM信頼度
+    "llm_reasoning": str,            # LLM判定理由
+    "brand_detected": bool,          # ブランド検出フラグ
+    "brand_suspected": bool,         # ブランド疑惑フラグ
+    "has_critical_brand": bool,      # クリティカルブランドフラグ
+    "issue_flags": List[str],        # 全検出フラグ
+    "precheck": {
+        "ml_probability": float,
+        "ml_category": str,
+        "tld_category": str,
+        "domain_length_category": str,
+        "quick_risk": float,
+        "ml_paradox_flag_from_precheck": bool,
+    },
+}
+```
 
 ### 5.2 certificate_analysis
 
@@ -168,11 +213,29 @@ class FinalAssessmentSO(BaseModel):
 | 拡張 | SCT, OCSP, CRL Distribution Points |
 | SAN分析 | SAN数、DNS/IP比率 |
 
-**出力**: `risk_score`, `findings`, `cert_type`, `is_free_ca`, `has_organization`
+**detected_issues例**:
+- `free_ca`, `self_signed`, `short_validity`, `no_org`
+- `low_san_count`, `expired`, `weak_key`, `domain_mismatch`
+
+**details構造**:
+```python
+{
+    "validation_level": str,     # "DV"/"OV"/"EV"/"self-signed"
+    "is_free_ca": bool,          # 無料CA (Let's Encrypt等)
+    "has_org": bool,             # 組織情報あり
+    "issuer": str,               # 発行者名
+    "validity_days": int,        # 有効期間日数
+    "san_count": int,            # SAN数
+    "key_type": str,             # "RSA"/"ECDSA"
+    "key_bits": int,             # 鍵長
+    "not_before": str,           # 有効開始日
+    "not_after": str,            # 有効終了日
+}
+```
 
 ### 5.3 contextual_risk_assessment
 
-**目的**: ドメインのコンテキスト情報に基づくリスク評価
+**目的**: ドメインのコンテキスト情報に基づくリスク評価（他ツール結果を集約）
 
 | 分析項目 | 説明 |
 |----------|------|
@@ -181,20 +244,74 @@ class FinalAssessmentSO(BaseModel):
 | ランダムパターン | ランダム文字列ドメイン |
 | ドメイン長 | 異常に長い/短いドメイン |
 | 数字比率 | 数字が多いドメイン |
+| 多言語リスクワード | connexion, verificar等 |
+| 危険TLD重み強化 | 他シグナルとの組み合わせ増幅 |
 
-**出力**: `contextual_score` (0.0-1.0), `domain_issues`, `ctx_issues`
+**detected_issues例**:
+- `dangerous_tld`, `medium_danger_tld`, `idn_homograph`
+- `random_pattern`, `short`, `very_short`, `high_digit_ratio`
+- `dangerous_tld_combo`, `dangerous_tld_random`, `multilingual_risk`
+
+**details構造**:
+```python
+{
+    "ml_probability": float,         # ML確率
+    "ml_category": str,              # "high_confidence_phish"/"likely_phish"/"uncertain"/"likely_benign"
+    "total_issues_count": int,       # 検出issues総数
+    "combined_risk_score": float,    # 全ツール平均リスク
+    "tool_average_risk": float,      # combined_risk_scoreと同値 (互換用)
+    "is_ml_paradox": bool,           # ML Paradox検出 (強パラドックスのみ)
+    "all_detected_issues": List[str],# 全ツールからの集約issues
+    "high_risk_hits": int,           # 高リスクワードヒット数
+    "known_domain": {                # 既知ドメイン情報
+        "is_known_seen": bool,
+        "is_known_legit": bool,
+        "label": str,
+        "mitigation": float,
+        "legit_info": Dict,
+    },
+    "consistency_boost": float,      # 一貫性ブースト値
+    "score_components": Dict,        # スコア内訳
+    "paradox": {                     # Paradox詳細
+        "risk_signal_count": int,
+        "is_paradox_strong": bool,
+        "is_paradox_weak": bool,
+        # 効果測定用 (2026-01-31追加)
+        "excluded_signals": List[str],   # 除外されたシグナル名
+        "would_have_triggered": bool,    # 除外がなければ発火していたか
+    },
+}
+```
 
 ### 5.4 short_domain_analysis
 
-**目的**: 短いドメイン(2-4文字)の分析
+**目的**: ドメイン構造の詳細分析（短ドメインに限らず全般）
 
 | 分析項目 | 説明 |
 |----------|------|
-| エントロピー | 文字のランダム性 |
-| ブランド混同 | 短縮形でのブランド偽装 |
-| 正規短ドメイン | 既知の正規短ドメイン判定 |
+| エントロピー | 文字のランダム性 (Shannon entropy) |
+| 子音クラスター | 3文字以上の連続子音検出 |
+| レアバイグラム | 英語で稀な文字組み合わせ |
+| ドメイン長分類 | very_short/short/normal/long |
+| 数字/母音比率 | ランダム性指標 |
 
-**出力**: `is_suspicious`, `findings`, `legitimate_match`
+**detected_issues例**:
+- `short`, `very_short`, `random_pattern`
+- `consonant_cluster_random`, `rare_bigram_random`
+- `high_entropy`, `low_vowel_ratio`
+
+**details構造**:
+```python
+{
+    "domain_length": int,            # ドメイン長
+    "domain_length_category": str,   # "very_short"/"short"/"normal"/"long"
+    "entropy": float,                # Shannon entropy
+    "vowel_ratio": float,            # 母音比率
+    "digit_ratio": float,            # 数字比率
+    "consonant_cluster_count": int,  # 子音クラスター数
+    "rare_bigram_ratio": float,      # レアバイグラム比率
+    "is_random": bool,               # ランダムパターン判定
+}
 
 ## 6. Precheck Module (precheck_module.py)
 
@@ -244,15 +361,31 @@ class FinalAssessmentSO(BaseModel):
 
 ### 8.2 出力
 
+#### 8.2.1 基本フィールド
+
 | フィールド | 型 | 説明 |
 |-----------|-----|------|
 | `ai_is_phishing` | bool | フィッシング判定 |
 | `ai_confidence` | float | 信頼度 (0.0-1.0) |
 | `ai_risk_level` | str | リスクレベル |
-| `ai_risk_factors` | str | リスク要因 (JSON) |
+| `reasoning` | str | 判定理由 (50文字以上) |
+| `risk_factors` | List[str] | リスク要因リスト |
+| `detected_brands` | List[str] | 検出ブランドリスト |
 | `processing_time` | float | 処理時間 (秒) |
 | `phase6_policy_version` | str | ポリシーバージョン |
-| `phase6_rules_fired` | str | 発火ルール |
+| `phase6_rules_fired` | List[str] | 発火ルール |
+
+#### 8.2.2 トレースフィールド
+
+FP/FN分析用の詳細トレースフィールドは `langgraph_module.py` の `evaluate()` 出力に含まれる。
+評価システムでの保存仕様は **parallel_evaluation_spec.md セクション10.1** を参照。
+
+主要トレースフィールド:
+- `trace_precheck_*`: Precheckステージの情報
+- `trace_brand/cert/domain/ctx_risk_score`: 各ツールのリスクスコア
+- `trace_ctx_issues_json`: 検出された問題点
+- `graph_state_slim_json`: 完全なグラフ状態 (デバッグ用)
+- `tool_*_output`: 各ツールの完全な出力
 
 ## 9. 依存関係
 
@@ -277,3 +410,13 @@ langgraph_module.py
 | Recall | 60.0% | 97.08% |
 | F1 Score | 72.5% | 98.36% |
 | 処理速度 | ~8.5件/分/GPU | — |
+
+---
+
+## 変更履歴
+
+| バージョン | 日付 | 変更内容 |
+|-----------|------|---------|
+| v1.6.3 | 2026-01-24 | Phase6ポリシー追加 |
+| v1.6.4 | 2026-01-28 | 出力仕様更新: トレースフィールド追加、parallel_evaluation_specへの参照追加 |
+| v1.6.5 | 2026-01-28 | Section 5 ツール仕様を実装に合わせて全面更新。共通出力フォーマット追加、detected_issues/details構造を文書化 |

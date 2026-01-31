@@ -147,6 +147,36 @@ BOUNDARY_REQUIRED_BRANDS: FrozenSet[str] = frozenset([
     "visa",   # "visajourney", "advisor"
     "ana",    # "banana", "analysis"
     "chase",  # "purchase"
+    # 2026-01-28追加
+    "citi",      # "cities"
+    "swift",     # "swiftly"
+    "meta",      # "metadata"
+    "hermes",    # "hi-res"
+    "appstore",  # "educationalappstore"
+    # 2026-01-29追加: fuzzy match FP対策
+    "costco",    # "costa"
+    "youtube",   # "yourule"
+    "laposte",   # "lacoste"
+    "sbinet",    # "biznet"
+    # 2026-01-29追加: v2評価で発見したFP
+    "steam",     # "stream"
+    "roblox",    # "oblog"
+    "eshop",     # "noodleshop"
+    # 2026-01-29追加: #10 fuzzy2 FP対策
+    "bestbuy",   # "bitbuy"
+    "binance",   # "balance", "finance"
+    "usbank",    # "unisbank"
+    "signal",    # "sigsac"
+    "nordea",    # "norge"
+    "shopify",   # "shoppy"
+    # 2026-01-29追加: #11 compound/substring FP対策
+    "acom",      # "comunicar"
+    "wise",      # "worldwise"
+    "stripe",    # "stripes"
+    "tmobile",   # "xtmobile"
+    "promise",   # "americaspromise"
+    "disney",    # "disneydriven"
+    "mastercard",  # "mastercardfdn"
 ])
 
 # Common words that contain brand keywords as substrings (FP exclusion)
@@ -183,6 +213,49 @@ BRAND_FP_EXCLUSION_WORDS: FrozenSet[str] = frozenset([
     "anarchy", "panacea", "canadapost", "montana", "indiana", "louisiana",
     # "chase" false positives
     "purchase", "purchaser", "purchases",
+    # 2026-01-28追加: "citi" false positives
+    "cities", "city", "twincities", "citiesorg", "changingcities",
+    "publicities", "electricity", "municipality", "velocities", "capacities",
+    "simplicities", "atrocities", "audacities", "ferocities",
+    # 2026-01-28追加: "swift" false positives
+    "swifterm", "swiftly", "swiftness", "swiftui", "swiftkey",
+    "swiftmailer", "swiftlang", "swiftpm",
+    # 2026-01-28追加: "meta" false positives
+    "metaflow", "metadata", "metalwork", "metaphor", "metamorphosis",
+    "metasploit", "metatag", "metaverse", "metabase", "metabolism",
+    "metacritic", "metallic", "metaprotection", "metalprotection",
+    "asmetalwork", "metal",
+    # 2026-01-28追加: "hermes" false positives
+    "hermesonlineshop", "hermesshop", "hermesstore", "hermescourier",
+    "hermesdelivery", "hermesparcel", "hermesuk", "hermesworld",
+    # 2026-01-28追加: "appstore" false positives
+    "educationalappstore", "iosappstore", "androidappstore",
+    "appstoreconnect", "appstorereview",
+    # 2026-01-29追加: fuzzy match FP対策
+    "costa", "costarica", "custo", "costumer", "costume",  # costco
+    "hires", "highres", "lozanohemmer", "hemmer",  # hermes
+    "rinet", "biznet",  # sbinet
+    "lacoste",  # laposte
+    "yourule", "yourtube",  # youtube
+    # 2026-01-29追加: v2評価で発見したFP
+    "stream", "upstream", "downstream", "mainstream", "livestream",  # steam
+    "oblog", "noblog", "blog",  # roblox
+    "noodleshop", "coffeeshop", "workshop", "bookshop",  # eshop
+    # 2026-01-29追加: #10 fuzzy2 FP対策
+    "bitbuy", "buybuy", "buybit",  # bestbuy
+    "balance", "finance", "refinance", "alliance", "vigilance",  # binance
+    "unisbank", "unibank",  # usbank
+    "sigsac", "sigact", "sigmod", "sigchi", "sigplan", "sigops",  # signal (ACM SIG系)
+    "norge", "nordic", "nordia",  # nordea
+    "shoppy", "shoppie", "shopping",  # shopify
+    # 2026-01-29追加: #11 compound/substring FP対策
+    "revistacomunicar", "pharmacomedicale", "comunicar", "comedicale", "pharmacom", "telecom", "dotcom", "intercom",  # acom
+    "worldwise", "otherwise", "likewise", "clockwise", "pairwise", "stepwise",  # wise
+    "stripes", "starsandstripes", "pinstripe", "pinstripes",  # stripe
+    "xtmobile",  # tmobile
+    "americaspromise", "compromise", "compromises",  # promise
+    "disneydriven", "disneyfan", "disneylife",  # disney
+    "mastercardfdn", "mastercardfoundation",  # mastercard
 ])
 
 # Common TLDs to exclude from fuzzy brand matching

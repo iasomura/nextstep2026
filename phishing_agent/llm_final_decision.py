@@ -81,6 +81,13 @@ llm_final_decision.py (Phase6 v1.4.7-dvguard4)
         - ML 0.40-0.85: 従来通り random_pattern/dangerous_tld が必要
         - ML >= 0.85: 無条件でオーバーライド (allowlist/gov/edu は除外)
 
+  - 2026-01-28: v1.6.6-typical-phishing-cert
+      - ブランド非依存のフィッシング検出強化
+        - typical_phishing_cert_pattern を strong_evidence に追加
+        - パターン: free_ca + no_org + short_term (<=90日)
+        - 背景: FNの33.5%がcert > 0.4だがbrand=0のため見逃し
+        - 効果: R1-R4 がブランドなしでも発火可能になる
+
 既存方針:
   - no_org 単体で True になり得る経路は持たない（複合条件のみ）
   - decision_trace を graph_state に埋め込み、risk_factors に policyタグを追記
@@ -103,7 +110,7 @@ except Exception:
 
 
 # ------------------------- phase6 meta -------------------------
-PHASE6_POLICY_VERSION = "v1.6.5-very-high-ml-fix"
+PHASE6_POLICY_VERSION = "v1.6.6-typical-phishing-cert"
 
 # ------------------------- TLD classification (2026-01-14) -------------------------
 # 高危険TLD: フィッシングに特に多用され、正規利用が少ないTLD
@@ -677,6 +684,7 @@ def _apply_policy_adjustments(
     _strong_cert = {
         "self_signed",
         "dv_multi_risk_combo",
+        # 2026-01-29: typical_phishing_cert_pattern を削除（Precision 39.4%で識別力不足、FP増加原因）
     }
     _strong_ctx = {
         "ml_paradox",

@@ -25,6 +25,17 @@ from __future__ import annotations
 #              - 4-3b5: ランダム+高ML相乗効果 (jcvuzh.com等)
 #              - 4-3b6: サブドメイン+ブランド検出 (etherwallet.mobilelab.vn等)
 #              - MULTILINGUAL_RISK_WORDS に英語アクション系追加 (update, renew等)
+# - 2026-01-28: typical_phishing_cert_pattern 検出追加 (FN対策)
+#              - free_ca + no_org + short_term (<=90日) → strong_evidence として扱う
+#              - ブランド非依存でフィッシング検出を可能にする
+# - 2026-01-29: typical_phishing_cert_pattern 検出無効化 (FP対策)
+#              - Precision 39.4%で識別力不足 (FP 68件の原因)
+#              - _strong_cert から削除済みだが、issues に含まれることで
+#                LLM判定に影響していたため、完全に無効化
+# - 2026-01-30: ml_paradox に dangerous TLD 条件を試行→ロールバック
+#              - 試行: non-dangerous TLD では ml_paradox を発火させない
+#              - 結果: 効果限定的（共通ドメインでFP -1件のみ）、F1改善なし
+#              - 詳細: docs/analysis/02_improvement_analysis.md #14
 # ---------------------------------------------------------------------
 from typing import Any, Dict, List, Optional
 
@@ -383,6 +394,7 @@ def contextual_risk_assessment(
     is_paradox_weak = False
 
     # 強パラドックス条件（2 パターン）
+    # NOTE: 2026-01-30に dangerous TLD ガードを試行したが効果限定的のためロールバック
     if (
         (p <= PARADOX_STRONG_MAX_ML and risk_signal_count >= PARADOX_STRONG_MIN_SIGNALS)
         or (p <= ML_LOW and risk_signal_count >= PARADOX_STRONG_ALT_MIN_SIGNALS)
@@ -399,21 +411,38 @@ def contextual_risk_assessment(
     #   以前は「常に強パラドックス扱い」だったが、Let's Encrypt + No Org は
     #   *一般サイトでも頻出* のため FP を誘発しやすい。
     #   → 追加の強い非MLシグナルがある場合にのみ strong に昇格する。
+    #
+    # 変更履歴:
+    #   - 2026-01-31: brand_detected, consonant_cluster_random を除外（FP削減）
+    #     - brand_detected: Precision 18.2% (FP 130件 vs TP 29件)
+    #     - consonant_cluster_random: Precision 10.5% (FP 17件 vs TP 2件)
+    #     - 期待効果: FP -122件, F1 +1.31pp
+    # 効果測定用: 除外されたシグナルのトラッキング
+    _excluded_from_needs_extra = {"brand_detected", "consonant_cluster_random"}
+    _paradox_excluded_signals: List[str] = []  # 除外により発火しなかったシグナル
+    _paradox_would_have_triggered = False  # 除外がなければ発火していたか
+
     if p <= PARADOX_STRONG_MAX_ML and {"free_ca", "no_org"}.issubset(issue_set):
         _needs_extra = {
             "dangerous_tld",
-            "brand_detected",
+            # "brand_detected",  # 2026-01-31除外: Precision 18.2%で低すぎる
             "random_pattern",
             "high_entropy",
             "short_random_combo",
             "random_with_high_tld_stat",
             "idn_homograph",
-            "consonant_cluster_random",   # 2026-01-24追加
-            "rare_bigram_random",          # 2026-01-24追加
+            # "consonant_cluster_random",  # 2026-01-31除外: Precision 10.5%で低すぎる
+            "rare_bigram_random",
         }
         if issue_set & _needs_extra:
             is_paradox_strong = True
             is_paradox_weak = False
+        else:
+            # 除外シグナルがあれば記録（効果測定用）
+            _hit_excluded = issue_set & _excluded_from_needs_extra
+            if _hit_excluded:
+                _paradox_excluded_signals = list(_hit_excluded)
+                _paradox_would_have_triggered = True
 
     # ML 由来ベーススコアの決定
     if is_paradox_strong:
@@ -871,6 +900,41 @@ def contextual_risk_assessment(
             score_components["low_signal_phishing"] = True
             score_components["low_signal_signals"] = low_signal_signals
 
+    # 4-3c2. Typical Phishing Certificate Pattern Detection (2026-01-28)
+    # ブランド非依存のフィッシング検出: 証明書パターンを strong_evidence として扱う
+    # 背景: FNの33.5%がcert > 0.4だがbrand=0のためルールが発火しない
+    # パターン: free_ca + no_org + short_term (<=90日) = 典型的なフィッシング証明書
+    # この issue は llm_final_decision.py の _strong_cert に追加され、
+    # R1-R4 などの既存ルールの strong_evidence 条件を満たす
+    #
+    # 2026-01-29: 無効化
+    #   - Precision 39.4%で識別力不足（FP 68件の原因）
+    #   - _strong_cert から削除済みだが、issues に含まれることで
+    #     LLM判定に影響していた
+    #   - 完全に無効化してFP削減を優先
+    #
+    # typical_phishing_cert = False
+    # cert_valid_days = cert_details.get("valid_days", 0) or 0
+    # is_free_ca = "free_ca" in issue_set
+    # is_no_org = "no_org" in issue_set
+    # is_short_term = cert_valid_days > 0 and cert_valid_days <= 90
+    #
+    # # benign_indicators (CRL, OV/EV) がある場合は除外
+    # cert_benign = set(cert_details.get("benign_indicators", []) or [])
+    # has_cert_benign = bool(cert_benign & {"has_crl_dp", "ov_ev_cert"})
+    #
+    # if is_free_ca and is_no_org and is_short_term and not has_cert_benign:
+    #     typical_phishing_cert = True
+    #     issues.append("typical_phishing_cert_pattern")
+    #     score_components["typical_phishing_cert_pattern"] = True
+    #     score_components["typical_phishing_cert_details"] = {
+    #         "is_free_ca": is_free_ca,
+    #         "is_no_org": is_no_org,
+    #         "valid_days": cert_valid_days,
+    #     }
+    #     # スコアには直接影響させず、strong_evidence としてのみ機能
+    #     # これにより既存ルール (R1-R4) がブランドなしでも発火可能になる
+
     # 4-3d. Old Certificate Phishing Detection (2026-01-17)
     # Handoff分析から判明した「古い証明書」パターンによるフィッシング検出
     # 特徴: FN平均449.8日 vs FP平均248.0日、効果量d=0.745***
@@ -1117,6 +1181,9 @@ def contextual_risk_assessment(
                 "risk_signal_count": risk_signal_count,
                 "is_paradox_strong": is_paradox_strong,
                 "is_paradox_weak": is_paradox_weak,
+                # 効果測定用（2026-01-31追加）
+                "excluded_signals": _paradox_excluded_signals,
+                "would_have_triggered": _paradox_would_have_triggered,
             },
         },
         "reasoning": " / ".join(reasoning_bits),
