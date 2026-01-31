@@ -4,6 +4,7 @@ Worker実装モジュール
 AI Agentによるドメイン評価を実行する
 
 変更履歴:
+    - 2026-01-28: トレースフィールド追加 - AI Agentの判定理由を保存するように変更
     - 2026-01-26: 証明書データ統合 - cert_features_mapをAgentに渡すように変更
 """
 
@@ -31,6 +32,28 @@ class WorkerResult:
     ai_risk_level: str
     processing_time: float
     error: Optional[str] = None
+    # トレースフィールド (2026-01-28追加)
+    ai_reasoning: Optional[str] = None
+    ai_risk_factors: Optional[str] = None  # JSON string
+    ai_detected_brands: Optional[str] = None  # JSON string
+    trace_precheck_ml_category: Optional[str] = None
+    trace_precheck_tld_category: Optional[str] = None
+    trace_precheck_brand_detected: Optional[bool] = None
+    trace_precheck_high_risk_hits: Optional[int] = None
+    trace_precheck_quick_risk: Optional[float] = None
+    trace_selected_tools: Optional[str] = None  # JSON string
+    trace_brand_risk_score: Optional[float] = None
+    trace_cert_risk_score: Optional[float] = None
+    trace_domain_risk_score: Optional[float] = None
+    trace_ctx_risk_score: Optional[float] = None
+    trace_ctx_issues: Optional[str] = None  # JSON string
+    trace_phase6_rules_fired: Optional[str] = None  # JSON string
+    graph_state_slim_json: Optional[str] = None  # Full state for debugging
+    # ツール出力の詳細 (2026-01-28追加: FP/FN分析用)
+    tool_brand_output: Optional[str] = None  # brand_impersonation_check full output (JSON)
+    tool_cert_output: Optional[str] = None   # certificate_analysis full output (JSON)
+    tool_domain_output: Optional[str] = None # short_domain_analysis full output (JSON)
+    tool_ctx_output: Optional[str] = None    # contextual_risk_assessment full output (JSON)
 
 
 class EvaluationWorker:
@@ -194,7 +217,7 @@ class EvaluationWorker:
             try:
                 result = self._evaluate_single(domain, ml_prob, timeout_per_domain)
 
-                # 結果保存
+                # 結果保存 (2026-01-28: トレースフィールド追加)
                 row = {
                     "domain": domain,
                     "ml_probability": ml_prob,
@@ -204,6 +227,28 @@ class EvaluationWorker:
                     "processing_time": result.processing_time,
                     "worker_id": self.worker_id,
                     "error": result.error,
+                    # トレースフィールド
+                    "ai_reasoning": result.ai_reasoning,
+                    "ai_risk_factors": result.ai_risk_factors,
+                    "ai_detected_brands": result.ai_detected_brands,
+                    "trace_precheck_ml_category": result.trace_precheck_ml_category,
+                    "trace_precheck_tld_category": result.trace_precheck_tld_category,
+                    "trace_precheck_brand_detected": result.trace_precheck_brand_detected,
+                    "trace_precheck_high_risk_hits": result.trace_precheck_high_risk_hits,
+                    "trace_precheck_quick_risk": result.trace_precheck_quick_risk,
+                    "trace_selected_tools": result.trace_selected_tools,
+                    "trace_brand_risk_score": result.trace_brand_risk_score,
+                    "trace_cert_risk_score": result.trace_cert_risk_score,
+                    "trace_domain_risk_score": result.trace_domain_risk_score,
+                    "trace_ctx_risk_score": result.trace_ctx_risk_score,
+                    "trace_ctx_issues": result.trace_ctx_issues,
+                    "trace_phase6_rules_fired": result.trace_phase6_rules_fired,
+                    "graph_state_slim_json": result.graph_state_slim_json,
+                    # ツール出力詳細 (FP/FN分析用)
+                    "tool_brand_output": result.tool_brand_output,
+                    "tool_cert_output": result.tool_cert_output,
+                    "tool_domain_output": result.tool_domain_output,
+                    "tool_ctx_output": result.tool_ctx_output,
                     **{k: v for k, v in domain_info.items() if k not in ["domain", "ml_probability"]}
                 }
                 self.result_writer.append(row)
@@ -267,6 +312,20 @@ class EvaluationWorker:
 
             elapsed = time.time() - start_time
 
+            # トレースフィールドの抽出 (2026-01-28追加)
+            def _json_str(obj):
+                """オブジェクトをJSON文字列に変換"""
+                if obj is None:
+                    return None
+                try:
+                    return json.dumps(obj, ensure_ascii=False)
+                except:
+                    return str(obj)
+
+            # ツール出力の抽出 (graph_state_slimから取得)
+            graph_state_slim = result.get("graph_state_slim") or {}
+            tool_results = graph_state_slim.get("tool_results") or {}
+
             return WorkerResult(
                 domain=domain,
                 ml_probability=ml_prob,
@@ -274,7 +333,29 @@ class EvaluationWorker:
                 ai_confidence=result.get("ai_confidence", 0.0),
                 ai_risk_level=result.get("ai_risk_level", "unknown"),
                 processing_time=elapsed,
-                error=None
+                error=None,
+                # トレースフィールド (フィールド名はlanggraph_moduleの出力に合わせる)
+                ai_reasoning=result.get("reasoning"),  # PhishingAssessment.reasoning
+                ai_risk_factors=_json_str(result.get("risk_factors")),  # PhishingAssessment.risk_factors
+                ai_detected_brands=_json_str(result.get("detected_brands")),  # PhishingAssessment.detected_brands
+                trace_precheck_ml_category=result.get("trace_precheck_ml_category"),
+                trace_precheck_tld_category=result.get("trace_precheck_tld_category"),
+                trace_precheck_brand_detected=result.get("trace_precheck_brand_detected"),
+                trace_precheck_high_risk_hits=result.get("trace_precheck_high_risk_hits"),
+                trace_precheck_quick_risk=result.get("trace_precheck_quick_risk"),
+                trace_selected_tools=result.get("trace_selected_tools_json"),  # already JSON string
+                trace_brand_risk_score=result.get("trace_brand_risk_score"),
+                trace_cert_risk_score=result.get("trace_cert_risk_score"),
+                trace_domain_risk_score=result.get("trace_domain_risk_score"),
+                trace_ctx_risk_score=result.get("trace_ctx_risk_score"),
+                trace_ctx_issues=result.get("trace_ctx_issues_json"),  # already JSON string
+                trace_phase6_rules_fired=result.get("trace_phase6_rules_fired_json"),  # already JSON string
+                graph_state_slim_json=result.get("graph_state_slim_json"),  # already JSON string
+                # ツール出力の詳細 (FP/FN分析用)
+                tool_brand_output=_json_str(tool_results.get("brand")),
+                tool_cert_output=_json_str(tool_results.get("cert")),
+                tool_domain_output=_json_str(tool_results.get("domain")),
+                tool_ctx_output=_json_str(tool_results.get("contextual_risk_assessment")),
             )
 
         except TimeoutError:
@@ -363,6 +444,104 @@ class EvaluationWorker:
             except:
                 pass
 
+    def retry_failed(
+        self,
+        domains: List[Dict[str, Any]],
+        timeout_per_domain: int = 120
+    ) -> Dict[str, Any]:
+        """
+        失敗ドメインをリトライ
+
+        Args:
+            domains: 失敗ドメイン情報リスト（domain, ml_probabilityを含む）
+            timeout_per_domain: タイムアウト（デフォルト120秒=通常の2倍）
+
+        Returns:
+            Dict: リトライ結果サマリー
+                - total: 対象件数
+                - success: 成功件数
+                - failed: 失敗件数
+                - results: 成功したドメインのリスト
+
+        変更履歴:
+            - 2026-01-31: リトライ機能追加
+        """
+        if not domains:
+            return {"total": 0, "success": 0, "failed": 0, "results": []}
+
+        print(f"[Worker {self.worker_id}] Retrying {len(domains)} failed domains (timeout={timeout_per_domain}s)")
+
+        success_count = 0
+        failed_count = 0
+        success_domains = []
+
+        for i, domain_info in enumerate(domains):
+            domain = domain_info.get("domain")
+            ml_prob = domain_info.get("ml_probability", 0.5)
+            original_worker = domain_info.get("worker_id", self.worker_id)
+
+            print(f"[Worker {self.worker_id}] Retry {i+1}/{len(domains)}: {domain}")
+
+            try:
+                result = self._evaluate_single(domain, ml_prob, timeout_per_domain)
+
+                if result.error is None:
+                    # 成功 - 結果を保存
+                    row = {
+                        "domain": domain,
+                        "ml_probability": ml_prob,
+                        "ai_is_phishing": result.ai_is_phishing,
+                        "ai_confidence": result.ai_confidence,
+                        "ai_risk_level": result.ai_risk_level,
+                        "processing_time": result.processing_time,
+                        "worker_id": self.worker_id,
+                        "error": None,
+                        "ai_reasoning": result.ai_reasoning,
+                        "ai_risk_factors": result.ai_risk_factors,
+                        "ai_detected_brands": result.ai_detected_brands,
+                        "trace_precheck_ml_category": result.trace_precheck_ml_category,
+                        "trace_precheck_tld_category": result.trace_precheck_tld_category,
+                        "trace_precheck_brand_detected": result.trace_precheck_brand_detected,
+                        "trace_precheck_high_risk_hits": result.trace_precheck_high_risk_hits,
+                        "trace_precheck_quick_risk": result.trace_precheck_quick_risk,
+                        "trace_selected_tools": result.trace_selected_tools,
+                        "trace_brand_risk_score": result.trace_brand_risk_score,
+                        "trace_cert_risk_score": result.trace_cert_risk_score,
+                        "trace_domain_risk_score": result.trace_domain_risk_score,
+                        "trace_ctx_risk_score": result.trace_ctx_risk_score,
+                        "trace_ctx_issues": result.trace_ctx_issues,
+                        "trace_phase6_rules_fired": result.trace_phase6_rules_fired,
+                        "graph_state_slim_json": result.graph_state_slim_json,
+                        "tool_brand_output": result.tool_brand_output,
+                        "tool_cert_output": result.tool_cert_output,
+                        "tool_domain_output": result.tool_domain_output,
+                        "tool_ctx_output": result.tool_ctx_output,
+                    }
+                    self.result_writer.append(row)
+
+                    # チェックポイントから失敗を削除
+                    self.checkpoint_manager.clear_failed_domain(original_worker, domain)
+
+                    success_count += 1
+                    success_domains.append(domain)
+                    print(f"[Worker {self.worker_id}]   ✓ {domain} succeeded on retry")
+                else:
+                    failed_count += 1
+                    print(f"[Worker {self.worker_id}]   ✗ {domain} failed again: {result.error}")
+
+            except Exception as e:
+                failed_count += 1
+                print(f"[Worker {self.worker_id}]   ✗ {domain} error: {str(e)[:50]}")
+
+        print(f"[Worker {self.worker_id}] Retry complete: {success_count}/{len(domains)} succeeded")
+
+        return {
+            "total": len(domains),
+            "success": success_count,
+            "failed": failed_count,
+            "results": success_domains
+        }
+
 
 class VLLMConnectionError(Exception):
     """vLLM接続エラー"""
@@ -428,9 +607,22 @@ def run_worker_process(
     checkpoint_mgr = CheckpointManager(checkpoint_dir, run_id="")
 
     fieldnames = [
+        # 基本フィールド
         "domain", "ml_probability", "ai_is_phishing", "ai_confidence",
         "ai_risk_level", "processing_time", "worker_id", "error",
-        "source", "y_true", "stage1_pred", "tld"
+        "source", "y_true", "stage1_pred", "tld",
+        # トレースフィールド (2026-01-28追加)
+        "ai_reasoning", "ai_risk_factors", "ai_detected_brands",
+        "trace_precheck_ml_category", "trace_precheck_tld_category",
+        "trace_precheck_brand_detected", "trace_precheck_high_risk_hits",
+        "trace_precheck_quick_risk", "trace_selected_tools",
+        "trace_brand_risk_score", "trace_cert_risk_score",
+        "trace_domain_risk_score", "trace_ctx_risk_score",
+        "trace_ctx_issues", "trace_phase6_rules_fired",
+        "graph_state_slim_json",
+        # ツール出力詳細 (2026-01-28追加: FP/FN分析用)
+        "tool_brand_output", "tool_cert_output",
+        "tool_domain_output", "tool_ctx_output",
     ]
     result_writer = ResultWriter(result_file, fieldnames)
 

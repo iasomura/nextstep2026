@@ -59,6 +59,8 @@ def parse_args() -> argparse.Namespace:
     # 実行オプション
     parser.add_argument("--resume", "-r", action="store_true",
                         help="前回のチェックポイントから再開")
+    parser.add_argument("--retry-failed", action="store_true",
+                        help="失敗ドメインのみリトライ（タイムアウト2倍）")
     parser.add_argument("--dry-run", action="store_true",
                         help="ドライラン（データ分割確認のみ）")
     parser.add_argument("--yes", "-y", action="store_true",
@@ -204,6 +206,74 @@ def main():
 
     # 環境セットアップ
     env = setup_environment()
+
+    # リトライモード
+    if args.retry_failed:
+        from parallel.checkpoint import CheckpointManager
+        from parallel.orchestrator import ParallelOrchestrator
+
+        # 変更履歴:
+        #   - 2026-01-31: パス修正 - orchestrator と同じ stage2_validation サブディレクトリを使用
+        results_dir = env["results_dir"] / "stage2_validation"
+        checkpoint_manager = CheckpointManager(results_dir, env["run_id"])
+
+        # 失敗ドメインを取得
+        failed_domains = checkpoint_manager.get_all_failed_domains()
+
+        if not failed_domains:
+            print("[INFO] No failed domains to retry.")
+            return
+
+        print(f"\n[RETRY MODE] Found {len(failed_domains)} failed domains")
+        for fd in failed_domains[:10]:
+            print(f"  - {fd['domain']} (Worker {fd.get('worker_id', '?')}): {fd.get('error', 'unknown')}")
+        if len(failed_domains) > 10:
+            print(f"  ... and {len(failed_domains) - 10} more")
+
+        if not args.yes:
+            response = input("\nRetry these domains? [y/N]: ").strip().lower()
+            if response != 'y':
+                print("Aborted.")
+                return
+
+        # handoffからml_probabilityを取得
+        handoff_df = load_handoff_data(env["handoff_dir"])
+        ml_prob_map = dict(zip(handoff_df["domain"], handoff_df["ml_probability"]))
+
+        for fd in failed_domains:
+            fd["ml_probability"] = ml_prob_map.get(fd["domain"], 0.5)
+
+        # 証明書特徴量ファイル
+        cert_features_file = env["artifacts_dir"] / "processed" / "cert_full_info_map.pkl"
+        if not cert_features_file.exists():
+            cert_features_file = None
+
+        # オーケストレーターでリトライ実行
+        with ParallelOrchestrator(
+            config=config,
+            run_id=env["run_id"],
+            artifacts_dir=env["artifacts_dir"],
+            base_dir=env["base_dir"],
+            additional_gpus=additional_gpus,
+            skip_confirmation=True,
+            cert_features_file=cert_features_file
+        ) as orchestrator:
+
+            if not orchestrator.setup():
+                print("\nSetup failed. Exiting.")
+                sys.exit(1)
+
+            # Worker 0でリトライ（1GPUで十分）
+            retry_result = orchestrator.retry_failed_domains(failed_domains, timeout=120)
+
+            print("\n" + "=" * 70)
+            print("Retry Complete!")
+            print("=" * 70)
+            print(f"  Total: {retry_result['total']}")
+            print(f"  Success: {retry_result['success']}")
+            print(f"  Failed: {retry_result['failed']}")
+
+        return
 
     # handoffデータ読み込み
     handoff_df = load_handoff_data(env["handoff_dir"])

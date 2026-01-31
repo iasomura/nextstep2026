@@ -260,6 +260,85 @@ class CheckpointManager:
         else:
             return 0
 
+    def get_failed_domains(self, worker_id: int) -> List[Dict[str, Any]]:
+        """
+        失敗ドメインを取得
+
+        Returns:
+            List[Dict]: 失敗ドメイン情報のリスト
+                - domain: ドメイン名
+                - index: 元のインデックス
+                - error: エラーメッセージ
+                - timestamp: 失敗時刻
+
+        変更履歴:
+            - 2026-01-31: リトライ機能のため追加
+        """
+        worker_file = self.checkpoint_dir / f"worker_{worker_id}_checkpoint.json"
+
+        if not worker_file.exists():
+            return []
+
+        with open(worker_file) as f:
+            data = json.load(f)
+
+        return data.get('errors', [])
+
+    def get_all_failed_domains(self) -> List[Dict[str, Any]]:
+        """
+        全Workerの失敗ドメインを取得
+
+        Returns:
+            List[Dict]: 失敗ドメイン情報のリスト（worker_id付き）
+
+        変更履歴:
+            - 2026-01-31: リトライ機能のため追加
+        """
+        all_failed = []
+
+        # グローバル状態からWorker数を取得
+        if not self._global_state_file.exists():
+            return []
+
+        with open(self._global_state_file) as f:
+            global_data = json.load(f)
+
+        num_workers = global_data.get('num_workers', 0)
+
+        for worker_id in range(num_workers):
+            failed = self.get_failed_domains(worker_id)
+            for item in failed:
+                item['worker_id'] = worker_id
+            all_failed.extend(failed)
+
+        return all_failed
+
+    def clear_failed_domain(self, worker_id: int, domain: str):
+        """
+        リトライ成功時に失敗リストから削除
+
+        変更履歴:
+            - 2026-01-31: リトライ機能のため追加
+        """
+        with self._lock:
+            worker_file = self.checkpoint_dir / f"worker_{worker_id}_checkpoint.json"
+
+            if not worker_file.exists():
+                return
+
+            with open(worker_file) as f:
+                data = json.load(f)
+
+            if 'errors' not in data:
+                return
+
+            # 該当ドメインを削除
+            data['errors'] = [e for e in data['errors'] if e.get('domain') != domain]
+            data['failed'] = len(data['errors'])
+            data['updated_at'] = datetime.now().isoformat()
+
+            self._atomic_write(worker_file, data)
+
     def _save_global_state(self, state: GlobalState):
         """グローバル状態を保存"""
         state.updated_at = datetime.now().isoformat()

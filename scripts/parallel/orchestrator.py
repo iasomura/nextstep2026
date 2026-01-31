@@ -512,6 +512,87 @@ class ParallelOrchestrator:
             result_file=output_file
         )
 
+    def retry_failed_domains(
+        self,
+        failed_domains: list,
+        timeout: int = 120
+    ) -> dict:
+        """
+        失敗ドメインをリトライ
+
+        Args:
+            failed_domains: 失敗ドメインリスト（domain, ml_probability, worker_idを含む）
+            timeout: タイムアウト秒数（デフォルト120秒）
+
+        Returns:
+            dict: リトライ結果サマリー
+
+        変更履歴:
+            - 2026-01-31: リトライ機能追加
+        """
+        if not failed_domains:
+            return {"total": 0, "success": 0, "failed": 0, "results": []}
+
+        print(f"\n[Orchestrator] Retrying {len(failed_domains)} failed domains...")
+
+        # Worker 0を使用
+        if not self.active_workers:
+            print("[ERROR] No active workers available for retry")
+            return {"total": len(failed_domains), "success": 0, "failed": len(failed_domains), "results": []}
+
+        worker_config = self.active_workers[0]
+
+        # ResultWriterの準備
+        from .checkpoint import ResultWriter
+        from .worker import EvaluationWorker
+
+        result_file = self.results_dir / f"retry_results_{self.run_id}.csv"
+        fieldnames = [
+            "domain", "ml_probability", "ai_is_phishing", "ai_confidence",
+            "ai_risk_level", "processing_time", "worker_id", "error",
+            "ai_reasoning", "ai_risk_factors", "ai_detected_brands",
+            "trace_precheck_ml_category", "trace_precheck_tld_category",
+            "trace_precheck_brand_detected", "trace_precheck_high_risk_hits",
+            "trace_precheck_quick_risk", "trace_selected_tools",
+            "trace_brand_risk_score", "trace_cert_risk_score",
+            "trace_domain_risk_score", "trace_ctx_risk_score",
+            "trace_ctx_issues", "trace_phase6_rules_fired",
+            "graph_state_slim_json", "tool_brand_output", "tool_cert_output",
+            "tool_domain_output", "tool_ctx_output"
+        ]
+        result_writer = ResultWriter(result_file, fieldnames)
+
+        # 証明書データ読み込み
+        cert_features_map = None
+        if self.cert_features_file and self.cert_features_file.exists():
+            import joblib
+            cert_features_map = joblib.load(self.cert_features_file)
+
+        # Worker作成
+        worker = EvaluationWorker(
+            worker_id=0,
+            vllm_port=worker_config.port,
+            base_dir=self.base_dir,
+            checkpoint_manager=self.checkpoint_manager,
+            result_writer=result_writer,
+            cert_features_map=cert_features_map
+        )
+
+        try:
+            # 変更履歴:
+            #   - 2026-01-31: initialize() 呼び出しを追加（_agent初期化漏れ修正）
+            # Worker初期化（_agentを作成）
+            if not worker.initialize():
+                print("[ERROR] Worker initialization failed")
+                return {"total": len(failed_domains), "success": 0, "failed": len(failed_domains), "results": []}
+
+            # リトライ実行
+            retry_result = worker.retry_failed(failed_domains, timeout_per_domain=timeout)
+            return retry_result
+
+        finally:
+            worker.cleanup()
+
     def cleanup(self):
         """クリーンアップ"""
         print("\n[Orchestrator] Cleaning up...")

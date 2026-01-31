@@ -1,7 +1,7 @@
 # 並列評価システム仕様書
 
-**バージョン**: v1.0
-**更新日**: 2026-01-24
+**バージョン**: v1.2
+**更新日**: 2026-01-28
 **対象モジュール**: `scripts/evaluate_e2e_parallel.py`, `scripts/parallel/`
 
 ---
@@ -79,10 +79,12 @@ python scripts/evaluate_e2e_parallel.py [OPTIONS]
 
 | オプション | 説明 | デフォルト |
 |-----------|------|-----------|
+| `--config PATH` | 設定ファイルパス | `scripts/parallel_config.yaml` |
 | `--add-gpu N[,M,...]` | 追加使用するWorker ID | なし (Worker 0のみ) |
 | `--n-sample N` | 評価サンプル数 | ALL (全件) |
 | `--random-state N` | 乱数シード | 42 |
-| `--resume` | チェックポイントから再開 | False |
+| `--shuffle` | ドメインリストをシャッフル | False |
+| `--resume, -r` | チェックポイントから再開 | False |
 | `--check-gpus` | GPU状態確認のみ | False |
 | `--dry-run` | ドライラン | False |
 | `-y, --yes` | 確認プロンプトスキップ | False |
@@ -119,39 +121,63 @@ workers:
     port: 8000
     type: local
     gpu: 0
+    speed_weight: 1.59      # 処理速度の重み（ドメイン配分に使用）
 
   - id: 1
     port: 8001
-    type: external      # ポートフォワード済み
+    type: external          # ポートフォワード済み
+    stop_on_complete: false # 完了後にvLLMを停止しない
+    speed_weight: 1.77
 
   - id: 2
     port: 8002
     type: external
-    start_cmd: "ssh user@host 'bash -lc \"/path/to/vllm.sh start\"'"
-    stop_cmd: "ssh user@host 'bash -lc \"/path/to/vllm.sh stop\"'"
+    start_cmd: "ssh user@host 'bash -lc \"/path/to/vllm.sh start\"'"  # オプション
+    stop_cmd: "ssh user@host 'bash -lc \"/path/to/vllm.sh stop\"'"    # オプション
+    stop_on_complete: false
+    speed_weight: 1.00
 
 vllm:
-  model: "Qwen/Qwen3-4B"
-  max_model_len: 8192
+  model: "JunHowie/Qwen3-4B-Thinking-2507-GPTQ-Int8"  # GPTQモデル
+  max_model_len: 4096
   max_num_seqs: 8
-  gpu_memory_utilization: 0.85
+  gpu_memory_utilization: 0.25
+  dtype: auto
+
+evaluation:
+  checkpoint_interval: 100    # チェックポイント保存間隔
+  timeout_per_domain: 60      # 1ドメインのタイムアウト(秒)
+  retry_count: 2              # リトライ回数
 
 health_check:
-  interval: 5        # 秒
+  interval: 5                 # ヘルスチェック間隔(秒)
   timeout: 10
   max_failures: 3
 
 retry:
   request_retries: 3
   request_delay: 5
+  domain_retries: 2           # ドメイン評価リトライ
+  domain_delay: 10
   vllm_restarts: 3
   vllm_restart_delay: 30
+
+failover:
+  enabled: true
+  redistribute_on_failure: true  # 障害時に他Workerへ再分配
+  min_workers: 1
 
 shared_server:
   enabled: true
   check_gpu_usage_before_start: true
   gpu_memory_threshold_mb: 1000
+  warn_if_other_users: true
   require_confirmation: true
+
+logging:
+  level: INFO
+  separate_worker_logs: true  # Worker毎に別ログ
+  log_dir: null               # null=artifacts/{RUN_ID}/logs/
 ```
 
 ## 6. チェックポイントシステム
@@ -176,12 +202,13 @@ artifacts/{RUN_ID}/results/stage2_validation/
 
 ```json
 {
-  "run_id": "2026-01-21_152158",
-  "total_domains": 17434,
-  "num_workers": 2,
-  "active_workers": [0, 1],
+  "run_id": "2026-01-24_213326",
+  "total_domains": 15670,
+  "num_workers": 3,
+  "active_workers": [0, 1, 2],
   "failed_workers": [],
-  "started_at": "2026-01-23T15:39:00",
+  "started_at": "2026-01-28T19:32:40.916481",
+  "updated_at": "2026-01-28T19:32:40.916522",
   "completed": false
 }
 ```
@@ -192,12 +219,15 @@ artifacts/{RUN_ID}/results/stage2_validation/
 {
   "worker_id": 0,
   "status": "running",
-  "total": 8717,
-  "completed": 5000,
+  "total": 5715,
+  "completed": 60,
   "failed": 0,
   "last_completed_domain": "example.com",
-  "last_completed_index": 4999,
-  "current_processing": null,
+  "last_completed_index": 59,
+  "current_processing": "next-domain.com",
+  "current_index": 60,
+  "started_at": "2026-01-28T19:32:41.322579",
+  "updated_at": "2026-01-28T19:41:29.041702",
   "vllm_restarts": 0,
   "errors": []
 }
@@ -266,12 +296,102 @@ for i, domain_info in enumerate(domains[start_index:]):
 - vLLM接続エラー: `VLLMConnectionError` → RecoveryManager通知
 - その他エラー: ログ記録、次ドメインへ進む
 
+### 9.4 リトライ機能 ✅ (実装完了: 2026-01-31)
+
+**実装概要**:
+評価完了後に失敗ドメインをバッチリトライする方式を採用。
+
+**使用方法**:
+```bash
+# 失敗ドメインのリトライ
+python scripts/evaluate_e2e_parallel.py --retry-failed -y
+```
+
+**実装詳細**:
+- `evaluate_e2e_parallel.py`: `--retry-failed` オプション追加
+- `orchestrator.py`: `retry_failed_domains()` メソッド追加
+- `worker.py`: `retry_failed()` メソッド追加
+- `checkpoint.py`: `get_all_failed_domains()`, `clear_failed_domain()` メソッド追加
+
+**動作**:
+1. チェックポイントから全Workerの失敗ドメインを収集
+2. タイムアウト2倍（60秒→120秒）で再評価
+3. 成功時はチェックポイントのエラーリストから削除
+4. 結果は `retry_results_{run_id}.csv` に保存
+
+**検証結果** (2026-01-31):
+- 3000件評価で5件がタイムアウト (0.17%)
+- リトライにより5件全て成功
+
 ## 10. 結果マージ
 
 - 各Worker の `worker_N_results.csv` を読み込み
 - domain列で重複除去 (resume時の重複対策)
 - タイムスタンプ付きCSVとして保存
-- マージ結果に全カラム含む (domain, ml_probability, ai_is_phishing, ai_confidence, ai_risk_level, processing_time, worker_id, error, source, y_true, stage1_pred, tld)
+- マージ結果に全カラム含む (下記セクション10.1参照)
+
+### 10.1 出力カラム一覧 (v1.1: 2026-01-28更新)
+
+| カテゴリ | カラム名 | 説明 |
+|---------|---------|------|
+| **基本** | domain | 対象ドメイン |
+| | ml_probability | Stage1 ML確率 |
+| | ai_is_phishing | AI Agent判定結果 |
+| | ai_confidence | AI Agent信頼度 |
+| | ai_risk_level | リスクレベル (low/medium/high/critical) |
+| | processing_time | 処理時間(秒) |
+| | worker_id | 処理Worker ID |
+| | error | エラーメッセージ (あれば) |
+| | source | データソース |
+| | y_true | 正解ラベル (1=phishing, 0=legitimate) |
+| | stage1_pred | Stage1予測 |
+| | tld | TLD |
+| **判定理由** | ai_reasoning | LLMの判定理由 (50文字以上) |
+| | ai_risk_factors | 検出されたリスク要因 (JSON) |
+| | ai_detected_brands | 検出されたブランド (JSON) |
+| **Precheck** | trace_precheck_ml_category | ML確率カテゴリ |
+| | trace_precheck_tld_category | TLDカテゴリ |
+| | trace_precheck_brand_detected | ブランド検出フラグ |
+| | trace_precheck_high_risk_hits | 高リスクキーワードヒット数 |
+| | trace_precheck_quick_risk | クイックリスクスコア |
+| **ツール選択** | trace_selected_tools | 選択されたツール (JSON) |
+| **ツールスコア** | trace_brand_risk_score | ブランドチェックスコア |
+| | trace_cert_risk_score | 証明書チェックスコア |
+| | trace_domain_risk_score | ドメインチェックスコア |
+| | trace_ctx_risk_score | コンテキストリスクスコア |
+| | trace_ctx_issues | コンテキスト検出問題 (JSON) |
+| **ポリシー** | trace_phase6_rules_fired | 発火したルール (JSON) |
+| **デバッグ** | graph_state_slim_json | 完全なグラフ状態 (JSON) |
+| **ツール出力詳細** | tool_brand_output | brand_impersonation_check出力 (JSON) |
+| | tool_cert_output | certificate_analysis出力 (JSON) |
+| | tool_domain_output | short_domain_analysis出力 (JSON) |
+| | tool_ctx_output | contextual_risk_assessment出力 (JSON) |
+
+### 10.2 FP/FN分析での活用
+
+トレースフィールドを使用した原因分析:
+
+```python
+import pandas as pd
+import json
+
+df = pd.read_csv("worker_0_results.csv")
+
+# FPケースの抽出
+fp = df[(df['ai_is_phishing'] == True) & (df['y_true'] == 0)]
+
+# 判定理由の確認
+for _, row in fp.iterrows():
+    print(f"Domain: {row['domain']}")
+    print(f"  Reasoning: {row['ai_reasoning']}")
+    print(f"  Risk factors: {row['ai_risk_factors']}")
+    print(f"  Ctx score: {row['trace_ctx_risk_score']}")
+
+    # ツール出力の詳細確認
+    if pd.notna(row['tool_brand_output']):
+        brand = json.loads(row['tool_brand_output'])
+        print(f"  Brand issues: {brand.get('detected_issues')}")
+```
 
 ## 11. vLLM自動停止
 
@@ -286,3 +406,24 @@ for i, domain_info in enumerate(domains[start_index:]):
 - resume時のWorker数変更は未対応 (ドメイン再分配が整合しなくなるため)
 - Worker間の動的負荷分散は未実装
 - 同一ドメインの重複評価防止はresult CSVのdomain重複除去で対応
+
+---
+
+## 変更履歴
+
+| バージョン | 日付 | 変更内容 |
+|-----------|------|---------|
+| v1.0 | 2026-01-24 | 初版作成 |
+| v1.1 | 2026-01-28 | トレースフィールド追加 (AI Agent説明可能性向上) |
+|      |            | - 判定理由 (ai_reasoning, ai_risk_factors, ai_detected_brands) |
+|      |            | - Precheckトレース (ml_category, tld_category, brand_detected等) |
+|      |            | - ツールスコア (brand/cert/domain/ctx_risk_score) |
+|      |            | - ツール出力詳細 (tool_brand/cert/domain/ctx_output) |
+|      |            | - FP/FN分析用サンプルコード追加 |
+| v1.2 | 2026-01-28 | 実装との整合性修正 |
+|      |            | - CLIオプション追加 (--config, --shuffle) |
+|      |            | - Config: vllm.model をGPTQ版に更新 |
+|      |            | - Config: speed_weight, stop_on_complete 追加 |
+|      |            | - Config: evaluation, failover, logging セクション追加 |
+|      |            | - Checkpoint: current_processing, current_index, started_at, updated_at 追加 |
+|      |            | - GlobalState: updated_at 追加 |
