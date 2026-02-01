@@ -110,7 +110,13 @@ except Exception:
 
 
 # ------------------------- phase6 meta -------------------------
-PHASE6_POLICY_VERSION = "v1.6.6-typical-phishing-cert"
+# 変更履歴:
+#   - 2026-01-31: v1.7.0-rule-modules - ルールモジュール統合
+PHASE6_POLICY_VERSION = "v1.7.0-rule-modules"
+
+# ルールモジュール使用フラグ（段階的移行用）
+# True: ルールモジュールを使用、False: インライン実装を使用
+USE_RULE_MODULES = True  # 2026-01-31: モジュール版に切り替え（動作一致確認済み）
 
 # ------------------------- TLD classification (2026-01-14) -------------------------
 # 高危険TLD: フィッシングに特に多用され、正規利用が少ないTLD
@@ -178,6 +184,21 @@ def _summarize_tool_signals(tool_results: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # ---------------------- benign certificate gate (2026-01-12) ---------------------
+# ===================================================================================
+# ⚠️ 重要: このインライン実装は非推奨です (2026-01-31)
+# ===================================================================================
+# 個別のルールは以下のモジュールに実装してください:
+#   - phishing_agent/rules/detectors/cert_gate.py (B1-B4 証明書ゲート)
+#   - phishing_agent/rules/detectors/brand_cert.py (ブランド×証明書ルール)
+#
+# 新しいルールを追加する場合:
+#   1. phishing_agent/rules/detectors/ に適切なファイルを作成または編集
+#   2. DetectionRule を継承したクラスを実装
+#   3. phishing_agent/rules/detectors/__init__.py にエクスポートを追加
+#   4. phishing_agent/rules/engine.py の create_phase6_engine() に登録
+#
+# このファイルにインラインでルールを書かないでください。
+# ===================================================================================
 def _apply_benign_cert_gate(
     asmt: PhishingAssessment,
     tool_summary: Dict[str, Any],
@@ -185,15 +206,32 @@ def _apply_benign_cert_gate(
     ml_probability: Optional[float] = None,
     precheck: Optional[Dict[str, Any]] = None,
     trace: Optional[List[Dict[str, Any]]] = None,
+    domain: str = "",
 ) -> PhishingAssessment:
     """
     証明書の正規性シグナル（benign_indicators）に基づくゲート。
-    Stage2で有効性が確認された証明書特徴量をStage3でも活用し、FPを削減。
 
-    Gate B1: OV/EV証明書 + ctx < 0.50 → BENIGN強制
-    Gate B2: CRL保有 + ml < 0.30 + ctx < 0.45 → BENIGN強制
-    Gate B3: ワイルドカード + 非危険TLD + ctx < 0.40 → BENIGN強制
-    Gate B4: 高SAN数 + 非危険TLD + ctx < 0.45 → BENIGN強制
+    ⚠️ 非推奨: この関数のインライン実装は USE_RULE_MODULES=True で無効化されています。
+    新しいルールは phishing_agent/rules/detectors/cert_gate.py に実装してください。
+
+    変更履歴:
+      - 2026-01-31: インライン版を非推奨化、モジュール版に移行
+    """
+    # USE_RULE_MODULES=True の場合はモジュール版で実行済み
+    if USE_RULE_MODULES:
+        return asmt
+
+    # USE_RULE_MODULES=False は非推奨（モジュール版を使用してください）
+    raise NotImplementedError(
+        "インライン版 _apply_benign_cert_gate は非推奨です。"
+        "USE_RULE_MODULES=True を設定してモジュール版を使用してください。"
+        "ルールの実装は phishing_agent/rules/detectors/cert_gate.py を参照。"
+    )
+
+    # =========================================================================
+    # 以下は旧インライン実装（参照用にコメントアウトして保持）
+    # 削除予定: 動作確認後に完全削除
+    # =========================================================================
     """
     tr = trace if isinstance(trace, list) else []
     ip = bool(getattr(asmt, "is_phishing", False))
@@ -332,8 +370,27 @@ def _apply_benign_cert_gate(
         )
 
     return asmt
+    """
+    # =========================================================================
+    # 旧インライン実装ここまで
+    # =========================================================================
 
 
+# ---------------------- low signal phishing gate (2026-01-12) ---------------------
+# ===================================================================================
+# ⚠️ 重要: このインライン実装は非推奨です (2026-01-31)
+# ===================================================================================
+# 個別のルールは以下のモジュールに実装してください:
+#   - phishing_agent/rules/detectors/low_signal_gate.py (P1-P4 低シグナルゲート)
+#
+# 新しいルールを追加する場合:
+#   1. phishing_agent/rules/detectors/ に適切なファイルを作成または編集
+#   2. DetectionRule を継承したクラスを実装
+#   3. phishing_agent/rules/detectors/__init__.py にエクスポートを追加
+#   4. phishing_agent/rules/engine.py の create_phase6_engine() に登録
+#
+# このファイルにインラインでルールを書かないでください。
+# ===================================================================================
 def _apply_low_signal_phishing_gate(
     asmt: PhishingAssessment,
     tool_summary: Dict[str, Any],
@@ -341,20 +398,32 @@ def _apply_low_signal_phishing_gate(
     ml_probability: Optional[float] = None,
     precheck: Optional[Dict[str, Any]] = None,
     trace: Optional[List[Dict[str, Any]]] = None,
+    domain: str = "",
 ) -> PhishingAssessment:
     """
     低シグナルフィッシング検出ゲート。
-    Stage2で見逃されやすい低MLフィッシングを検出する。
 
-    Gate P1: ブランド検出 + 短期証明書 + 低ML → PHISHING強制
-    Gate P2: ブランド疑い + 短期証明書 + 低SAN + 低ML → PHISHING強制
-    Gate P3: 危険TLD + 短期証明書 + 低SAN + 低ML + benign無し → risk bump
+    ⚠️ 非推奨: この関数のインライン実装は USE_RULE_MODULES=True で無効化されています。
+    新しいルールは phishing_agent/rules/detectors/low_signal_gate.py に実装してください。
 
     変更履歴:
-      - 2026-01-18: P1ゲートを非危険TLD + ML<0.30 で無効化
-        - 3000件評価の分析結果: P1がPOST_LLM_FLIP_GATEの効果を打ち消し、142件のFPを発生
-        - Let's Encrypt（90日証明書）の普及により、正規サイトも短期証明書を使用
-        - 修正によりF1: 0.764 → 0.812（+4.8%）、FP: 276 → 134（-142件）
+      - 2026-01-31: インライン版を非推奨化、モジュール版に移行
+    """
+    # USE_RULE_MODULES=True の場合はモジュール版で実行済み
+    if USE_RULE_MODULES:
+        return asmt
+
+    # USE_RULE_MODULES=False は非推奨（モジュール版を使用してください）
+    raise NotImplementedError(
+        "インライン版 _apply_low_signal_phishing_gate は非推奨です。"
+        "USE_RULE_MODULES=True を設定してモジュール版を使用してください。"
+        "ルールの実装は phishing_agent/rules/detectors/low_signal_gate.py を参照。"
+    )
+
+    # =========================================================================
+    # 以下は旧インライン実装（参照用にコメントアウトして保持）
+    # 削除予定: 動作確認後に完全削除
+    # =========================================================================
     """
     tr = trace if isinstance(trace, list) else []
     ip = bool(getattr(asmt, "is_phishing", False))
@@ -559,16 +628,40 @@ def _apply_low_signal_phishing_gate(
         )
 
     return asmt
+    """
+    # =========================================================================
+    # 旧インライン実装ここまで
+    # =========================================================================
 
 
 def _priority_bump(current: str, minimum: str) -> str:
+    """リスクレベルの優先度比較（ヘルパー関数）"""
     order = ["low","medium","medium-high","high","critical"]
     try:
         return order[max(order.index(current or "low"), order.index(minimum or "low"))]
     except Exception:
         return minimum or current or "medium"
 
+
 # ---------------------- policy adjustments ---------------------
+# ===================================================================================
+# ⚠️ 重要: このインライン実装は非推奨です (2026-01-31)
+# ===================================================================================
+# 個別のルールは以下のモジュールに実装してください:
+#   - phishing_agent/rules/detectors/policy.py (R1-R6 ポリシールール)
+#   - phishing_agent/rules/detectors/ml_guard.py (ML Override ルール)
+#   - phishing_agent/rules/detectors/ctx_trigger.py (CTX トリガールール)
+#   - phishing_agent/rules/detectors/gov_edu_gate.py (Gov/Edu ゲート)
+#   - phishing_agent/rules/detectors/post_gates.py (POST処理ゲート)
+#
+# 新しいルールを追加する場合:
+#   1. phishing_agent/rules/detectors/ に適切なファイルを作成または編集
+#   2. DetectionRule を継承したクラスを実装
+#   3. phishing_agent/rules/detectors/__init__.py にエクスポートを追加
+#   4. phishing_agent/rules/engine.py の create_phase6_engine() に登録
+#
+# このファイルにインラインでルールを書かないでください。
+# ===================================================================================
 def _apply_policy_adjustments(
     asmt: PhishingAssessment,
     tool_summary: Dict[str, Any],
@@ -576,6 +669,7 @@ def _apply_policy_adjustments(
     ml_probability: Optional[float] = None,
     precheck: Optional[Dict[str, Any]] = None,
     trace: Optional[List[Dict[str, Any]]] = None,
+    domain: str = "",
 ) -> PhishingAssessment:
     """
     仕様整合の最終補正 + Phase6ポリシールール（R1/R2/R3/R4/R5）。
@@ -587,6 +681,38 @@ def _apply_policy_adjustments(
     追加（2025-12-14）:
       - R4: ML<0.5 かつ {free_ca,no_org} かつ contextual>=しきい値 → phishing
       - R5: ML<0.5 かつ dangerous_tld & no_org かつ contextual>=0.33 → phishing
+
+    変更履歴:
+      - 2026-01-31: USE_RULE_MODULES フラグによるモジュール版への分岐を追加
+
+    ⚠️ 非推奨: この関数のインライン実装は USE_RULE_MODULES=True で無効化されています。
+    新しいルールは phishing_agent/rules/detectors/ 以下に実装してください。
+
+    変更履歴:
+      - 2026-01-31: インライン版を非推奨化、モジュール版に移行
+    """
+    # USE_RULE_MODULES=True の場合はモジュール版を使用
+    if USE_RULE_MODULES:
+        return _apply_policy_adjustments_via_modules(
+            asmt=asmt,
+            tool_summary=tool_summary,
+            ml_probability=ml_probability,
+            precheck=precheck,
+            trace=trace,
+            domain=domain,
+        )
+
+    # USE_RULE_MODULES=False は非推奨（モジュール版を使用してください）
+    raise NotImplementedError(
+        "インライン版 _apply_policy_adjustments は非推奨です。"
+        "USE_RULE_MODULES=True を設定してモジュール版を使用してください。"
+        "ルールの実装は phishing_agent/rules/detectors/ を参照。"
+    )
+
+    # =========================================================================
+    # 以下は旧インライン実装（参照用にコメントアウトして保持）
+    # 削除予定: 動作確認後に完全削除
+    # =========================================================================
     """
     tr = trace if isinstance(trace, list) else []
     c = clip_confidence(getattr(asmt, "confidence", 0.0))
@@ -1234,6 +1360,53 @@ def _apply_policy_adjustments(
             })
 
     # ------------------------------------------------------------------
+    # #16 High ML + Ctx Rescue (2026-01-31追加):
+    # - ML >= 0.35 かつ Ctx >= 0.40 (< 0.50) で benign 判定されている場合
+    # - FN を救済するために phishing にオーバーライド
+    # - 分析結果: FN救済66件, FP増加7件 (Precision 90.4%), F1 +1.69pp
+    # 変更履歴:
+    #   - 2026-01-31: FN分析に基づき追加 (案B採用)
+    # ------------------------------------------------------------------
+    HIGH_ML_CTX_RESCUE_ML_TH = 0.35  # ML閾値
+    HIGH_ML_CTX_RESCUE_CTX_LOW = 0.40  # Ctx下限
+    HIGH_ML_CTX_RESCUE_CTX_HIGH = 0.50  # Ctx上限 (この値以上は既にphishing判定のはず)
+    if not ip and ml >= HIGH_ML_CTX_RESCUE_ML_TH:
+        # Ctx スコアが中程度 (0.40-0.50) の場合に救済
+        if HIGH_ML_CTX_RESCUE_CTX_LOW <= ctx_score < HIGH_ML_CTX_RESCUE_CTX_HIGH:
+            # 除外条件: allowlist, 信頼TLD, gov/edu
+            _rescue_trusted_tlds = {"org", "edu", "gov", "mil", "int"}
+            _is_rescue_trusted = (
+                tld_suffix.lower() in _rescue_trusted_tlds
+                or any(tld_suffix.lower().endswith(f".{t}") for t in _rescue_trusted_tlds)
+            )
+            _should_rescue = (
+                not is_allowlisted
+                and not _is_rescue_trusted
+                and not _is_gov_edu_tld
+            )
+
+            if _should_rescue:
+                ip = True
+                c = max(c, 0.70)
+                rl = "high"
+                try:
+                    reasoning_text = (
+                        reasoning_text +
+                        f" | Phase6 gate: HIGH_ML_CTX_RESCUE (ml={ml:.3f} >= {HIGH_ML_CTX_RESCUE_ML_TH}, "
+                        f"ctx={ctx_score:.3f} in [{HIGH_ML_CTX_RESCUE_CTX_LOW}, {HIGH_ML_CTX_RESCUE_CTX_HIGH}))"
+                    )
+                except Exception:
+                    pass
+                tr.append({
+                    "rule": "HIGH_ML_CTX_RESCUE",
+                    "action": "rescue_fn_high_ml_ctx",
+                    "ml": round(ml, 4),
+                    "ml_threshold": HIGH_ML_CTX_RESCUE_ML_TH,
+                    "ctx_score": round(ctx_score, 4),
+                    "ctx_range": [HIGH_ML_CTX_RESCUE_CTX_LOW, HIGH_ML_CTX_RESCUE_CTX_HIGH],
+                })
+
+    # ------------------------------------------------------------------
     # Post-Policy flip gate (dvguard4):
     # - domain_issues が random_pattern のみ の場合は、誤反転（FP）が多い。
     #   brand が無い限り、Benign→Phishing の追加反転をブロックする。
@@ -1283,6 +1456,7 @@ def _apply_policy_adjustments(
         reasoning=reasoning_text,
     )
     return asmt
+    """  # 旧インライン実装の終端（ここまで参照用docstring）
 
 # -------------------------- public API --------------------------
 
@@ -1524,6 +1698,7 @@ def final_decision(
         ml_probability=ml,
         precheck=pre,
         trace=trace,
+        domain=domain,  # モジュール版で必要
     )
 
     # 5) mitigated_risk_factors を risk_factors にタグとして反映
@@ -1551,6 +1726,7 @@ def final_decision(
         ml_probability=ml,
         precheck=pre,
         trace=trace,
+        domain=domain,  # モジュール版で必要
     )
 
     # 5c) Low Signal Phishing Gate (2026-01-12)
@@ -1561,6 +1737,7 @@ def final_decision(
         ml_probability=ml,
         precheck=pre,
         trace=trace,
+        domain=domain,  # モジュール版で必要
     )
 
     # 6) graph_state へのトレース保存
@@ -1635,5 +1812,419 @@ def final_decision(
 
     return asmt2
 
+
+# =====================================================================
+# Rule Module Integration (2026-01-31)
+# =====================================================================
+# ルールモジュールを使用した補正処理の代替実装
+# USE_RULE_MODULES = True で使用される
+# =====================================================================
+
+def _apply_policy_adjustments_via_modules(
+    asmt: PhishingAssessment,
+    tool_summary: Dict[str, Any],
+    *,
+    ml_probability: Optional[float] = None,
+    precheck: Optional[Dict[str, Any]] = None,
+    trace: Optional[List[Dict[str, Any]]] = None,
+    domain: str = "",
+) -> PhishingAssessment:
+    """
+    ルールモジュールを使用した Policy Adjustments.
+
+    _apply_policy_adjustments() のモジュール版。
+    RuleContextBuilder + RuleEngine + ResultApplier を使用する。
+
+    変更履歴:
+        - 2026-01-31: 新規作成（ルールモジュール移行計画 Phase 3）
+    """
+    from .rules.context_builder import RuleContextBuilder
+    from .rules.engine import create_phase6_engine
+    from .rules.result_applier import ResultApplier
+
+    tr = trace if isinstance(trace, list) else []
+
+    # 1) RuleContext を構築
+    ctx = RuleContextBuilder.build(
+        domain=domain,
+        ml_probability=ml_probability or 0.0,
+        tool_summary=tool_summary,
+        precheck=precheck or {},
+        llm_assessment=asmt,
+    )
+
+    # 2) RuleEngine を作成・実行
+    engine = create_phase6_engine()
+    engine_result = engine.evaluate_phased(ctx)
+
+    # 3) ルール発火情報をトレースに追加
+    for rule_result in engine_result.rule_results:
+        if rule_result.triggered:
+            tr.append({
+                "rule": rule_result.rule_name,
+                "action": "force_phishing" if rule_result.force_phishing else
+                         ("force_benign" if rule_result.force_benign else "triggered"),
+                "reasoning": rule_result.reasoning,
+                "details": rule_result.details,
+            })
+
+    # 4) 結果を PhishingAssessment に適用
+    result = ResultApplier.apply(asmt, engine_result, tr)
+
+    return result
+
+
+def _apply_benign_cert_gate_via_modules(
+    asmt: PhishingAssessment,
+    tool_summary: Dict[str, Any],
+    *,
+    ml_probability: Optional[float] = None,
+    precheck: Optional[Dict[str, Any]] = None,
+    trace: Optional[List[Dict[str, Any]]] = None,
+    domain: str = "",
+) -> PhishingAssessment:
+    """
+    ルールモジュールを使用した Benign Certificate Gate.
+
+    _apply_benign_cert_gate() のモジュール版。
+    cert_gate ルールのみを実行する。
+
+    変更履歴:
+        - 2026-01-31: 新規作成（ルールモジュール移行計画 Phase 3）
+    """
+    from .rules.context_builder import RuleContextBuilder
+    from .rules.engine import RuleEngine
+    from .rules.detectors.cert_gate import create_cert_gate_rules
+    from .rules.detectors.brand_cert import BenignCertGateSkipRule
+    from .rules.result_applier import ResultApplier
+
+    tr = trace if isinstance(trace, list) else []
+
+    # 1) RuleContext を構築
+    ctx = RuleContextBuilder.build(
+        domain=domain,
+        ml_probability=ml_probability or 0.0,
+        tool_summary=tool_summary,
+        precheck=precheck or {},
+        llm_assessment=asmt,
+    )
+
+    # 2) 証明書ゲートルールのみで Engine を作成
+    engine = RuleEngine()
+    engine.register(BenignCertGateSkipRule())  # スキップ判定ルール
+    engine.register_all(create_cert_gate_rules())
+
+    engine_result = engine.evaluate(ctx)
+
+    # 3) トレース追加
+    for rule_result in engine_result.rule_results:
+        if rule_result.triggered:
+            tr.append({
+                "rule": rule_result.rule_name.upper().replace("_", "_"),
+                "action": rule_result.details.get("action", "triggered"),
+                **{k: v for k, v in rule_result.details.items() if k != "action"},
+            })
+
+    # 4) 結果適用
+    result = ResultApplier.apply(asmt, engine_result, tr)
+
+    return result
+
+
+def _apply_low_signal_phishing_gate_via_modules(
+    asmt: PhishingAssessment,
+    tool_summary: Dict[str, Any],
+    *,
+    ml_probability: Optional[float] = None,
+    precheck: Optional[Dict[str, Any]] = None,
+    trace: Optional[List[Dict[str, Any]]] = None,
+    domain: str = "",
+) -> PhishingAssessment:
+    """
+    ルールモジュールを使用した Low Signal Phishing Gate.
+
+    _apply_low_signal_phishing_gate() のモジュール版。
+    low_signal_gate ルールのみを実行する。
+
+    変更履歴:
+        - 2026-01-31: 新規作成（ルールモジュール移行計画 Phase 3）
+    """
+    from .rules.context_builder import RuleContextBuilder
+    from .rules.engine import RuleEngine
+    from .rules.detectors.low_signal_gate import create_low_signal_gate_rules
+    from .rules.result_applier import ResultApplier
+
+    tr = trace if isinstance(trace, list) else []
+
+    # 1) RuleContext を構築
+    ctx = RuleContextBuilder.build(
+        domain=domain,
+        ml_probability=ml_probability or 0.0,
+        tool_summary=tool_summary,
+        precheck=precheck or {},
+        llm_assessment=asmt,
+    )
+
+    # 2) 低シグナルゲートルールのみで Engine を作成
+    engine = RuleEngine()
+    engine.register_all(create_low_signal_gate_rules())
+
+    engine_result = engine.evaluate(ctx)
+
+    # 3) トレース追加
+    for rule_result in engine_result.rule_results:
+        if rule_result.triggered:
+            tr.append({
+                "rule": rule_result.rule_name.upper().replace("_", "_"),
+                "action": rule_result.details.get("action", "triggered"),
+                **{k: v for k, v in rule_result.details.items() if k != "action"},
+            })
+
+    # 4) 結果適用
+    result = ResultApplier.apply(asmt, engine_result, tr)
+
+    return result
+
+
+def final_decision_via_modules(
+    llm,
+    domain: str,
+    ml_probability: float,
+    tool_results: dict[str, object],
+    graph_state: dict[str, object],
+    strict_mode: bool = False,
+) -> PhishingAssessment:
+    """Phase6 最終判定（ルールモジュール版）
+
+    final_decision() のモジュール統合版。
+    ルールモジュールを使用して Policy Adjustments を実行する。
+
+    変更履歴:
+        - 2026-01-31: 新規作成（ルールモジュール移行計画 Phase 3）
+    """
+    # 0) Traceability: Phase6 policy version stamp
+    try:
+        if isinstance(graph_state, dict):
+            graph_state.setdefault("phase6_policy_version", PHASE6_POLICY_VERSION)
+    except Exception:
+        pass
+
+    # 1) シグナル集約
+    tsum = _summarize_tool_signals(tool_results or {})
+
+    ml = float(ml_probability or 0.0)
+    if   ml < 0.2: ml_category = "very_low"
+    elif ml < 0.4: ml_category = "low"
+    elif ml < 0.6: ml_category = "medium"
+    elif ml < 0.8: ml_category = "high"
+    else:          ml_category = "very_high"
+
+    ctx_score = float((tsum.get("contextual") or {}).get("risk_score", 0.0) or 0.0)
+    ml_paradox = (ml < 0.3 and ctx_score >= 0.5)
+
+    pre: dict[str, object] = {}
+    if isinstance(graph_state, dict):
+        pre = dict(graph_state.get("precheck_hints", {}) or {})
+
+    # 2) LLM へのプロンプト構築（元の final_decision と同じ）
+    system_text = (
+        "You are an expert AI analyst specializing in cybersecurity and phishing detection.\n"
+        "Using the given ML score and the outputs of the analysis tools, decide whether this domain is phishing or not.\n"
+        "\n"
+        "You MUST output ONLY JSON that conforms to the Pydantic schema PhishingAssessmentSO:\n"
+        "- is_phishing: bool\n"
+        "- confidence: float between 0.0 and 1.0 (use a smaller value when you are uncertain)\n"
+        "- risk_level: one of ['low','medium','medium-high','high','critical']\n"
+        "- detected_brands: list of detected brand names (empty if none)\n"
+        "- risk_factors: risk factors that you treat as ACTIVE evidence for the final decision\n"
+        "    (for example: dangerous_tld, free_ca, no_org, ml_paradox, etc.)\n"
+        "- primary_category: one of ['safe_official_brand','safe_generic_content','safe_parked_domain',"
+        "'phishing_impersonation','phishing_credentials','suspicious_dga_domain','suspicious_tld_combo','malware_distribution']\n"
+        "- mitigated_risk_factors: risk factors that you detected but decided to treat as\n"
+        "    safe/acceptable in the final decision\n"
+        "- reasoning: at least 50 characters explaining why you chose the value of is_phishing\n"
+        "    and why you decided that the mitigated_risk_factors can be ignored in the final\n"
+        "    decision.\n"
+        "\n"
+        "Important rules:\n"
+        "1. Domains that look like random strings (high entropy / very few vowels) can be risky,\n"
+        "   but do NOT treat a single weak heuristic like random_pattern alone as sufficient\n"
+        "   for is_phishing=true. Require corroborating signals (e.g., short+random, dangerous_tld,\n"
+        "   brand impersonation, idn_homograph, etc.).\n"
+        "2. The absence of brand elements does NOT automatically mean the site is safe. When a\n"
+        "   dangerous TLD (.icu, .xyz, .top, etc.) is combined with free_ca and no_org, treat\n"
+        "   this as a strong risk signal even without any brand element.\n"
+        "3. Do NOT set is_phishing=true based on ml_probability alone. If you decide phishing, include at least one\n"
+        "   non-ML risk_factors that appear in tool_signals.*.issues.\n"
+        "4. When contextual_risk_assessment.risk_score >= 0.65, you MUST set is_phishing=true.\n"
+        "   When 0.50 <= contextual_risk_assessment.risk_score < 0.65, set is_phishing=true ONLY if\n"
+        "   there is at least one strong non-ML signal (e.g., brand_detected, dangerous_tld, idn_homograph,\n"
+        "   random_pattern/high_entropy, self_signed, dv_multi_risk_combo, dv_suspicious_combo, ml_paradox).\n"
+        "5. contextual_risk_assessment.risk_score < 0.50 does NOT imply the site is safe. It only means it is not an automatic trigger.\n"
+        "6. If you decide is_phishing=false even though there are strong risk signals such as\n"
+        "   dangerous_tld, free_ca, no_org, or ml_paradox, you MUST put those signals into\n"
+        "   mitigated_risk_factors (not risk_factors) and clearly explain in reasoning why the\n"
+        "   site is still considered safe.\n"
+        "7. For both risk_factors and mitigated_risk_factors, prefer to use the short\n"
+        "   identifiers that appear in tool_signals.*.issues (for example: dangerous_tld,\n"
+        "   free_ca, brand_detected, high_entropy, etc.).\n"
+        "8. A \"valid\" SSL certificate (especially DV / Let\'s Encrypt) is NOT a mitigating factor.\n"
+        "   Phishing sites commonly use valid DV certificates. Do NOT cite \"valid certificate\" as a reason for safety or mitigation.\n"
+        "   Treat DV/Let\'s Encrypt as neutral-to-risk unless there is strong identity evidence (e.g., OV/EV with org).\n"
+        "9. When ml_probability < 0.25 and precheck_summary.tld_category is not 'dangerous', be VERY conservative about setting is_phishing=true.\n"
+        "   Only set is_phishing=true if there is clear independent evidence (e.g., strong brand impersonation).\n"
+        "   Otherwise set is_phishing=false and place any detected risk signals into mitigated_risk_factors.\n"
+    )
+
+    user_payload = {
+        "domain": domain,
+        "ml_probability": ml,
+        "ml_category": ml_category,
+        "ml_paradox_hint": ml_paradox,
+        "tool_signals": tsum,
+        "precheck_summary": {
+            "tld_category": pre.get("tld_category"),
+            "quick_risk": pre.get("quick_risk"),
+            "potential_brands": pre.get("potential_brands", []),
+            "ml_paradox_hint": pre.get("ml_paradox", False),
+        },
+        "policy": {
+            "use_contextual_as_primary": True,
+            "brand_plus_cert_elevate": True,
+        },
+    }
+
+    user_content = "/no_think " + _json_dumps(user_payload)
+
+    messages = [
+        {"role": "system", "content": system_text},
+        {"role": "user", "content": user_content},
+    ]
+
+    trace: list[dict[str, object]] = []
+    trace.append({
+        "phase6_version": PHASE6_POLICY_VERSION,
+        "rule_modules": True,  # モジュール版であることを示すフラグ
+        "ml": ml,
+        "ml_category": ml_category,
+        "ctx_score": ctx_score,
+        "ml_paradox": ml_paradox,
+    })
+
+    # 3) Structured Output 呼び出し（元と同じ）
+    if not hasattr(llm, "with_structured_output"):
+        raise StructuredOutputError(
+            "LLM does not support with_structured_output",
+            domain=domain,
+            ml_probability=ml,
+            step="final_decision",
+        )
+
+    asmt_so: Optional[PhishingAssessmentSO] = None
+
+    try:
+        chain = llm.with_structured_output(PhishingAssessmentSO)
+        asmt_so = chain.invoke(messages)
+    except Exception as e1:
+        trace.append({"step": "so_primary_failed", "error": str(e1)[:200]})
+
+        try:
+            raw_response = llm.invoke(messages)
+            raw_text = raw_response.content if hasattr(raw_response, "content") else str(raw_response)
+            cleaned_text = _strip_think_tags(raw_text)
+
+            json_start = cleaned_text.find("{")
+            json_end = cleaned_text.rfind("}") + 1
+            if json_start >= 0 and json_end > json_start:
+                json_str = cleaned_text[json_start:json_end]
+                parsed = json.loads(json_str)
+                asmt_so = PhishingAssessmentSO(**parsed)
+                trace.append({"step": "so_fallback_success", "method": "strip_think_tags"})
+            else:
+                raise ValueError(f"No valid JSON found in response: {cleaned_text[:200]}")
+        except Exception as e2:
+            trace.append({"step": "so_fallback_failed", "error": str(e2)[:200]})
+            raise StructuredOutputError(
+                f"Phase6 final_decision SO failed: {e1}; fallback also failed: {e2}",
+                domain=domain,
+                ml_probability=ml,
+                step="final_decision",
+            )
+
+    if asmt_so is None:
+        raise StructuredOutputError(
+            "Phase6 final_decision SO failed: no valid response",
+            domain=domain,
+            ml_probability=ml,
+            step="final_decision",
+        )
+
+    trace.append({
+        "step": "llm_raw_output",
+        "assessment": asmt_so.model_dump(),
+    })
+
+    # 4) ルールモジュールを使用した Policy Adjustments
+    asmt2 = _apply_policy_adjustments_via_modules(
+        asmt_so,
+        tsum,
+        ml_probability=ml,
+        precheck=pre,
+        trace=trace,
+        domain=domain,
+    )
+
+    # 5) mitigated_risk_factors を risk_factors にタグとして反映
+    mitigated = list(getattr(asmt_so, "mitigated_risk_factors", []) or [])
+    if mitigated:
+        rf = list(getattr(asmt2, "risk_factors", []) or [])
+        for f in mitigated:
+            tag = f"mitigated:{f}"
+            if tag not in rf:
+                rf.append(tag)
+        asmt2 = PhishingAssessment(
+            is_phishing=asmt2.is_phishing,
+            confidence=asmt2.confidence,
+            risk_level=asmt2.risk_level,
+            detected_brands=list(asmt2.detected_brands or []),
+            risk_factors=rf,
+            reasoning=asmt2.reasoning,
+        )
+
+    # 6) graph_state へのトレース保存
+    rules_fired: list[str] = []
+    try:
+        if isinstance(graph_state, dict):
+            graph_state["phase6_policy_version"] = PHASE6_POLICY_VERSION
+            graph_state["phase6_rule_modules"] = True  # モジュール版フラグ
+
+            for t in trace:
+                if isinstance(t, dict) and t.get("rule"):
+                    r = str(t.get("rule"))
+                    if r not in rules_fired:
+                        rules_fired.append(r)
+            graph_state["phase6_rules_fired"] = rules_fired
+
+            dt = list(graph_state.get("decision_trace", []) or [])
+            dt.append({
+                "phase6_version": PHASE6_POLICY_VERSION,
+                "rule_modules": True,
+                "domain": domain,
+                "ml": ml,
+                "ml_category": ml_category,
+                "ctx_score": ctx_score,
+                "tool_summary": tsum,
+                "ml_paradox": ml_paradox,
+                "llm_primary_category": str(getattr(asmt_so, "primary_category", "")),
+                "llm_mitigated_risk_factors": mitigated,
+                "llm_risk_factors": list(getattr(asmt_so, "risk_factors", []) or []),
+                "policy_rules_fired": rules_fired,
+                "policy_trace": trace,
+            })
+            graph_state["decision_trace"] = dt
+    except Exception:
+        pass
+
+    return asmt2
 
 

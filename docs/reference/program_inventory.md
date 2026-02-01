@@ -109,6 +109,7 @@
 |----------|------|
 | `scripts/evaluate_e2e.py` | パイプライン全体評価。Stage1→Stage2→Agent→最終判定。PostgreSQLからデータ読込、TP/FP/FN評価、コスト重み付け対応。出力: `artifacts/{RUN_ID}/results/stage2_validation/` |
 | `scripts/evaluate_e2e_parallel.py` | 並列評価。マルチGPU/マルチWorker分散評価。`--add-gpu`, `--resume`, `--n-sample`, `--check-gpus`, `--dry-run` 対応 |
+| `scripts/run_eval_3gpu.sh` | 3GPU並列評価ラッパー。vLLM起動確認、SSHトンネル確認、`--resume`オプション対応、リトライ処理 |
 
 ### 並列評価モジュール (scripts/parallel/)
 
@@ -124,6 +125,15 @@
 | `parallel/gpu_checker.py` | GPU検出。ローカル/リモートGPU可用性チェック(nvidia-smi XML)、リソース割当確認 |
 | `parallel/ssh_manager.py` | SSH/tmux管理。リモートvLLMライフサイクル管理(SSH接続、ポートフォワード、tmuxセッション) |
 
+### 評価モニタリング
+
+| ファイル | 概要 |
+|----------|------|
+| `scripts/monitor_evaluation.py` | 評価進捗リアルタイム監視。Worker状態、完了率、ETA表示 |
+| `scripts/monitor_fnfp.py` | FN/FPリアルタイム監視。誤判定パターン追跡 |
+| `scripts/monitor_fnfp_detail.py` | FN/FP詳細監視。トレース情報付き分析 |
+| `scripts/monitor_fnfp_with_reasoning.py` | FN/FP監視（推論ログ付き）。LLM判断根拠を含む |
+
 ### 結果分析
 
 | ファイル | 概要 |
@@ -134,6 +144,11 @@
 | `scripts/analyze_featureless_phishing.py` | 特徴量が少ないphishingサンプル分析 |
 | `scripts/analyze_phishing_characteristics.py` | phishingドメインの特性分析 |
 | `scripts/analyze_scenario5_fn.py` | FNシナリオ分析 |
+| `scripts/analyze_trace.py` | トレースデータ分析。ルール発火パターン、判定フロー解析 |
+| `scripts/analyze_rule_metrics.py` | ルール効果分析。ルール別TP/FP/TN/FN集計、Precision/Recall計算 |
+| `scripts/analyze_brand_exclusion.py` | ブランド除外効果分析。FP削減効果の検証 |
+| `scripts/export_fnfp_analysis.py` | FN/FP分析エクスポート。JSONL形式でトレース付き出力 |
+| `scripts/trace_utils.py` | トレースユーティリティ。トレースデータのパース・集計ヘルパー |
 
 ---
 
@@ -191,6 +206,10 @@
 | `test_integration.py` | パイプライン統合テスト |
 | `test_regression.py` | 回帰テスト |
 | `test_stage3_cert_integration.py` | Stage3証明書統合テスト |
+| `scripts/test_module_switch.py` | ルールモジュール切替テスト。インライン vs モジュール動作確認 |
+| `scripts/compare_inline_vs_module.py` | インライン vs モジュール比較。判定結果の差異検出 |
+| `scripts/run_rule_integration_test.py` | ルール結合テスト実行。モジュール化ルールの動作検証 |
+| `scripts/extract_test_domains.py` | テストデータ抽出。ルール別テスト用ドメインリスト生成 |
 
 ### 外部API検証
 

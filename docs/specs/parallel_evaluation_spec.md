@@ -1,7 +1,7 @@
 # 並列評価システム仕様書
 
-**バージョン**: v1.2
-**更新日**: 2026-01-28
+**バージョン**: v1.4
+**更新日**: 2026-01-31
 **対象モジュール**: `scripts/evaluate_e2e_parallel.py`, `scripts/parallel/`
 
 ---
@@ -407,6 +407,61 @@ for _, row in fp.iterrows():
 - Worker間の動的負荷分散は未実装
 - 同一ドメインの重複評価防止はresult CSVのdomain重複除去で対応
 
+## 13. データ混在防止機能 ✅ (実装完了: 2026-01-31)
+
+### 13.1 背景
+
+複数回の評価実行（中断・再開の繰り返し）により、Worker CSVに重複データが蓄積し、分析データが混在する問題が発生していた。
+
+### 13.2 解決策
+
+1. **評価ごとに一意のディレクトリ**
+   - 結果は `results/stage2_validation/eval_YYYYMMDD_HHMMSS/` に保存
+   - 既存データとの混在を防止
+
+2. **ロックファイルによる排他制御**
+   - 評価開始時に `.eval_lock` を作成
+   - 別の評価が開始されようとした場合は拒否
+   - 評価終了時にロックを解放
+
+### 13.3 ディレクトリ構成
+
+```
+results/stage2_validation/
+├── .eval_lock                    # 排他制御用ロックファイル
+├── eval_20260131_210056/         # 評価1
+│   ├── worker_0_results.csv
+│   ├── worker_1_results.csv
+│   ├── worker_2_results.csv
+│   ├── eval_df__nALL__ts_xxx.csv # マージ結果
+│   └── *.json                    # チェックポイント
+├── eval_20260131_220000/         # 評価2
+│   └── ...
+└── backup_YYYYMMDD_HHMMSS/       # バックアップ（手動）
+```
+
+### 13.4 ロックファイルの動作
+
+```python
+# 評価開始時
+if lock_file.exists():
+    print("❌ 別の評価が実行中です")
+    return False
+lock_file.write(f"eval_{eval_id}")
+
+# 評価終了時（正常/異常問わず）
+lock_file.unlink()
+```
+
+### 13.5 中断時の対処
+
+評価が異常終了した場合、ロックファイルが残存する可能性がある。
+その場合は手動で削除する:
+
+```bash
+rm artifacts/.../results/stage2_validation/.eval_lock
+```
+
 ---
 
 ## 変更履歴
@@ -427,3 +482,12 @@ for _, row in fp.iterrows():
 |      |            | - Config: evaluation, failover, logging セクション追加 |
 |      |            | - Checkpoint: current_processing, current_index, started_at, updated_at 追加 |
 |      |            | - GlobalState: updated_at 追加 |
+| v1.3 | 2026-01-31 | データ混在防止機能追加 |
+|      |            | - 評価ごとに一意のディレクトリ (`eval_YYYYMMDD_HHMMSS/`) |
+|      |            | - ロックファイルによる排他制御 (`.eval_lock`) |
+|      |            | - `run_eval_3gpu.sh` に自動リトライ (Step 5) 追加 |
+| v1.4 | 2026-01-31 | 中断からの再開機能追加 (#11) |
+|      |            | - `run_eval_3gpu.sh` に `--resume` オプション追加 |
+|      |            | - チェックポイント検出時の自動プロンプト |
+|      |            | - `orchestrator.setup(resume)` で既存ディレクトリ再利用 |
+|      |            | - `_find_latest_checkpoint_dir()` メソッド追加 |

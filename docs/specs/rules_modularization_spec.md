@@ -12,7 +12,7 @@
 4. **有効/無効制御**: コードまたは設定による動的なルール制御
 5. **再利用性**: ルールの組み合わせや優先度の柔軟な変更
 
-### 実装状況 (2026-01-28)
+### 実装状況 (2026-01-31 更新)
 
 | カテゴリ | 状態 | ルール数 |
 |---------|------|---------|
@@ -20,15 +20,50 @@
 | ML Paradox | 完了 (既存) | 2 |
 | TLD Combo | 完了 (既存) | 4 |
 | Low Signal (old) | 完了 (既存) | 2 |
-| ML Guard | **完了** | 4 |
+| ML Guard | **完了** | 5 |
 | Cert Gate (B1-B4) | **完了** | 4 |
 | Low Signal Gate (P1-P4) | **完了** | 4 |
 | Policy (R1-R6) | **完了** | 6 |
+| CTX Trigger | **完了** | 2 |
+| Gov/Edu Gate | **完了** | 1 |
+| Brand Cert | **完了** | 2 |
+| Post Gates | **完了** | 3 |
 | EngineResult Phase6拡張 | **完了** | - |
 | RuleEngine 統合API | **完了** | - |
 | MetricsCollector 統合 | **完了** | - |
+| **本体統合 (llm_final_decision.py)** | **✅ 完了** | - |
 
-**合計: 26ルール実装済み**
+**合計: 35ルール実装済み、本体統合完了**
+
+### Phase 3 ログ記録修正 (2026-01-31)
+
+**問題**: 評価結果で `phase6_rules_fired` が空になり、ルール発火ログが記録されなかった
+
+**原因**: LangGraph の `AgentState` TypedDict に `phase6_rules_fired` 等のフィールドが未定義
+
+**修正**:
+1. `AgentState` に新フィールド追加 (`agent_foundations.py`)
+   - `phase6_policy_version: Optional[str]`
+   - `phase6_rules_fired: Optional[List[str]]`
+   - `phase6_gate: Optional[Dict[str, Any]]`
+   - `decision_trace: Optional[List[Dict[str, Any]]]`
+
+2. 関数呼び出しに `domain` パラメータ追加 (`llm_final_decision.py`)
+   - `_apply_policy_adjustments()`
+   - `_apply_benign_cert_gate()`
+   - `_apply_low_signal_phishing_gate()`
+
+**結果**: 100件評価で23件のルール発火を正常記録、`phase6_policy_version = v1.7.0-rule-modules`
+
+### 例外的な実装箇所 (2026-01-31)
+
+以下のルールは、設計上ルールモジュールに実装すべきだが、例外的に別の場所に実装されている。
+
+| ルール | 実装場所 | 理由 |
+|--------|---------|------|
+| #17 critical_brand_minimum ML閾値 | `contextual_risk_assessment.py` | ルールモジュールで一律benign強制すると、paypal-home.com等の実フィッシングがFNになるため。contextual側でブーストをスキップすることで、他要因（multiple_brands_detected等）による高ctxは維持される。 |
+
+**詳細**: `docs/research/20260131.md` Section 17 参照
 
 ### Phase 1-2 統合 (2026-01-28)
 
@@ -49,9 +84,11 @@
 ```
 phishing_agent/rules/
 ├── __init__.py           # 公開API (RuleEngine, create_all_rules, create_default_engine等)
-├── engine.py             # RuleEngine (ルール実行エンジン)
+├── engine.py             # RuleEngine (ルール実行エンジン、フェーズ実行対応)
 ├── metrics.py            # MetricsCollector (効果測定)
-├── integration.py        # 統合ヘルパー (build_rule_context, evaluate_rules等) [2026-01-28追加]
+├── integration.py        # 統合ヘルパー (build_rule_context, evaluate_rules等)
+├── context_builder.py    # RuleContextBuilder [2026-01-31追加]
+├── result_applier.py     # ResultApplier (EngineResult → PhishingAssessment) [2026-01-31追加]
 ├── config/
 │   ├── __init__.py
 │   ├── settings.py       # RulesConfig, RuleSettings
@@ -67,10 +104,14 @@ phishing_agent/rules/
     ├── ml_paradox.py     # MLParadoxStrongRule, MLParadoxWeakRule (2個)
     ├── tld_combo.py      # 危険TLD組み合わせルール (4個)
     ├── low_signal.py     # 低シグナルフィッシングルール - 旧版 (2個)
-    ├── ml_guard.py       # MLガードルール (4個) [2026-01-27追加]
+    ├── ml_guard.py       # MLガードルール (5個) [2026-01-27追加, 01-31拡張]
     ├── cert_gate.py      # 証明書ゲートルール B1-B4 (4個) [2026-01-27追加]
     ├── low_signal_gate.py # 低シグナルゲートルール P1-P4 (4個) [2026-01-27追加]
-    └── policy.py         # ポリシールール R1-R6 (6個) [2026-01-27追加]
+    ├── policy.py         # ポリシールール R1-R6 (6個) [2026-01-27追加]
+    ├── ctx_trigger.py    # CTXトリガールール (2個) [2026-01-31追加]
+    ├── gov_edu_gate.py   # Gov/Eduゲートルール (1個) [2026-01-31追加]
+    ├── brand_cert.py     # ブランド証明書ルール (2個) [2026-01-31追加]
+    └── post_gates.py     # ポストゲートルール (3個) [2026-01-31追加]
 ```
 
 ---
@@ -291,29 +332,30 @@ result = engine.evaluate(ctx)
 
 ---
 
-## 今後の作業
+## 統合状況
 
-### Phase 1: 本体統合 (未着手)
+### Phase 1: 本体統合 ✅ 完了 (2026-01-31)
 
-`llm_final_decision.py` の `_apply_policy_adjustments()` から `RuleEngine` を呼び出す。
+`llm_final_decision.py` の `_apply_policy_adjustments()` から `RuleEngine` を呼び出す統合が完了。
 
+**使用方法:**
 ```python
-# 将来の統合イメージ
-from phishing_agent.rules import RuleEngine
-from phishing_agent.rules.detectors import create_all_phase6_rules
+# llm_final_decision.py で USE_RULE_MODULES = True に設定
+USE_RULE_MODULES = True  # モジュール版を使用
 
-engine = RuleEngine()
-engine.register_all(create_all_phase6_rules())
+# _apply_policy_adjustments() 内で自動的にモジュール版が呼び出される
+# 内部では以下が実行される:
+from phishing_agent.rules import RuleContextBuilder, create_phase6_engine, ResultApplier
 
-# _apply_policy_adjustments 内で
-ctx = RuleContext(
-    domain=domain,
-    ml_probability=ml,
-    ctx_score=ctx_score,
-    # ...
-)
-results = engine.evaluate(ctx)
+ctx = RuleContextBuilder.build(domain, ml_probability, tool_summary, precheck, llm_assessment)
+engine = create_phase6_engine()
+result = engine.evaluate_phased(ctx)
+final = ResultApplier.apply(llm_assessment, result, trace)
 ```
+
+**動作検証:**
+- インライン版とモジュール版で 100% 同一結果を達成
+- 145 テストケースで全て一致確認済み
 
 ### Phase 2: 効果測定
 
@@ -326,6 +368,12 @@ results = engine.evaluate(ctx)
 - 2026-01-27: 初版作成
 - 2026-01-27: ログ出力仕様を追加
 - 2026-01-27: 実装完了 - ML Guard, Cert Gate, Low Signal Gate, Policy ルール (18個追加)
+- 2026-01-31: 本体統合完了
+  - RuleContextBuilder, ResultApplier 追加
+  - ctx_trigger, gov_edu_gate, brand_cert, post_gates ルール追加
+  - フェーズ実行対応 (evaluate_phased)
+  - USE_RULE_MODULES フラグによる切り替え実装
+  - インライン版と100%動作一致達成
 
 ---
 
@@ -455,7 +503,7 @@ print(f"Reasoning: {result.reasoning}")
    python scripts/evaluate_e2e.py --n-sample 100 --random-state 42
    ```
 
-4. **本体との整合性**: 現在、ルールモジュールは本体 (`llm_final_decision.py`) とは独立しています。本体にも同様のロジックが実装されているため、モジュール側の変更は本体には影響しません。
+4. **本体との統合状況**: ルールモジュールは本体 (`llm_final_decision.py`) と統合済みです。`USE_RULE_MODULES = True` でモジュール版が使用されます。インライン版のコードは後方互換性のため残存しており、`USE_RULE_MODULES = False` で使用可能です。
 
 ## 関連ドキュメント
 

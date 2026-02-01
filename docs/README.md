@@ -72,6 +72,7 @@ docs/
 
 | ファイル | 内容 |
 |---------|------|
+| `data_pipeline_guide.md` | **データパイプラインガイド (NEW)** |
 | `program_inventory.md` | プログラム一覧 |
 | `stage3_evaluation_guide.md` | 評価ガイド |
 | `access_patterns.md` | アクセスパターン |
@@ -129,6 +130,14 @@ docs/
 **`docs/specs/parallel_evaluation_spec.md`**
 
 - 3GPU並列評価システムの仕様
+
+### データパイプラインガイド (NEW)
+
+**`docs/reference/data_pipeline_guide.md`**
+
+- Notebook（01〜05）の実行順序とデータフロー
+- artifacts ディレクトリ構造
+- 主要CSVカラムの説明
 
 ---
 

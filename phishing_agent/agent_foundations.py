@@ -485,6 +485,12 @@ class AgentState(TypedDict, total=False):
     # Phase6 LLM final decision debug info
     debug_llm_final: Dict[str, Any]
 
+    # Phase6 policy rules tracking (2026-01-31)
+    phase6_policy_version: Optional[str]
+    phase6_rules_fired: Optional[List[str]]
+    phase6_gate: Optional[Dict[str, Any]]
+    decision_trace: Optional[List[Dict[str, Any]]]
+
 # ==============================
 # カスタム例外
 # ==============================

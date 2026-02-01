@@ -223,12 +223,16 @@ class HighMLOverrideRule(DetectionRule):
         )
 
     def _has_dangerous_tld(self, ctx: RuleContext) -> bool:
-        """危険TLDかどうか判定"""
-        tld = ctx.tld.lower().strip(".")
+        """危険TLDシグナルがあるかどうか判定.
+
+        注意: TLDメンバーシップではなく、実際に検出されたdangerous_tldシグナルのみ確認。
+        これはinline版のhas_dangerous_tld_signalと同じ動作。
+
+        変更履歴:
+            - 2026-01-31: TLDメンバーシップ判定を削除（inline版と整合性確保）
+        """
         return (
-            tld in HIGH_DANGER_TLDS
-            or tld in MEDIUM_DANGER_TLDS
-            or "dangerous_tld" in ctx.issue_set
+            "dangerous_tld" in ctx.issue_set
             or "dangerous_tld" in ctx.ctx_issues
         )
 
@@ -316,12 +320,16 @@ class UltraLowMLBlockRule(DetectionRule):
         )
 
     def _has_dangerous_tld(self, ctx: RuleContext) -> bool:
-        """危険TLDかどうか判定"""
-        tld = ctx.tld.lower().strip(".")
+        """危険TLDシグナルがあるかどうか判定.
+
+        注意: TLDメンバーシップではなく、実際に検出されたdangerous_tldシグナルのみ確認。
+        これはinline版のhas_dangerous_tld_signalと同じ動作。
+
+        変更履歴:
+            - 2026-01-31: TLDメンバーシップ判定を削除（inline版と整合性確保）
+        """
         return (
-            tld in HIGH_DANGER_TLDS
-            or tld in MEDIUM_DANGER_TLDS
-            or "dangerous_tld" in ctx.issue_set
+            "dangerous_tld" in ctx.issue_set
             or "dangerous_tld" in ctx.ctx_issues
         )
 
@@ -485,6 +493,117 @@ class PostLLMFlipGateRule(DetectionRule):
         )
 
 
+class HighMLCtxRescueRule(DetectionRule):
+    """High ML + Ctx Rescue Rule (#16).
+
+    ML >= 0.35 かつ Ctx >= 0.40 で benign 判定されている場合、
+    phishing にオーバーライドして FN を救済する。
+
+    分析結果 (2026-01-31):
+    - 対象: ML高スコアなのにCtxが0.40-0.50で見逃されているFN
+    - FN救済: 66件, FP増加: 7件 (Precision 90.4%)
+    - F1 +1.69pp の改善効果
+
+    除外条件:
+    - allowlist に含まれるドメイン
+    - 信頼TLD (.org, .edu, .gov, .mil, .int)
+    - 政府/教育ドメイン
+
+    変更履歴:
+        - 2026-01-31: #16 FN救済ルールとして新規作成
+    """
+
+    def __init__(
+        self,
+        enabled: bool = True,
+        ml_threshold: float = 0.35,
+        ctx_threshold: float = 0.40,
+        ctx_upper: float = 0.50,
+        confidence_floor: float = 0.70,
+    ):
+        super().__init__(enabled=enabled)
+        self._ml_threshold = ml_threshold
+        self._ctx_threshold = ctx_threshold
+        self._ctx_upper = ctx_upper
+        self._confidence_floor = confidence_floor
+
+    @property
+    def name(self) -> str:
+        return "high_ml_ctx_rescue"
+
+    @property
+    def description(self) -> str:
+        return (
+            f"Rescue FN when ML >= {self._ml_threshold} and "
+            f"Ctx in [{self._ctx_threshold}, {self._ctx_upper})"
+        )
+
+    def _evaluate(self, ctx: RuleContext) -> RuleResult:
+        # 条件チェック: 現在 benign 判定
+        if ctx.llm_is_phishing:
+            return RuleResult.not_triggered(self.name)
+
+        # ML閾値チェック
+        if ctx.ml_probability < self._ml_threshold:
+            return RuleResult.not_triggered(self.name)
+
+        # Ctx スコアチェック: 中程度の範囲 [threshold, upper)
+        if ctx.ctx_score < self._ctx_threshold:
+            return RuleResult.not_triggered(self.name)
+
+        if ctx.ctx_score >= self._ctx_upper:
+            # Ctx >= 0.50 は既に phishing 判定されているはず
+            return RuleResult.not_triggered(self.name)
+
+        # 除外条件チェック
+        if ctx.is_known_legitimate:
+            return RuleResult.not_triggered(self.name)
+
+        tld = ctx.tld.lower().strip(".")
+        if tld in TRUSTED_TLDS or any(tld.endswith(f".{t}") for t in TRUSTED_TLDS):
+            return RuleResult.not_triggered(self.name)
+
+        if self._is_gov_edu_tld(ctx):
+            return RuleResult.not_triggered(self.name)
+
+        # 救済発動
+        return RuleResult(
+            triggered=True,
+            rule_name=self.name,
+            issue_tag="high_ml_ctx_rescue",
+            force_phishing=True,
+            confidence_floor=self._confidence_floor,
+            risk_level_bump="high",
+            reasoning=(
+                f"High ML + Ctx rescue: ML={ctx.ml_probability:.3f} >= {self._ml_threshold}, "
+                f"Ctx={ctx.ctx_score:.3f} in [{self._ctx_threshold}, {self._ctx_upper})"
+            ),
+            details={
+                "ml_probability": ctx.ml_probability,
+                "ml_threshold": self._ml_threshold,
+                "ctx_score": ctx.ctx_score,
+                "ctx_threshold": self._ctx_threshold,
+                "ctx_upper": self._ctx_upper,
+            },
+        )
+
+    def _is_gov_edu_tld(self, ctx: RuleContext) -> bool:
+        """政府/教育ドメインかどうか判定"""
+        tld = ctx.tld.lower().strip(".")
+        reg_domain = ctx.registered_domain.lower()
+
+        return (
+            tld.startswith("gov.") or tld == "gov"
+            or tld.startswith("go.") or tld.startswith("gob.")
+            or tld.startswith("gouv.") or ".gov." in tld
+            or tld.endswith(".gov")
+            or tld == "mil" or tld.startswith("mil.")
+            or tld == "edu" or tld.startswith("edu.")
+            or tld.startswith("ac.")
+            or reg_domain.startswith("gov.") or reg_domain == "gov"
+        )
+
+
 def create_ml_guard_rules(enabled: bool = True) -> list:
     """Create all ML guard rules.
 
@@ -497,6 +616,7 @@ def create_ml_guard_rules(enabled: bool = True) -> list:
     return [
         VeryHighMLOverrideRule(enabled=enabled),
         HighMLOverrideRule(enabled=enabled),
+        HighMLCtxRescueRule(enabled=enabled),  # #16 FN救済ルール (2026-01-31追加)
         UltraLowMLBlockRule(enabled=enabled),
         PostLLMFlipGateRule(enabled=enabled),
     ]

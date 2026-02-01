@@ -370,8 +370,8 @@ def main():
         cert_features_file=cert_features_file
     ) as orchestrator:
 
-        # セットアップ
-        if not orchestrator.setup():
+        # セットアップ（resume対応）
+        if not orchestrator.setup(resume=args.resume):
             print("\nSetup failed. Exiting.")
             sys.exit(1)
 

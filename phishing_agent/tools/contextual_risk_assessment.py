@@ -36,6 +36,10 @@ from __future__ import annotations
 #              - 試行: non-dangerous TLD では ml_paradox を発火させない
 #              - 結果: 効果限定的（共通ドメインでFP -1件のみ）、F1改善なし
 #              - 詳細: docs/analysis/02_improvement_analysis.md #14
+# - 2026-01-31: critical_brand_minimum に ML閾値条件を追加 (#17)
+#              - 問題: fuzzy/substring matchで低ML(<0.15)の場合、84.6%がFP
+#              - 対策: ML < 0.15 の場合は critical_brand_minimum を適用しない
+#              - 効果測定: issues に "critical_brand_minimum_blocked" を追加
 # ---------------------------------------------------------------------
 from typing import Any, Dict, List, Optional
 
@@ -687,19 +691,39 @@ def contextual_risk_assessment(
     brand_details_ctx = brand_data.get("details", {}) or {}
     has_critical_brand = brand_details_ctx.get("has_critical_brand", False)
 
+    # 変更履歴:
+    #   - 2026-01-31: ML < 0.15 の場合は critical_brand_minimum を適用しない (#17)
+    #                 FP分析より、fuzzy/substring matchで低MLの場合84.6%がFP
+    #
+    # 設計上の注意 (#17):
+    #   本来、判定条件の調整は phishing_agent/rules/detectors/ のルールモジュールに
+    #   実装すべきだが、以下の理由により例外的にcontextual側に実装している:
+    #
+    #   - ML < 0.15 でも他要因でctx > 0.50になるケースが約10%存在する (3000件中3件)
+    #     例: vpn-android.com (ctx=0.69, FP), xcloud.host (ctx=0.72, FP),
+    #         paypal-home.com (ctx=0.60, TP)
+    #   - これらはmultiple_brands_detected等の他ルールでctxが上昇したケース
+    #   - ルールモジュールで一律benign強制すると paypal-home.com がFNになる
+    #   - 本実装（contextual側でブーストをスキップ）なら他要因による高ctxは維持され、
+    #     paypal-home.com は正しくphishing判定される
     if has_critical_brand and "brand_detected" in issue_set:
         if is_dangerous_tld:
-            # 危険TLD + critical_brand → 高リスク確定
+            # 危険TLD + critical_brand → 高リスク確定 (ML閾値なし)
             score = max(score, 0.55)
             if "critical_brand_dangerous_tld" not in issues:
                 issues.append("critical_brand_dangerous_tld")
             score_components["critical_brand_enforcement"] = "dangerous_tld"
-        else:
-            # critical_brand のみ → 中〜高リスク
+        elif p >= 0.15:
+            # critical_brand のみ → 中〜高リスク (ML >= 0.15 の場合のみ)
             score = max(score, 0.50)
             if "critical_brand_minimum" not in issues:
                 issues.append("critical_brand_minimum")
             score_components["critical_brand_enforcement"] = "standard"
+        else:
+            # ML < 0.15 → critical_brand_minimum をスキップ (FP削減)
+            score_components["critical_brand_enforcement"] = "blocked_low_ml"
+            if "critical_brand_minimum_blocked" not in issues:
+                issues.append("critical_brand_minimum_blocked")
 
     # 4-3b4. Multiple Brand Keywords Boost (2026-01-25)
     # FN分析より、複数ブランドキーワードが検出されても単一ブランドと同じ扱いだった。

@@ -3,6 +3,10 @@
 phishing_agent.rules.detectors
 ------------------------------
 Detection rule implementations.
+
+変更履歴:
+    - 2026-01-27: Phase6 ルール追加
+    - 2026-01-31: ctx_trigger, gov_edu_gate, brand_cert, post_gates 追加
 """
 
 from .base import DetectionRule, RuleContext, RuleResult
@@ -30,10 +34,11 @@ from .low_signal import (
     create_low_signal_rules,
 )
 
-# ML guard rules (2026-01-27追加)
+# ML guard rules (2026-01-27追加, 2026-01-31 HighMLCtxRescueRule追加)
 from .ml_guard import (
     VeryHighMLOverrideRule,
     HighMLOverrideRule,
+    HighMLCtxRescueRule,
     UltraLowMLBlockRule,
     PostLLMFlipGateRule,
     create_ml_guard_rules,
@@ -68,6 +73,34 @@ from .policy import (
     create_policy_rules,
 )
 
+# Contextual trigger rules (2026-01-31追加)
+from .ctx_trigger import (
+    HardCtxTriggerRule,
+    SoftCtxTriggerRule,
+    create_ctx_trigger_rules,
+)
+
+# Government/Education gate rules (2026-01-31追加)
+from .gov_edu_gate import (
+    GovEduBenignGateRule,
+    create_gov_edu_gate_rules,
+)
+
+# Brand + Certificate rules (2026-01-31追加)
+from .brand_cert import (
+    BrandCertHighRule,
+    BenignCertGateSkipRule,
+    create_brand_cert_rules,
+)
+
+# Post-processing gate rules (2026-01-31追加)
+from .post_gates import (
+    PostRandomPatternOnlyGateRule,
+    MlNoMitigationGateRule,
+    LowToMinMediumRule,
+    create_post_gate_rules,
+)
+
 __all__ = [
     # Base classes
     'DetectionRule',
@@ -87,9 +120,10 @@ __all__ = [
     'LowSignalPhishingRule',
     'DVSuspiciousComboRule',
     'create_low_signal_rules',
-    # ML Guard (2026-01-27追加)
+    # ML Guard (2026-01-27追加, 2026-01-31 HighMLCtxRescueRule追加)
     'VeryHighMLOverrideRule',
     'HighMLOverrideRule',
+    'HighMLCtxRescueRule',
     'UltraLowMLBlockRule',
     'PostLLMFlipGateRule',
     'create_ml_guard_rules',
@@ -113,4 +147,20 @@ __all__ = [
     'PolicyR5Rule',
     'PolicyR6Rule',
     'create_policy_rules',
+    # Contextual Trigger (2026-01-31追加)
+    'HardCtxTriggerRule',
+    'SoftCtxTriggerRule',
+    'create_ctx_trigger_rules',
+    # Government/Education Gate (2026-01-31追加)
+    'GovEduBenignGateRule',
+    'create_gov_edu_gate_rules',
+    # Brand + Certificate (2026-01-31追加)
+    'BrandCertHighRule',
+    'BenignCertGateSkipRule',
+    'create_brand_cert_rules',
+    # Post Gates (2026-01-31追加)
+    'PostRandomPatternOnlyGateRule',
+    'MlNoMitigationGateRule',
+    'LowToMinMediumRule',
+    'create_post_gate_rules',
 ]

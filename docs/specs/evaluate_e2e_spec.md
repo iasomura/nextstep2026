@@ -1,7 +1,10 @@
 # E2E評価スクリプト仕様書
 
-**更新日**: 2026-01-24
+**更新日**: 2026-01-31
 **対象**: `scripts/evaluate_e2e.py`
+
+> **Note**: 大規模評価には並列版 `evaluate_e2e_parallel.py` を推奨。
+> 詳細は `parallel_evaluation_spec.md` を参照。
 
 ---
 

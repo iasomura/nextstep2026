@@ -4,6 +4,10 @@
 並列評価の全体制御を行う
 
 変更履歴:
+    - 2026-01-31: 中断からの再開機能追加 (#11)
+                  - setup()にresume引数追加
+                  - _find_latest_checkpoint_dir()追加
+    - 2026-01-31: 評価ごとに一意ディレクトリ + ロックファイルで排他制御
     - 2026-01-26: 証明書データ統合 - cert_features_fileをworkerに渡すように変更
 """
 
@@ -78,10 +82,16 @@ class ParallelOrchestrator:
         print(f"[Orchestrator] Active workers: {[w.id for w in self.active_workers]}")
 
         # ディレクトリ設定
-        self.results_dir = self.artifacts_dir / "results" / "stage2_validation"
+        self.results_base_dir = self.artifacts_dir / "results" / "stage2_validation"
         self.logs_dir = self.artifacts_dir / "logs" / "parallel"
-        self.results_dir.mkdir(parents=True, exist_ok=True)
         self.logs_dir.mkdir(parents=True, exist_ok=True)
+
+        # 評価IDとディレクトリは run() で設定（resume対応のため）
+        self.eval_id: Optional[str] = None
+        self.results_dir: Optional[Path] = None
+
+        # ロックファイル
+        self.lock_file = self.results_base_dir / ".eval_lock"
 
         # コンポーネント
         self.vllm_cluster: Optional[VLLMCluster] = None
@@ -160,20 +170,102 @@ class ParallelOrchestrator:
 
         return results
 
-    def setup(self) -> bool:
+    def _acquire_lock(self) -> bool:
+        """ロックファイルを取得"""
+        if self.lock_file.exists():
+            with open(self.lock_file, 'r') as f:
+                existing_eval = f.read().strip()
+            print(f"\n❌ 別の評価が実行中です: {existing_eval}")
+            print(f"   ロックファイル: {self.lock_file}")
+            print("   前の評価が中断された場合は、ロックファイルを手動で削除してください。")
+            return False
+
+        # ロック取得
+        self.lock_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.lock_file, 'w') as f:
+            f.write(f"eval_{self.eval_id}")
+        print(f"   ✓ ロック取得: eval_{self.eval_id}")
+        return True
+
+    def _release_lock(self):
+        """ロックファイルを解放"""
+        if self.lock_file.exists():
+            self.lock_file.unlink()
+            print("   ✓ ロック解放")
+
+    def _find_latest_checkpoint_dir(self) -> Optional[Path]:
+        """
+        最新のチェックポイントディレクトリを検索
+
+        Returns:
+            チェックポイントがあるディレクトリ、なければNone
+
+        変更履歴:
+            - 2026-01-31: #11 中断からの再開機能のため追加
+        """
+        if not self.results_base_dir.exists():
+            return None
+
+        # eval_* ディレクトリを新しい順にソート
+        eval_dirs = sorted(
+            self.results_base_dir.glob("eval_*"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True
+        )
+
+        for eval_dir in eval_dirs:
+            # チェックポイントファイルがあるか確認
+            checkpoint_files = list(eval_dir.glob("worker_*_checkpoint.json"))
+            if checkpoint_files:
+                # parallel_state.json も確認
+                if (eval_dir / "parallel_state.json").exists():
+                    return eval_dir
+
+        return None
+
+    def setup(self, resume: bool = False) -> bool:
         """
         セットアップ
 
+        Args:
+            resume: 前回から再開するか
+
         Returns:
             成功したか
+
+        変更履歴:
+            - 2026-01-31: resume パラメータ追加 (#11)
         """
         print("\n" + "=" * 70)
         print("Setting up Parallel Evaluation")
         print("=" * 70)
 
-        # 1. GPU確認
+        # 0. 評価ディレクトリ設定（resume対応）
+        print("\n[Step 0] Setting up evaluation directory...")
+        if resume:
+            checkpoint_dir = self._find_latest_checkpoint_dir()
+            if checkpoint_dir:
+                self.results_dir = checkpoint_dir
+                self.eval_id = checkpoint_dir.name.replace("eval_", "")
+                print(f"   ✓ Resuming from: {checkpoint_dir.name}")
+            else:
+                print("   ⚠ No checkpoint found, starting fresh")
+                resume = False  # 新規評価として扱う
+
+        if not resume:
+            self.eval_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+            self.results_dir = self.results_base_dir / f"eval_{self.eval_id}"
+            self.results_dir.mkdir(parents=True, exist_ok=True)
+            print(f"   ✓ New evaluation: eval_{self.eval_id}")
+
+        # 1. ロック取得（排他制御）
+        print("\n[Step 1] Acquiring evaluation lock...")
+        if not self._acquire_lock():
+            return False
+
+        # 2. GPU確認
         if self.config.shared_server.check_gpu_usage_before_start:
-            print("\n[Step 1] Checking GPU availability...")
+            print("\n[Step 2] Checking GPU availability...")
             gpu_status = self.check_gpus()
 
             unavailable = [wid for wid, status in gpu_status.items() if not status["available"]]
@@ -190,8 +282,8 @@ class ParallelOrchestrator:
                 else:
                     print("   (--yes specified, continuing...)")
 
-        # 2. vLLMクラスター初期化
-        print("\n[Step 2] Initializing vLLM cluster...")
+        # 3. vLLMクラスター初期化
+        print("\n[Step 3] Initializing vLLM cluster...")
         self.vllm_cluster = VLLMCluster()
 
         vllm_managers: Dict[int, BaseVLLMManager] = {}
@@ -215,8 +307,8 @@ class ParallelOrchestrator:
 
         print("   ✓ vLLM cluster ready")
 
-        # 3. ヘルスモニター初期化
-        print("\n[Step 3] Starting health monitor...")
+        # 4. ヘルスモニター初期化
+        print("\n[Step 4] Starting health monitor...")
         self.health_monitor = HealthMonitor(
             check_interval=self.config.health_check.interval,
             timeout=self.config.health_check.timeout,
@@ -229,9 +321,9 @@ class ParallelOrchestrator:
         self.health_monitor.start()
         print("   ✓ Health monitor started")
 
-        # 4. リカバリーマネージャー初期化
+        # 5. リカバリーマネージャー初期化
         if self.config.failover.enabled:
-            print("\n[Step 4] Initializing recovery manager...")
+            print("\n[Step 5] Initializing recovery manager...")
             self.recovery_manager = RecoveryManager(
                 self.health_monitor,
                 vllm_managers,
@@ -240,8 +332,8 @@ class ParallelOrchestrator:
             )
             print("   ✓ Recovery manager ready")
 
-        # 5. チェックポイント初期化
-        print("\n[Step 5] Initializing checkpoint manager...")
+        # 6. チェックポイント初期化
+        print("\n[Step 6] Initializing checkpoint manager...")
         self.checkpoint_manager = CheckpointManager(self.results_dir, self.run_id)
         print("   ✓ Checkpoint manager ready")
 
@@ -608,6 +700,9 @@ class ParallelOrchestrator:
             for msg in messages:
                 print(f"   {msg}")
             print("   ✓ vLLM cluster stopped")
+
+        # ロック解放
+        self._release_lock()
 
         print("\n[Orchestrator] Cleanup complete")
 
