@@ -1,16 +1,18 @@
 # docs/ ディレクトリ構成
 
-更新日: 2026-01-30
+更新日: 2026-02-01
 
 ## フォルダ構成
 
 ```
 docs/
 ├── specs/          仕様書 (15ファイル)
-├── analysis/       分析レポート (5ファイル)
+├── analysis/       分析レポート (6ファイル)
 ├── sakusen/        計画・戦略 (8ファイル)
 ├── reference/      リファレンス (5ファイル)
-├── research/       リサーチ・日次記録 (20ファイル)
+├── research/       リサーチ・日次記録 (21ファイル)
+├── reports/        進捗報告書
+├── mtg/            打ち合わせ記録
 └── chatgpt/        ChatGPT関連メモ (3ファイル)
 ```
 
@@ -47,6 +49,7 @@ docs/
 | `03_certificate_analysis.md` | 証明書特徴量分析 |
 | `04_stage3_certificate_analysis.md` | Stage3証明書分析レポート |
 | `05_feature_candidates.md` | 特徴量候補メモ |
+| `fnfp_analysis_20260201.md` | **全件評価FN/FP詳細分析 (NEW)** |
 
 ---
 
@@ -86,7 +89,15 @@ docs/
 | `dataset_overview.md` | データセット概要 |
 | `related_work.md` | 関連研究 |
 | `stage3_knowledge_expansion_rationale.md` | 知識拡張根拠 |
-| `20260110.md` ... `20260126.md` | 日次リサーチノート |
+| `20260110.md` ... `20260201.md` | 日次リサーチノート |
+
+---
+
+## reports/ - 進捗報告書
+
+| ファイル | 内容 |
+|---------|------|
+| `202602_progress_report_draft.md` | **2026年2月 進捗報告書** |
 
 ---
 

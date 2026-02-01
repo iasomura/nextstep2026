@@ -1202,9 +1202,31 @@ if has_typical_phishing_cert_pattern:
 
 | # | 項目 | 期待効果 | 優先度 | 状態 |
 |---|------|---------|--------|------|
-| 16 | **ML >= 0.5 FN救済** (Ctx閾値緩和) | FN -60件 (7.5%) | **高** | 新規 |
-| 3 | ml_paradox 条件厳格化 | FP -320件 (50.2%) | **高** | 未実施 |
-| 17 | critical_brand_minimum 調整 | FP -171件 (26.8%) | 中 | 新規 |
+| **18** | **fuzzy/fuzzy2 ブランドマッチ閾値調整** | **FP -107, F1 +0.55pp** | **高** | **新規 (2026-02-01)** |
+| 16 | ML >= 0.5 FN救済 (Ctx閾値緩和) | FN -60件 (7.5%) | 中 | 新規 |
+| 3 | ml_paradox 条件厳格化 | FP -320件 (50.2%) | 中 | 未実施 |
+| 17 | critical_brand_minimum ML閾値 | FP -22件 | 低 | **✅ 完了** |
+
+#### #18 詳細（2026-02-01 追加）
+
+**背景**: 全件評価（15,630件）のTP/FP分析より、ブランドマッチタイプ別に精度差を発見。
+
+| Type | TP | FP | TP/FP比 |
+|------|-----|-----|---------|
+| substring | 90 | 50 | 1.80 |
+| compound | 68 | 60 | 1.13 |
+| **fuzzy** | 72 | 107 | **0.67** |
+| **fuzzy2** | 42 | 92 | **0.46** |
+
+**推奨アクション**:
+- fuzzy/fuzzy2 マッチの閾値を厳格化、または無効化
+- 72件のTPのうち37件は他ルール（ml_no_mitigation_gate等）で救済可能
+- 純TP損失: 35件、純FP削減: 107件
+
+**期待効果**:
+- Precision: 72.81% → 75.78% (+2.97pp)
+- Recall: 65.33% → 64.05% (-1.28pp)
+- **F1: 68.87% → 69.42% (+0.55pp)**
 
 #### 廃止・保留
 
@@ -1474,58 +1496,74 @@ Step 3: #17 再分析・実装（#3評価後に改めて分析）
 
 ---
 
-### Step 2: #16 ML >= 0.5 FN救済（詳細分析済み）
+### Step 2: #16 ML高スコアFN救済 ✅ 実装完了 (2026-01-31)
 
-**問題**: ML >= 0.5 なのに Ctx が低くて見逃されるFN
+**問題**: ML確率が高いのに Ctx が中程度で見逃されるFN
 
-**分析結果**:
-- FN (ML >= 0.5): 90件 (FN全体の10.6%)
-- Ctx分布: 0.3-0.4 に集中 (43.3%)
+**再分析結果** (3000件評価データ):
+- FN (ML >= 0.35): 105件
+- 最適閾値: ML >= 0.35, Ctx >= 0.40 (Precision 90.4%)
 
-**閾値シミュレーション**:
+**閾値シミュレーション** (更新版):
 
-| 設定 | FN救済 | FP増加 | Net | F1変化 |
-|------|--------|--------|-----|--------|
-| ML >= 0.5, Ctx >= 0.30 | +45 | +36 | +9 | **+0.74pp** |
-| ML >= 0.5, Ctx >= 0.35 | +17 | +15 | +2 | +0.26pp |
-| ML >= 0.7, Ctx >= 0.35 | +10 | +6 | +4 | +0.19pp |
+| 設定 | FN救済 | FP増加 | Net | 救済Prec | F1変化 |
+|------|--------|--------|-----|----------|--------|
+| ML >= 0.35, Ctx >= 0.30 | +105 | +41 | +64 | 71.9% | +2.24pp |
+| **ML >= 0.35, Ctx >= 0.40** | **+66** | **+7** | **+59** | **90.4%** | **+1.69pp** |
+| ML >= 0.40, Ctx >= 0.40 | +45 | +4 | +41 | 91.8% | +1.17pp |
 
-**推奨**: `ML >= 0.5, Ctx >= 0.30` で F1 +0.74pp
+**採用**: `ML >= 0.35, Ctx >= 0.40` (B案) - 高精度でF1改善
 
-**実装案**:
+**実装**:
+- ファイル: `phishing_agent/rules/detectors/ml_guard.py`
+- ルール: `HighMLCtxRescueRule`
+- 除外条件: allowlist, 信頼TLD (.org, .edu, .gov等)
+
 ```python
-# ML高スコアでCtxが中程度なら救済
-if p >= 0.50 and score >= 0.30 and score < 0.50:
-    score = 0.50
-    issues.append("high_ml_rescue")
+class HighMLCtxRescueRule(DetectionRule):
+    def __init__(self, ml_threshold=0.35, ctx_threshold=0.40, ctx_upper=0.50):
+        ...
+
+    def _evaluate(self, ctx: RuleContext) -> RuleResult:
+        if ctx.llm_is_phishing:
+            return RuleResult.not_triggered(self.name)
+        if ctx.ml_probability < self._ml_threshold:
+            return RuleResult.not_triggered(self.name)
+        if ctx.ctx_score < self._ctx_threshold or ctx.ctx_score >= self._ctx_upper:
+            return RuleResult.not_triggered(self.name)
+        # 除外条件チェック後...
+        return RuleResult(triggered=True, force_phishing=True, ...)
 ```
+
+**次のアクション**: 3000件評価で効果確認
 
 ---
 
-### Step 3: #17 critical_brand_minimum 調整（#3評価後に再分析）
+### Step 3: #17 critical_brand_minimum 調整 ✅ 完了 (2026-01-31)
 
-**問題**: critical_brand_minimum の Precision が 38.0% と低い
+**問題**: critical_brand_minimum の Precision が 38.0% と低い（ML < 0.15 で 84.6% が FP）
 
-**分析結果**:
-- FP: 171件, TP: 105件
-- **FPの70.8% (121件) が ml_paradox と共起** → #3で一部解消の可能性
+**実装内容**:
+- ML < 0.15 の場合は `critical_brand_minimum` によるスコアブースト（→0.50）をスキップ
+- 効果測定用に `critical_brand_minimum_blocked` タグを追加
+- 実装場所: `contextual_risk_assessment.py`（例外的にルールモジュールではなくcontextual側に実装）
 
-**低Precisionブランド（FPの主因）**:
+**設計判断**: contextual vs rules module
 
-| ブランド | FP | TP | Precision |
-|---------|---:|---:|----------:|
-| sbinet (fuzzy2) | 8 | 0 | 0% |
-| citi (compound) | 8 | 0 | 0% |
-| visa (substring) | 4 | 0 | 0% |
-| danske (fuzzy2) | 4 | 0 | 0% |
-| eshop (compound) | 4 | 0 | 0% |
+| アプローチ | 実装場所 | 動作 |
+|-----------|---------|------|
+| A (採用) | contextual | ブーストをスキップ、他要因による高ctxは維持 |
+| B | rules module | 一律benign強制 |
 
-**実装案（2案）**:
+**エッジケース分析** (3000件中3件):
 
-**案A**: 低Precisionブランドを CRITICAL_BRAND_KEYWORDS から除外
-**案B**: ML < 0.1 かつ safe TLD の場合は critical_brand_minimum を適用しない
+| ドメイン | ctx | ML | 実際 | A | B |
+|----------|-----|-----|------|---|---|
+| vpn-android.com | 0.69 | 0.079 | benign | FP | 正 |
+| xcloud.host | 0.72 | 0.032 | benign | FP | 正 |
+| paypal-home.com | 0.60 | 0.106 | phishing | **正** | **FN** |
 
-**次のアクション**: #3 評価後に FP 内訳を再分析し、どの案が効果的か判断
+**結論**: Approach A を採用（paypal-home.com のTP維持を優先）
 
 ---
 
@@ -1534,6 +1572,7 @@ if p >= 0.50 and score >= 0.30 and score < 0.50:
 - ~~#9 typical_phishing_cert_pattern 完全無効化~~ ✅
 - ~~#10 fuzzy2 FP対策~~ ✅
 - ~~#11 compound/substring FP対策~~ ✅
+- ~~#17 critical_brand_minimum ML閾値~~ ✅ (2026-01-31)
 
 ### ロールバック済み
 - **#14 ml_paradox TLD修正** - 効果限定的（FP -1件のみ）のためロールバック
@@ -1683,8 +1722,100 @@ python scripts/analyze_brand_exclusion.py
 
 ---
 
+## 15. 全件評価（15,630件）詳細分析（2026-02-01）
+
+### 15.1 評価結果
+
+| 指標 | 値 |
+|------|-----|
+| **F1 Score** | **68.87%** |
+| Precision | 72.81% |
+| Recall | 65.33% |
+| TP | 1,781 |
+| FP | 665 |
+| FN | 945 |
+| TN | 12,239 |
+
+### 15.2 カテゴリ別特性
+
+| Category | Count | ML Mean | CTX Mean | 特徴 |
+|----------|-------|---------|----------|------|
+| **TP** | 1,781 | 0.719 | 0.512 | 高ML + 高CTX |
+| **FP** | 665 | 0.314 | 0.435 | 低ML + 中CTX |
+| **TN** | 12,239 | 0.085 | 0.131 | 低ML + 低CTX |
+| **FN** | 945 | 0.191 | 0.256 | 低ML + 低CTX |
+
+### 15.3 ルール別 TP/FP 比
+
+| Rule | TP | FP | TP/FP比 | 評価 |
+|------|-----|-----|---------|------|
+| very_high_ml_override | 804 | 37 | **21.7** | 優良 |
+| ml_no_mitigation_gate | 1,384 | 199 | **7.0** | 優良 |
+| soft_ctx_trigger | 292 | 106 | 2.8 | 良好 |
+| brand_cert_high | 228 | 218 | **1.0** | 要注意 |
+| policy_r4 | 304 | 432 | **0.7** | 問題 |
+
+### 15.4 ブランドマッチタイプ別分析
+
+| Type | TP | FP | TP/FP比 | 評価 |
+|------|-----|-----|---------|------|
+| substring | 90 | 50 | 1.80 | 許容 |
+| compound | 68 | 60 | 1.13 | 許容 |
+| **fuzzy** | 72 | 107 | **0.67** | 問題 |
+| **fuzzy2** | 42 | 92 | **0.46** | 問題 |
+
+**発見**: fuzzy/fuzzy2 は FP > TP であり、削減対象として適切
+
+### 15.5 POST_LLM_FLIP_GATE の役割
+
+| Category | GATE発火 | 割合 |
+|----------|---------|------|
+| TP | 0 | 0.0% |
+| FP | 0 | 0.0% |
+| **TN** | **1,003** | **8.2%** |
+| FN | 111 | 11.7% |
+
+**重要発見**: GATEはTN 1,003件を保護している。緩和すると大幅FP増加のリスク。
+
+### 15.6 トレードオフシミュレーション
+
+#### シナリオ1: fuzzy/fuzzy2 無効化（推奨）
+
+| 指標 | 現状 | 変更後 | 差分 |
+|------|------|--------|------|
+| TP | 1,781 | 1,746 | -35 |
+| FP | 665 | 558 | **-107** |
+| Precision | 72.81% | 75.78% | **+2.97pp** |
+| Recall | 65.33% | 64.05% | -1.28pp |
+| F1 | 68.87% | 69.42% | **+0.55pp** |
+
+#### シナリオ2: POST_LLM_FLIP_GATE 緩和（非推奨）
+
+| リスク | 値 |
+|--------|-----|
+| FN救済 | +111 |
+| FP増加 | **+1,003** |
+
+### 15.7 結論
+
+#### 許容すべき限界
+
+| 領域 | 件数 | 理由 |
+|------|------|------|
+| 極低シグナルFN | 361 (38%) | 外部脅威インテリジェンスなしでは検出不可能 |
+| GATE保護TN | 1,003 | 緩和するとFP急増 |
+
+#### チューニング可能な領域
+
+| 対策 | FP削減 | TP損失 | 純効果 |
+|------|--------|--------|--------|
+| fuzzy/fuzzy2 無効化 | -107 | -35 | **F1 +0.55pp** |
+
+---
+
 ## 変更履歴
 
+- 2026-02-01: **全件評価完了・FN/FP詳細分析** - 15,630件評価完了（F1 68.87%）、TP/TN/FP/FN全カテゴリの特性分析、ルール別TP/FP比分析、ブランドマッチタイプ別分析（fuzzy/fuzzy2問題発見）、POST_LLM_FLIP_GATE役割分析（TN 1,003件保護）、トレードオフシミュレーション（fuzzy/fuzzy2無効化でF1 +0.55pp）、Section 15追加
 - 2026-01-31 07:17: **#3評価完了** - 3000件サンプル評価で効果確認。F1 +2.37pp（期待+1.31ppを上回る）、効果測定ログ整合性確認済み、タイムアウト5件（リトライ機能検討）
 - 2026-01-31 11:00: **#3実装完了** - contextual_risk_assessment.py の `_needs_extra` から `brand_detected`, `consonant_cluster_random` を除外。テスト確認済み
 - 2026-01-31 10:30: #3詳細分析完了 - ml_paradox発火パス分析（通常パス43件/free_ca+no_org+_needs_extra 277件）、_needs_extraから低精度シグナル(brand_detected:18.2%, consonant_cluster_random:10.5%)除外で**F1 +1.31pp**の見込み
