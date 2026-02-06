@@ -213,9 +213,26 @@ def main():
         from parallel.orchestrator import ParallelOrchestrator
 
         # 変更履歴:
+        #   - 2026-02-07: パス修正 - stage2_validation直下ではなく最新のeval_*サブディレクトリを探索
         #   - 2026-01-31: パス修正 - orchestrator と同じ stage2_validation サブディレクトリを使用
-        results_dir = env["results_dir"] / "stage2_validation"
-        checkpoint_manager = CheckpointManager(results_dir, env["run_id"])
+        results_base = env["results_dir"] / "stage2_validation"
+        # 最新のeval_*ディレクトリ（parallel_state.json があるもの）を探す
+        eval_dir = None
+        if results_base.exists():
+            eval_dirs = sorted(
+                results_base.glob("eval_*"),
+                key=lambda p: p.stat().st_mtime,
+                reverse=True
+            )
+            for d in eval_dirs:
+                if (d / "parallel_state.json").exists():
+                    eval_dir = d
+                    break
+        if eval_dir is None:
+            print("[INFO] No evaluation directory with checkpoint found.")
+            return
+        print(f"[INFO] Using checkpoint dir: {eval_dir.name}")
+        checkpoint_manager = CheckpointManager(eval_dir, env["run_id"])
 
         # 失敗ドメインを取得
         failed_domains = checkpoint_manager.get_all_failed_domains()
