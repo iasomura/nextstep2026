@@ -27,3 +27,20 @@ traces/
 *.pkl
 *.pt
 *.onnx
+
+# logs
+*.log
+
+# temp files
+*.swp
+*.csv.tmp
+fnfp_reasoning_*.jsonl
+
+# secrets
+docs/virustotal_api_key.txt
+
+# vllm runtime
+scripts/.vllm.pid
+
+# personal config
+CLAUDE.local.md

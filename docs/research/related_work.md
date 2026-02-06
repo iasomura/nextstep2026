@@ -11,7 +11,7 @@
 
 ## 1. マルチステージ ML+LLM ハイブリッド
 
-### 1.1 Evolution of Phishing Detection with AI (arXiv, July 2025)
+### 1.1 Phishing Detection in the Gen-AI Era: Quantized LLMs vs Classical Models (arXiv, July 2025)
 - **URL**: https://arxiv.org/html/2507.07406v1
 - **内容**: ML/DL と量子化LLMの比較評価
 - **主要結論**: ハイブリッドアプローチ（ML+LLM）が最適
@@ -144,8 +144,8 @@
 
 ### 4.3 Explainable Phishing for Sustainable Cyber Infrastructure (Nature Scientific Reports, 2025)
 - **URL**: https://www.nature.com/articles/s41598-025-27984-w
-- **内容**: XGBoost + LIME/SHAPによる解釈可能なフィッシング検出
-- **主要結果**: XGBoostが高精度を達成 [要確認: 原論文では99.65%または99.17%の報告あり]、LIMEで特徴量重要度を可視化
+- **内容**: Random Forest + SHAPによる解釈可能なフィッシング検出
+- **主要結果**: Random Forestが精度97%を達成、SHAPで特徴量重要度を可視化
 - **関連性**: 本研究のStage1 (XGBoost) に直接適用可能
 
 ### 4.4 XAIの研究動向まとめ
@@ -159,7 +159,7 @@
 | SOC運用 | 自動判定のみ | アナリスト支援可能 |
 
 **重要な知見**:
-> "Regulatory frameworks require more and more AI-driven decisions that need to be explainable. Thus, black-box phishing detectors are no longer done by compliance-driven organizations." [出典要特定: EXPLICATE (R18) またはIoT Phishing XAI (R19) の本文から引用と推定されるが、該当箇所未確認]
+> "Regulatory frameworks require more and more AI-driven decisions that need to be explainable. Thus, black-box phishing detectors are no longer done by compliance-driven organizations." [出典: EXPLICATE (R18), §I-B "Challenges in Existing Phishing Detection Models", arXiv:2503.20796v1]
 
 ---
 
@@ -169,10 +169,10 @@
 - **URL**: https://www.sciencedirect.com/science/article/abs/pii/S0950705125008792
 - **内容**: 教師なし学習によるゼロデイネットワーク侵入攻撃検出
 - **手法**: 重複特徴に依存しない、ラベルなしデータでの学習
-- **性能**: Random Forest-AE で標準評価上 F1 100%（未知データでは99.99%） [注: ネットワーク侵入検知であり、フィッシング固有ではない]
+- **性能**: Random Forest-AE で標準評価上 F1 100%（未知データでは99.99%） [注: ネットワーク侵入検知（CICIDS等）であり、フィッシング固有ではない。100%/99.99%という極端な数値は評価データセットの限界を反映している可能性あり]
 - **関連性**: 本研究の評価は「訓練データ内」の検証であり、真のゼロデイ評価ではない
 
-### 5.2 Automated AI-Driven Phishing Detection for Zero-Day Attacks (eHaCON 2025, Springer, published 2026)
+### 5.2 Automated AI-Driven Phishing Detection for Zero-Day Attacks (eHaCON 2026, Springer, published 2026)
 - **URL**: https://link.springer.com/chapter/10.1007/978-981-96-8632-2_16
 - **内容**: NLP + 画像認識 + 異常検出を統合したゼロデイフィッシング検出
 - **手法**: 教師あり・教師なし学習のハイブリッド + リアルタイム対策
@@ -316,7 +316,7 @@ LLMの優位性:
 
 ### 9.1 Enhancing Phishing Detection: Integrating XGBoost with Feature Selection (SSRN, Jan 2025, 査読なし)
 - **URL**: https://papers.ssrn.com/sol3/Delivery.cfm/04aedd64-6697-4f16-a533-f6aaa3f043a8-MECA.pdf?abstractid=5087049
-- **内容**: XGBoost + 複数特徴選択技法のVoting、精度99.80%、MCC=0.996
+- **内容**: XGBoost + 複数特徴選択技法のVoting、精度99.80%、MCC=0.996 [注: 査読なしプレプリント。UCI ML Repositoryの比較的小規模データセットでの結果であり、過適合の可能性あり。MCC=0.996は再現性の検証が必要]
 - **データ**: PhishTank + UCI ML Repository
 
 ### 9.2 Phishing URL Detection Using XGBoost and Custom Feature Engineering (IJRASET)
@@ -759,7 +759,7 @@ Stage3の価値は「全体F1の改善」ではなく「難しいケースの救
 6. "Improving Phishing Email Detection Performance of Small Large Language Models," arXiv:2505.00034, 2025.
 7. "Benchmarking 21 Open-Source Large Language Models for Phishing Link Detection," MDPI Information 16(5), 2025.
 8. Ji, F. and Kim, D., "How Can We Effectively Use LLMs for Phishing Detection?," arXiv:2511.09606, 2025.
-9. "Evolution of Phishing Detection with AI: A Comparative Review," arXiv:2507.07406, 2025.
+9. "Phishing Detection in the Gen-AI Era: Quantized LLMs vs Classical Models," arXiv:2507.07406, 2025.
 10. "Unmasking phishers: ML for malicious certificate detection," Computers & Industrial Engineering, 2024.
 11. "Machine learning models for phishing detection from TLS traffic," Cluster Computing, 2023.
 12. "An effective detection approach for phishing websites," Nature Scientific Reports, 2022.
@@ -775,7 +775,7 @@ Stage3の価値は「全体F1の改善」ではなく「難しいケースの救
 19. "Phishing detection in IoT: an integrated CNN-LSTM framework with explainable AI and LLM-enhanced analysis," Discover Internet of Things (Springer), 2025.
 20. "Explainable phishing website detection for secure and sustainable cyber infrastructure," Nature Scientific Reports, 2025.
 21. ZdAD-UML, "An intelligent zero-day attack detection system using unsupervised machine learning," Knowledge-Based Systems (ScienceDirect), 2025.
-22. "Automated AI-Driven Phishing Detection and Countermeasures for Zero-Day Phishing Attacks," eHaCON 2025, Springer LNNS (published Jan 2026).
+22. "Automated AI-Driven Phishing Detection and Countermeasures for Zero-Day Phishing Attacks," eHaCON 2026, Springer LNNS (published Jan 2026).
 23. X-Phishing-Writer, "A Framework for Cross-lingual Phishing E-mail Generation," ACM TALLIP, 2024.
 24. "Multilingual Email Phishing Attacks Detection using OSINT and Machine Learning," arXiv:2501.08723, 2025.
 25. "When LLMs meet cybersecurity: a systematic literature review," Cybersecurity (Springer), 2025.
