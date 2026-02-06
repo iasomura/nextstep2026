@@ -9,6 +9,7 @@ ensuring that high-confidence ML predictions are respected and low-confidence
 predictions are properly gated.
 
 変更履歴:
+    - 2026-02-04: HighMLOverrideRule をデフォルト無効化 (Precision 23.8%, Net -11)
     - 2026-01-27: 初版作成 (llm_final_decision.py から移植)
 """
 
@@ -615,7 +616,10 @@ def create_ml_guard_rules(enabled: bool = True) -> list:
     """
     return [
         VeryHighMLOverrideRule(enabled=enabled),
-        HighMLOverrideRule(enabled=enabled),
+        # 2026-02-04: HighMLOverrideRule をデフォルト無効化
+        # 理由: Precision 23.8% (TP:5, FP:16), Net Benefit -11
+        # 分析: ルール効果分析で、FPを多く引き起こす問題ルールと判明
+        HighMLOverrideRule(enabled=False),  # 無効化
         HighMLCtxRescueRule(enabled=enabled),  # #16 FN救済ルール (2026-01-31追加)
         UltraLowMLBlockRule(enabled=enabled),
         PostLLMFlipGateRule(enabled=enabled),

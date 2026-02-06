@@ -27,13 +27,19 @@
 | CTX Trigger | **完了** | 2 |
 | Gov/Edu Gate | **完了** | 1 |
 | Brand Cert | **完了** | 2 |
-| Post Gates | **完了** | 3 |
+| Post Gates | **完了** | 4 |
 | EngineResult Phase6拡張 | **完了** | - |
 | RuleEngine 統合API | **完了** | - |
 | MetricsCollector 統合 | **完了** | - |
 | **本体統合 (llm_final_decision.py)** | **✅ 完了** | - |
 
-**合計: 35ルール実装済み、本体統合完了**
+**合計: 36ルール実装済み、本体統合完了**
+
+### 2026-02-04 更新
+
+- `CrlDpRandomPatternRelaxRule` 追加（Post Gates）
+- PolicyR1/R2/R4 閾値調整
+- HighMLOverrideRule デフォルト無効化
 
 ### Phase 3 ログ記録修正 (2026-01-31)
 
@@ -111,7 +117,7 @@ phishing_agent/rules/
     ├── ctx_trigger.py    # CTXトリガールール (2個) [2026-01-31追加]
     ├── gov_edu_gate.py   # Gov/Eduゲートルール (1個) [2026-01-31追加]
     ├── brand_cert.py     # ブランド証明書ルール (2個) [2026-01-31追加]
-    └── post_gates.py     # ポストゲートルール (3個) [2026-01-31追加]
+    └── post_gates.py     # ポストゲートルール (4個) [2026-01-31追加, 02-04更新]
 ```
 
 ---
@@ -259,6 +265,35 @@ class RuleResult:
 | `policy_r4` | ML < 0.50 + DV証明書 + ctx >= 0.34 + strong_evidence | force_phishing |
 | `policy_r5` | ML < 0.50 + dangerous_tld + no_org + ctx >= 0.33 | force_phishing |
 | `policy_r6` | ML < 0.30 + dangerous_tld + DV証明書 + ctx >= 0.35 | force_phishing |
+
+### Post Gates (4個) - `post_gates.py` [2026-01-31追加, 02-04更新]
+
+| ルール名 | 説明 | 効果 |
+|---------|------|------|
+| `post_random_pattern_only_gate` | random_patternのみ + 正規TLD + no brand → benign | force_benign |
+| `crl_dp_random_pattern_relax` | has_crl_dp + random_pattern + ML < 0.25 + no brand → benign [02-04追加] | force_benign |
+| `ml_no_mitigation_gate` | ML >= 0.50 + no allowlist + no benign cert → phishing | force_phishing |
+| `low_to_min_medium` | phishing判定 + risk_level=low → medium | risk_bump |
+
+### CTX Trigger (2個) - `ctx_trigger.py` [2026-01-31追加]
+
+| ルール名 | 説明 | 効果 |
+|---------|------|------|
+| `hard_ctx_trigger` | ctx >= 0.65 → 強制phishing | force_phishing |
+| `soft_ctx_trigger` | ctx >= 0.50 + strong_evidence → phishing | force_phishing |
+
+### Gov/Edu Gate (1個) - `gov_edu_gate.py` [2026-01-31追加]
+
+| ルール名 | 説明 | 効果 |
+|---------|------|------|
+| `gov_edu_benign_gate` | gov/edu/mil TLD + no brand → benign | force_benign |
+
+### Brand Cert (2個) - `brand_cert.py` [2026-01-31追加]
+
+| ルール名 | 説明 | 効果 |
+|---------|------|------|
+| `brand_cert_high` | brand + (no_cert or no_org or free_ca) → phishing | force_phishing |
+| `benign_cert_gate_skip` | ブランド検出時の証明書ゲートスキップ | (skip) |
 
 ---
 

@@ -1,0 +1,70 @@
+Stage3 AI Agent 評価サマリー
+======================================================================
+Timestamp: 20260127_135612
+Total: 15549, TP: 1824, TN: 11694, FN: 895, FP: 1136
+Recall: 0.6708, Precision: 0.6162, F1: 0.6424
+
+FN Analysis (895 cases)
+--------------------------------------------------
+By source:
+source
+jpcert          433
+phishtank       314
+certificates    148
+
+By TLD (top 10):
+tld
+com     599
+cn       44
+br       36
+net      26
+org      12
+shop     10
+top       9
+me        8
+xyz       8
+cl        8
+
+By ML category:
+ml_category
+very_low    423
+low         248
+medium      152
+high         72
+
+By risk level:
+ai_risk_level
+low        734
+medium     147
+timeout     14
+
+FP Analysis (1136 cases)
+--------------------------------------------------
+By TLD (top 10):
+tld
+com       540
+org        49
+net        42
+top        41
+xyz        37
+ru         34
+online     32
+cc         26
+cn         23
+info       17
+
+By ML category:
+ml_category
+very_low    535
+low         288
+high        198
+medium      115
+
+By risk level:
+ai_risk_level
+high           1064
+critical         41
+medium-high      31
+
+Dangerous TLD FPs: 241
+Short domain (<=6) FPs: 588

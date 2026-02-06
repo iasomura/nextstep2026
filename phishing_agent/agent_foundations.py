@@ -375,7 +375,7 @@ class PhishingAssessment(BaseModel):
         risk_level: 5段階のリスクレベル
         detected_brands: 検出ブランド名のリスト
         risk_factors: リスク要因のリスト
-        reasoning: 判定理由（20〜1000文字）
+        reasoning: 判定理由（20〜2500文字）
 
     Examples:
         >>> PhishingAssessment(
@@ -394,7 +394,9 @@ class PhishingAssessment(BaseModel):
     )
     detected_brands: List[str] = Field(default_factory=list, description="検出ブランド名のリスト")
     risk_factors: List[str] = Field(default_factory=list, description="リスク要因のリスト")
-    reasoning: str = Field(description="判定理由（20〜1000文字）", min_length=20, max_length=1000)
+    reasoning: str = Field(description="判定理由（20〜2500文字）", min_length=20, max_length=2500)
+    # 変更履歴:
+    #   - 2026-02-03: max_length を 1000 → 2500 に拡大（SOエラー率23.5%→目標5%以下）
 
     @field_validator("confidence", mode="before")
     @classmethod

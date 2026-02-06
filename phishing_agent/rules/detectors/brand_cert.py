@@ -5,6 +5,7 @@ phishing_agent.rules.detectors.brand_cert
 Brand + Certificate combination rules.
 
 変更履歴:
+    - 2026-02-05: BrandCertHighRule に ML下限閾値を追加（FP削減: ML<0.12で抑制）
     - 2026-01-31: 初版作成（ルールモジュール移行計画 Step 2.3）
 """
 
@@ -18,10 +19,12 @@ class BrandCertHighRule(DetectionRule):
     フィッシングの強い兆候。
 
     条件:
+    - ml_probability >= ml_threshold (デフォルト 0.12)
     - brand_detected
     - かつ {no_cert, no_org, free_ca} のいずれかがある
 
     変更履歴:
+        - 2026-02-05: ML下限閾値を追加（FP削減: ML<0.12で抑制、F1 +1.1pp）
         - 2026-01-31: 初版作成 (llm_final_decision.py の brand_cert_high から移植)
     """
 
@@ -29,9 +32,11 @@ class BrandCertHighRule(DetectionRule):
         self,
         enabled: bool = True,
         confidence_floor: float = 0.70,
+        ml_threshold: float = 0.12,
     ):
         super().__init__(enabled=enabled)
         self._confidence_floor = confidence_floor
+        self._ml_threshold = ml_threshold
 
     @property
     def name(self) -> str:
@@ -42,16 +47,45 @@ class BrandCertHighRule(DetectionRule):
         return "Force phishing when brand detected with low quality certificate"
 
     def _evaluate(self, ctx: RuleContext) -> RuleResult:
-        # ブランド検出チェック
+        # ブランド検出チェック（先にチェックして、ML抑制対象か判定）
         brand_detected = bool(ctx.brand_details.get("detected_brands"))
-        if not brand_detected:
-            return RuleResult.not_triggered(self.name)
+        detected_brands = ctx.brand_details.get("detected_brands", [])
 
         # 低品質証明書チェック
         cert_issues = set(ctx.cert_details.get("issues", []) or [])
         all_issues = ctx.issue_set | ctx.ctx_issues | cert_issues
         low_quality_cert = all_issues & {"no_cert", "no_org", "free_ca"}
 
+        # ML下限チェック: MLが極端に低い場合はブランドだけでは判定しない
+        # 理由: ブランド誤検知（fuzzy/substring）によるFP削減
+        # 効果: FP -34件、FN +1件、F1 +1.1pp（シミュレーション検証済み）
+        if ctx.ml_probability < self._ml_threshold:
+            # ブランド + 低品質証明書の条件を満たしていた場合は抑制をログ
+            if brand_detected and low_quality_cert:
+                return RuleResult(
+                    triggered=False,
+                    rule_name=self.name,
+                    issue_tag="brand_cert_high_suppressed",
+                    reasoning=(
+                        f"SUPPRESSED: ML={ctx.ml_probability:.3f} < {self._ml_threshold} "
+                        f"(would have triggered with brands={detected_brands}, cert_issues={list(low_quality_cert)})"
+                    ),
+                    details={
+                        "suppressed": True,
+                        "suppression_reason": "ml_below_threshold",
+                        "ml_probability": ctx.ml_probability,
+                        "ml_threshold": self._ml_threshold,
+                        "brands": detected_brands,
+                        "low_quality_cert_issues": list(low_quality_cert),
+                    },
+                )
+            return RuleResult.not_triggered(self.name)
+
+        # ブランド未検出
+        if not brand_detected:
+            return RuleResult.not_triggered(self.name)
+
+        # 低品質証明書なし
         if not low_quality_cert:
             return RuleResult.not_triggered(self.name)
 
@@ -64,12 +98,13 @@ class BrandCertHighRule(DetectionRule):
             confidence_floor=self._confidence_floor,
             risk_level_bump="high",
             reasoning=(
-                f"Brand + low quality cert: brand detected with {list(low_quality_cert)}"
+                f"Brand + low quality cert: brand detected with {list(low_quality_cert)} (ML={ctx.ml_probability:.3f})"
             ),
             details={
                 "brand_detected": True,
                 "brands": ctx.brand_details.get("detected_brands"),
                 "low_quality_cert_issues": list(low_quality_cert),
+                "ml_probability": ctx.ml_probability,
             },
         )
 

@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-llm_final_decision.py (Phase6 v1.4.7-dvguard4)
+llm_final_decision.py (Phase6 v1.4.8-prompt-recall)
 -------------------------------------------
 変更履歴:
+  - 2026-02-04: v1.4.8-prompt-recall - プロンプト改善（Recall向上）
+      - 閾値を調整: contextual_risk_score >= 0.65 → baseline_risk >= 0.55
+      - cert_risk_score, domain_risk_score も判定基準に追加
+      - ルール9緩和: ml < 0.25 → ml < 0.15 (legitimate TLDのみ)
+      - ルール10追加: ML >= 0.5 + free_ca_no_org → strong phishing indicator
+      - ルール11追加: short_random_combo + dangerous_tld → high risk
   - 2025-12-14: R4/R5 を追加（ML<0.5 帯の FN 改善）
       - R4: ML<0.5 かつ {free_ca,no_org} かつ contextual>=しきい値 → phishing
            * legitimate TLD & normal/long は少しだけ厳しめのしきい値
@@ -112,7 +118,9 @@ except Exception:
 # ------------------------- phase6 meta -------------------------
 # 変更履歴:
 #   - 2026-01-31: v1.7.0-rule-modules - ルールモジュール統合
-PHASE6_POLICY_VERSION = "v1.7.0-rule-modules"
+PHASE6_POLICY_VERSION = "v1.7.1-prompt-recall"
+# 変更履歴:
+#   - 2026-02-04: v1.7.1-prompt-recall - プロンプト改善（Recall向上）
 
 # ルールモジュール使用フラグ（段階的移行用）
 # True: ルールモジュールを使用、False: インライン実装を使用
@@ -1575,15 +1583,16 @@ def final_decision(
         "   for is_phishing=true. Require corroborating signals (e.g., short+random, dangerous_tld,\n"
         "   brand impersonation, idn_homograph, etc.).\n"
         "2. The absence of brand elements does NOT automatically mean the site is safe. When a\n"
-        "   dangerous TLD (.icu, .xyz, .top, etc.) is combined with free_ca and no_org, treat\n"
-        "   this as a strong risk signal even without any brand element.\n"
+        "   dangerous TLD (.icu, .xyz, .top, .cn, etc.) is combined with free_ca and no_org, treat\n"
+        "   this as a STRONG risk signal even without any brand element. Set is_phishing=true.\n"
         "3. Do NOT set is_phishing=true based on ml_probability alone. If you decide phishing, include at least one\n"
         "   non-ML risk_factors that appear in tool_signals.*.issues.\n"
-        "4. When contextual_risk_assessment.risk_score >= 0.65, you MUST set is_phishing=true.\n"
-        "   When 0.50 <= contextual_risk_assessment.risk_score < 0.65, set is_phishing=true ONLY if\n"
-        "   there is at least one strong non-ML signal (e.g., brand_detected, dangerous_tld, idn_homograph,\n"
-        "   random_pattern/high_entropy, self_signed, dv_multi_risk_combo, dv_suspicious_combo, ml_paradox).\n"
-        "5. contextual_risk_assessment.risk_score < 0.50 does NOT imply the site is safe. It only means it is not an automatic trigger.\n"
+        "4. Risk score thresholds (use the HIGHEST of contextual.risk_score, cert.risk_score, domain.risk_score, or baseline_risk):\n"
+        "   - >= 0.55: you MUST set is_phishing=true.\n"
+        "   - >= 0.40: set is_phishing=true if there is at least one strong non-ML signal\n"
+        "     (e.g., dangerous_tld, free_ca_no_org, random_pattern, short_random_combo, ml_paradox).\n"
+        "   - < 0.40: use other signals to decide.\n"
+        "5. risk_score < 0.40 does NOT imply the site is safe. It only means it is not an automatic trigger.\n"
         "6. If you decide is_phishing=false even though there are strong risk signals such as\n"
         "   dangerous_tld, free_ca, no_org, or ml_paradox, you MUST put those signals into\n"
         "   mitigated_risk_factors (not risk_factors) and clearly explain in reasoning why the\n"
@@ -1594,9 +1603,12 @@ def final_decision(
         "8. A \"valid\" SSL certificate (especially DV / Let\'s Encrypt) is NOT a mitigating factor.\n"
         "   Phishing sites commonly use valid DV certificates. Do NOT cite \"valid certificate\" as a reason for safety or mitigation.\n"
         "   Treat DV/Let\'s Encrypt as neutral-to-risk unless there is strong identity evidence (e.g., OV/EV with org).\n"
-        "9. When ml_probability < 0.25 and precheck_summary.tld_category is not 'dangerous', be VERY conservative about setting is_phishing=true.\n"
-        "   Only set is_phishing=true if there is clear independent evidence (e.g., strong brand impersonation).\n"
-        "   Otherwise set is_phishing=false and place any detected risk signals into mitigated_risk_factors.\n"
+        "9. When ml_probability < 0.15 and precheck_summary.tld_category is 'legitimate', be conservative about setting is_phishing=true.\n"
+        "   But if cert.issues contains 'free_ca_no_org' or 'dv_weak_identity', still consider phishing if other signals exist.\n"
+        "10. When ml_probability >= 0.5 and cert.issues contains 'free_ca_no_org' or 'dv_weak_identity',\n"
+        "    this is a STRONG indicator of phishing. Set is_phishing=true unless there is clear evidence of legitimacy.\n"
+        "11. When domain.issues contains 'short_random_combo' or 'dangerous_tld', treat this as high risk.\n"
+        "    Combined with free_ca, this almost always indicates phishing.\n"
     )
 
     user_payload = {
@@ -2052,15 +2064,16 @@ def final_decision_via_modules(
         "   for is_phishing=true. Require corroborating signals (e.g., short+random, dangerous_tld,\n"
         "   brand impersonation, idn_homograph, etc.).\n"
         "2. The absence of brand elements does NOT automatically mean the site is safe. When a\n"
-        "   dangerous TLD (.icu, .xyz, .top, etc.) is combined with free_ca and no_org, treat\n"
-        "   this as a strong risk signal even without any brand element.\n"
+        "   dangerous TLD (.icu, .xyz, .top, .cn, etc.) is combined with free_ca and no_org, treat\n"
+        "   this as a STRONG risk signal even without any brand element. Set is_phishing=true.\n"
         "3. Do NOT set is_phishing=true based on ml_probability alone. If you decide phishing, include at least one\n"
         "   non-ML risk_factors that appear in tool_signals.*.issues.\n"
-        "4. When contextual_risk_assessment.risk_score >= 0.65, you MUST set is_phishing=true.\n"
-        "   When 0.50 <= contextual_risk_assessment.risk_score < 0.65, set is_phishing=true ONLY if\n"
-        "   there is at least one strong non-ML signal (e.g., brand_detected, dangerous_tld, idn_homograph,\n"
-        "   random_pattern/high_entropy, self_signed, dv_multi_risk_combo, dv_suspicious_combo, ml_paradox).\n"
-        "5. contextual_risk_assessment.risk_score < 0.50 does NOT imply the site is safe. It only means it is not an automatic trigger.\n"
+        "4. Risk score thresholds (use the HIGHEST of contextual.risk_score, cert.risk_score, domain.risk_score, or baseline_risk):\n"
+        "   - >= 0.55: you MUST set is_phishing=true.\n"
+        "   - >= 0.40: set is_phishing=true if there is at least one strong non-ML signal\n"
+        "     (e.g., dangerous_tld, free_ca_no_org, random_pattern, short_random_combo, ml_paradox).\n"
+        "   - < 0.40: use other signals to decide.\n"
+        "5. risk_score < 0.40 does NOT imply the site is safe. It only means it is not an automatic trigger.\n"
         "6. If you decide is_phishing=false even though there are strong risk signals such as\n"
         "   dangerous_tld, free_ca, no_org, or ml_paradox, you MUST put those signals into\n"
         "   mitigated_risk_factors (not risk_factors) and clearly explain in reasoning why the\n"
@@ -2071,9 +2084,12 @@ def final_decision_via_modules(
         "8. A \"valid\" SSL certificate (especially DV / Let\'s Encrypt) is NOT a mitigating factor.\n"
         "   Phishing sites commonly use valid DV certificates. Do NOT cite \"valid certificate\" as a reason for safety or mitigation.\n"
         "   Treat DV/Let\'s Encrypt as neutral-to-risk unless there is strong identity evidence (e.g., OV/EV with org).\n"
-        "9. When ml_probability < 0.25 and precheck_summary.tld_category is not 'dangerous', be VERY conservative about setting is_phishing=true.\n"
-        "   Only set is_phishing=true if there is clear independent evidence (e.g., strong brand impersonation).\n"
-        "   Otherwise set is_phishing=false and place any detected risk signals into mitigated_risk_factors.\n"
+        "9. When ml_probability < 0.15 and precheck_summary.tld_category is 'legitimate', be conservative about setting is_phishing=true.\n"
+        "   But if cert.issues contains 'free_ca_no_org' or 'dv_weak_identity', still consider phishing if other signals exist.\n"
+        "10. When ml_probability >= 0.5 and cert.issues contains 'free_ca_no_org' or 'dv_weak_identity',\n"
+        "    this is a STRONG indicator of phishing. Set is_phishing=true unless there is clear evidence of legitimacy.\n"
+        "11. When domain.issues contains 'short_random_combo' or 'dangerous_tld', treat this as high risk.\n"
+        "    Combined with free_ca, this almost always indicates phishing.\n"
     )
 
     user_payload = {

@@ -93,9 +93,12 @@ from .brand_cert import (
     create_brand_cert_rules,
 )
 
-# Post-processing gate rules (2026-01-31追加)
+# Post-processing gate rules (2026-01-31追加, 2026-02-04/05 追加)
 from .post_gates import (
     PostRandomPatternOnlyGateRule,
+    CrlDpRandomPatternRelaxRule,      # 2026-02-04追加
+    DangerousTldLowMlRelaxRule,       # 2026-02-05追加 (Task #22)
+    FuzzyBrandLowMlRelaxRule,         # 2026-02-05追加 (Task #20)
     MlNoMitigationGateRule,
     LowToMinMediumRule,
     create_post_gate_rules,
@@ -158,8 +161,11 @@ __all__ = [
     'BrandCertHighRule',
     'BenignCertGateSkipRule',
     'create_brand_cert_rules',
-    # Post Gates (2026-01-31追加)
+    # Post Gates (2026-01-31追加, 2026-02-04/05 追加)
     'PostRandomPatternOnlyGateRule',
+    'CrlDpRandomPatternRelaxRule',    # 2026-02-04追加
+    'DangerousTldLowMlRelaxRule',     # 2026-02-05追加 (Task #22)
+    'FuzzyBrandLowMlRelaxRule',       # 2026-02-05追加 (Task #20)
     'MlNoMitigationGateRule',
     'LowToMinMediumRule',
     'create_post_gate_rules',

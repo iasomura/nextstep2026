@@ -237,6 +237,383 @@ class MlNoMitigationGateRule(DetectionRule):
         )
 
 
+class CrlDpRandomPatternRelaxRule(DetectionRule):
+    """CRL DP + Random Pattern Relax Rule.
+
+    has_crl_dp（高品質証明書）を持つドメインで、random_patternのみが
+    検出されている場合、FPを抑制するためbenign判定にする。
+
+    条件:
+    - 現在 phishing 判定
+    - has_crl_dp が benign_indicators にある
+    - domain_issues に random_pattern がある
+    - ブランド検出がない
+    - ML < 0.25（低いML確率）
+    - 危険TLDでない
+
+    例: frmtr.com, wfqqmy.com, hl-rmc.com
+
+    変更履歴:
+        - 2026-02-04: 初版作成（FP削減: ランダムパターン緩和）
+    """
+
+    def __init__(
+        self,
+        enabled: bool = True,
+        ml_threshold: float = 0.25,
+        confidence_ceiling: float = 0.30,
+    ):
+        super().__init__(enabled=enabled)
+        self._ml_threshold = ml_threshold
+        self._confidence_ceiling = confidence_ceiling
+
+    @property
+    def name(self) -> str:
+        return "crl_dp_random_pattern_relax"
+
+    @property
+    def description(self) -> str:
+        return f"Relax random_pattern detection when has_crl_dp with ML < {self._ml_threshold}"
+
+    def _evaluate(self, ctx: RuleContext) -> RuleResult:
+        # benign なら何もしない
+        if not ctx.llm_is_phishing:
+            return RuleResult.not_triggered(self.name)
+
+        # has_crl_dp チェック
+        if "has_crl_dp" not in ctx.benign_indicators:
+            return RuleResult.not_triggered(self.name)
+
+        # random_pattern チェック
+        if "random_pattern" not in ctx.issue_set:
+            return RuleResult.not_triggered(self.name)
+
+        # ブランド検出チェック
+        brand_detected = bool(ctx.brand_details.get("detected_brands"))
+        if brand_detected:
+            return RuleResult.not_triggered(self.name)
+
+        # ML threshold チェック
+        if ctx.ml_probability >= self._ml_threshold:
+            return RuleResult.not_triggered(self.name)
+
+        # 危険TLDチェック
+        tld = ctx.tld.lower().strip(".")
+        is_dangerous = (
+            tld in HIGH_DANGER_TLDS
+            or tld in MEDIUM_DANGER_TLDS
+            or "dangerous_tld" in ctx.issue_set
+            or "dangerous_tld" in ctx.ctx_issues
+        )
+        if is_dangerous:
+            return RuleResult.not_triggered(self.name)
+
+        # 他の強いリスクシグナルチェック
+        strong_signals = {
+            "idn_homograph", "high_entropy", "very_high_entropy",
+            "self_signed", "no_cert", "brand_detected",
+        }
+        all_issues = ctx.issue_set | ctx.ctx_issues
+        if all_issues & strong_signals:
+            return RuleResult.not_triggered(self.name)
+
+        # benign 強制
+        return RuleResult(
+            triggered=True,
+            rule_name=self.name,
+            issue_tag="crl_dp_random_pattern_relax",
+            force_benign=True,
+            confidence_ceiling=self._confidence_ceiling,
+            risk_level_bump="low",
+            reasoning=(
+                f"CRL DP random pattern relax: {ctx.domain} has has_crl_dp "
+                f"with random_pattern and ML={ctx.ml_probability:.3f} < {self._ml_threshold}"
+            ),
+            details={
+                "ml_probability": ctx.ml_probability,
+                "ml_threshold": self._ml_threshold,
+                "benign_indicator": "has_crl_dp",
+                "domain_issues": list(ctx.issue_set),
+            },
+        )
+
+
+class DangerousTldLowMlRelaxRule(DetectionRule):
+    """Dangerous TLD + Low ML Relax Rule.
+
+    高FP率の危険TLDで、MLスコアが非常に低く、ctx_scoreも低い場合、
+    FPを抑制するためbenign判定にする。
+
+    対象TLD（FP率 > 60%）: .cc, .shop, .cyou, .top, .xyz
+    除外TLD（FP率 < 55%）: .cn, .icu（実際のPhishingが多い）
+
+    条件:
+    - 現在 phishing 判定
+    - TLD が対象TLD（cc, shop, cyou, top, xyz）
+    - ML < 0.15（非常に低いML確率）
+    - ctx_score < 0.50（低いコンテキストリスク）
+    - ブランド検出がない
+
+    期待効果（全件分析）:
+    - FP削減: 49件
+    - FN増加: 10件
+    - 純効果: +39件
+
+    変更履歴:
+        - 2026-02-05: 初版作成（Task #22: FP削減: 危険TLD+極低MLゲート調整）
+    """
+
+    # 対象TLD（高FP率）
+    TARGET_TLDS: Set[str] = frozenset({"cc", "shop", "cyou", "top", "xyz"})
+
+    def __init__(
+        self,
+        enabled: bool = True,
+        ml_threshold: float = 0.15,
+        ctx_threshold: float = 0.50,
+        confidence_ceiling: float = 0.30,
+    ):
+        super().__init__(enabled=enabled)
+        self._ml_threshold = ml_threshold
+        self._ctx_threshold = ctx_threshold
+        self._confidence_ceiling = confidence_ceiling
+
+    @property
+    def name(self) -> str:
+        return "dangerous_tld_low_ml_relax"
+
+    @property
+    def description(self) -> str:
+        return (
+            f"Relax phishing on high-FP-rate TLDs (cc,shop,cyou,top,xyz) "
+            f"when ML < {self._ml_threshold} and ctx < {self._ctx_threshold}"
+        )
+
+    def _evaluate(self, ctx: RuleContext) -> RuleResult:
+        # benign なら何もしない
+        if not ctx.llm_is_phishing:
+            return RuleResult.not_triggered(self.name)
+
+        # TLDチェック（対象TLDのみ）
+        tld = ctx.tld.lower().strip(".")
+        if tld not in self.TARGET_TLDS:
+            return RuleResult.not_triggered(self.name)
+
+        # ML threshold チェック
+        if ctx.ml_probability >= self._ml_threshold:
+            return RuleResult(
+                triggered=False,
+                rule_name=self.name,
+                reasoning=f"ML too high: {ctx.ml_probability:.3f} >= {self._ml_threshold}",
+                details={
+                    "skip_reason": "ml_too_high",
+                    "ml_probability": ctx.ml_probability,
+                    "ml_threshold": self._ml_threshold,
+                },
+            )
+
+        # ctx threshold チェック
+        if ctx.ctx_score >= self._ctx_threshold:
+            return RuleResult(
+                triggered=False,
+                rule_name=self.name,
+                reasoning=f"ctx too high: {ctx.ctx_score:.3f} >= {self._ctx_threshold}",
+                details={
+                    "skip_reason": "ctx_too_high",
+                    "ctx_score": ctx.ctx_score,
+                    "ctx_threshold": self._ctx_threshold,
+                },
+            )
+
+        # ブランド検出チェック
+        brand_detected = bool(ctx.brand_details.get("detected_brands"))
+        if brand_detected:
+            return RuleResult(
+                triggered=False,
+                rule_name=self.name,
+                reasoning=f"Brand detected: {ctx.brand_details.get('detected_brands')}",
+                details={
+                    "skip_reason": "brand_detected",
+                    "detected_brands": ctx.brand_details.get("detected_brands"),
+                },
+            )
+
+        # benign 強制
+        return RuleResult(
+            triggered=True,
+            rule_name=self.name,
+            issue_tag="dangerous_tld_low_ml_relax",
+            force_benign=True,
+            confidence_ceiling=self._confidence_ceiling,
+            risk_level_bump="low",
+            reasoning=(
+                f"Dangerous TLD low ML relax: {ctx.domain} has high-FP-rate TLD (.{tld}) "
+                f"with ML={ctx.ml_probability:.3f} < {self._ml_threshold} "
+                f"and ctx={ctx.ctx_score:.3f} < {self._ctx_threshold}, no brand detected"
+            ),
+            details={
+                "domain": ctx.domain,
+                "tld": tld,
+                "ml_probability": ctx.ml_probability,
+                "ml_threshold": self._ml_threshold,
+                "ctx_score": ctx.ctx_score,
+                "ctx_threshold": self._ctx_threshold,
+                "brand_detected": False,
+                "target_tlds": list(self.TARGET_TLDS),
+            },
+        )
+
+
+class FuzzyBrandLowMlRelaxRule(DetectionRule):
+    """Fuzzy Brand + Low ML Relax Rule.
+
+    ブランド検出がfuzzy2/substringのみで、MLスコアが非常に低い場合、
+    FPを抑制するためbenign判定にする。
+
+    分析結果（Stage3単体評価 3000件）:
+    - ブランド検出ありFPの88.9%がML < 0.05
+    - ML < 0.05 + fuzzy2/substringのみ → FP削減20件、FN増加0件
+
+    条件:
+    - 現在 phishing 判定
+    - ブランド検出あり
+    - 検出ブランドがすべてfuzzy2またはsubstringマッチ
+    - ML < 0.05（非常に低いML確率）
+
+    除外:
+    - exact match（例: google, dhl）
+    - critical_brand（例: bank, login）
+    - compound match（例: wise (compound)）
+    - fuzzy match（fuzzy2より厳格）
+
+    期待効果:
+    - FP削減: 20件
+    - FN増加: 0件
+    - 純効果: +20件
+
+    変更履歴:
+        - 2026-02-05: 初版作成（Task #20: FP削減: ブランド誤検知対策）
+    """
+
+    # 緩和対象のマッチタイプ
+    RELAXABLE_MATCH_TYPES = frozenset({"fuzzy2", "substring"})
+
+    def __init__(
+        self,
+        enabled: bool = True,
+        ml_threshold: float = 0.05,
+        confidence_ceiling: float = 0.30,
+    ):
+        super().__init__(enabled=enabled)
+        self._ml_threshold = ml_threshold
+        self._confidence_ceiling = confidence_ceiling
+
+    @property
+    def name(self) -> str:
+        return "fuzzy_brand_low_ml_relax"
+
+    @property
+    def description(self) -> str:
+        return (
+            f"Relax phishing when brand detection is fuzzy2/substring only "
+            f"and ML < {self._ml_threshold}"
+        )
+
+    def _is_relaxable_brand_match(self, detected_brands: list) -> tuple:
+        """Check if all detected brands are fuzzy2/substring matches.
+
+        Returns:
+            (is_relaxable, match_types):
+                is_relaxable: True if all matches are fuzzy2/substring
+                match_types: set of detected match types
+        """
+        if not detected_brands:
+            return False, set()
+
+        match_types = set()
+        for brand in detected_brands:
+            brand_str = str(brand).lower()
+
+            # マッチタイプを抽出
+            if "(fuzzy2)" in brand_str:
+                match_types.add("fuzzy2")
+            elif "(substring)" in brand_str:
+                match_types.add("substring")
+            elif "(fuzzy)" in brand_str:
+                # fuzzy（fuzzy2ではない）は厳格なので緩和対象外
+                match_types.add("fuzzy")
+            elif "(compound)" in brand_str:
+                match_types.add("compound")
+            elif "(" not in brand_str:
+                # 括弧なし = exact match
+                match_types.add("exact")
+            else:
+                # その他（llm_confirmed等）
+                match_types.add("other")
+
+        # fuzzy2/substringのみかチェック
+        is_relaxable = match_types.issubset(self.RELAXABLE_MATCH_TYPES)
+        return is_relaxable, match_types
+
+    def _evaluate(self, ctx: RuleContext) -> RuleResult:
+        # benign なら何もしない
+        if not ctx.llm_is_phishing:
+            return RuleResult.not_triggered(self.name)
+
+        # ブランド検出チェック
+        detected_brands = ctx.brand_details.get("detected_brands", [])
+        if not detected_brands:
+            return RuleResult.not_triggered(self.name)
+
+        # ML threshold チェック
+        if ctx.ml_probability >= self._ml_threshold:
+            return RuleResult(
+                triggered=False,
+                rule_name=self.name,
+                reasoning=f"ML too high: {ctx.ml_probability:.3f} >= {self._ml_threshold}",
+                details={
+                    "skip_reason": "ml_too_high",
+                    "ml_probability": ctx.ml_probability,
+                    "ml_threshold": self._ml_threshold,
+                },
+            )
+
+        # マッチタイプチェック
+        is_relaxable, match_types = self._is_relaxable_brand_match(detected_brands)
+        if not is_relaxable:
+            return RuleResult(
+                triggered=False,
+                rule_name=self.name,
+                reasoning=f"Non-relaxable match types: {match_types}",
+                details={
+                    "skip_reason": "non_relaxable_match_type",
+                    "detected_brands": detected_brands,
+                    "match_types": list(match_types),
+                },
+            )
+
+        # benign 強制
+        return RuleResult(
+            triggered=True,
+            rule_name=self.name,
+            issue_tag="fuzzy_brand_low_ml_relax",
+            force_benign=True,
+            confidence_ceiling=self._confidence_ceiling,
+            risk_level_bump="low",
+            reasoning=(
+                f"Fuzzy brand low ML relax: {ctx.domain} has only {match_types} brand matches "
+                f"with ML={ctx.ml_probability:.3f} < {self._ml_threshold}"
+            ),
+            details={
+                "domain": ctx.domain,
+                "ml_probability": ctx.ml_probability,
+                "ml_threshold": self._ml_threshold,
+                "detected_brands": detected_brands,
+                "match_types": list(match_types),
+            },
+        )
+
+
 class LowToMinMediumRule(DetectionRule):
     """Low to Min Medium Rule.
 
@@ -289,9 +666,17 @@ def create_post_gate_rules(enabled: bool = True) -> list:
 
     Returns:
         List of post-processing gate rule instances
+
+    変更履歴:
+        - 2026-02-05: FuzzyBrandLowMlRelaxRule 追加 (Task #20)
+        - 2026-02-05: DangerousTldLowMlRelaxRule 追加 (Task #22)
+        - 2026-02-04: CrlDpRandomPatternRelaxRule 追加
     """
     return [
         PostRandomPatternOnlyGateRule(enabled=enabled),
+        CrlDpRandomPatternRelaxRule(enabled=enabled),  # 2026-02-04追加
+        DangerousTldLowMlRelaxRule(enabled=enabled),   # 2026-02-05追加 (Task #22)
+        FuzzyBrandLowMlRelaxRule(enabled=enabled),     # 2026-02-05追加 (Task #20)
         MlNoMitigationGateRule(enabled=enabled),
         LowToMinMediumRule(enabled=enabled),
     ]

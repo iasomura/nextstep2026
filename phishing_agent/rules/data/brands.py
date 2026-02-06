@@ -3,6 +3,11 @@
 phishing_agent.rules.data.brands
 --------------------------------
 Brand-related data for phishing detection rules.
+
+変更履歴:
+    - 2026-02-04: FN削減のためブランドキーワード追加
+        - jcb (日本のクレジットカード)
+        - bank, auth, account, support (汎用キーワード、BOUNDARY_REQUIRED)
 """
 
 from typing import FrozenSet
@@ -27,6 +32,15 @@ CRITICAL_BRAND_KEYWORDS: FrozenSet[str] = frozenset([
     "mercari", "merucari", # メルカリ
     "ekinet", "eki-net",   # えきねっと
     "coincheck",           # コインチェック
+    "jcb",                 # JCBカード (2026-02-04追加: FN分析より)
+
+    # Generic high-risk keywords (2026-02-04追加: FN分析より)
+    # Note: These require BOUNDARY_REQUIRED matching to avoid FP
+    "bank",                # 銀行系キーワード (kecbank.com等で未検出)
+    "auth",                # 認証系キーワード (authenticationaua.shop等で未検出)
+    "account",             # アカウント系キーワード (saccount-members.com等で未検出)
+    "support",             # サポート系キーワード (ulys-support.com等で未検出)
+    "login", "signin", "verify", "secure",  # 認証・セキュリティ系
 
     # Global services
     "telegram", "zoom", "coinbase", "binance",
@@ -177,6 +191,15 @@ BOUNDARY_REQUIRED_BRANDS: FrozenSet[str] = frozenset([
     "promise",   # "americaspromise"
     "disney",    # "disneydriven"
     "mastercard",  # "mastercardfdn"
+    # 2026-02-04追加: FN削減用汎用キーワード（FP防止のためboundary必須）
+    "bank",      # "databank", "foodbank", "riverbank"
+    "auth",      # "author", "authority"
+    "account",   # "accountant", "accountability"
+    "support",   # "supportive", "unsupported"
+    "login",     # "loginpage" などの複合語
+    "signin",    # "signinpage"
+    "verify",    # "verifying", "verification"
+    "secure",    # "secured", "insecure"
 ])
 
 # Common words that contain brand keywords as substrings (FP exclusion)
@@ -256,6 +279,25 @@ BRAND_FP_EXCLUSION_WORDS: FrozenSet[str] = frozenset([
     "americaspromise", "compromise", "compromises",  # promise
     "disneydriven", "disneyfan", "disneylife",  # disney
     "mastercardfdn", "mastercardfoundation",  # mastercard
+    # 2026-02-04追加: FN削減用汎用キーワードのFP除外
+    # "bank" false positives
+    "databank", "foodbank", "riverbank", "snowbank", "westbank", "eastbank",
+    "embankment", "bankrupt", "bankruptcy", "mobank", "interbank", "eurobank",
+    "worldbank", "centralbank", "investmentbank",
+    # "auth" false positives
+    # Note: "authentication" は除外しない (フィッシングドメインで使われる可能性あり)
+    "author", "authority", "authorize", "authorized", "authentic",
+    "oauth", "preauth", "unauth", "reauth",
+    # "account" false positives
+    "accountant", "accountancy", "accountability", "accountable", "unaccountable",
+    # "support" false positives
+    "supportive", "unsupported", "supportable", "supportability",
+    # "login" false positives
+    "loginpage", "loginform", "loginbutton", "loginscreen",
+    # "verify" false positives
+    "verifying", "verification", "verified", "unverified", "reverify",
+    # "secure" false positives
+    "secured", "insecure", "securely", "securement", "cybersecure",
 ])
 
 # Common TLDs to exclude from fuzzy brand matching

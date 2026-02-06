@@ -1,7 +1,7 @@
 # Stage3 AI Agent 仕様書
 
-**バージョン**: v1.6.5
-**更新日**: 2026-01-28
+**バージョン**: v1.7.1
+**更新日**: 2026-02-04
 **対象モジュール**: `phishing_agent/`
 
 ---
@@ -80,6 +80,22 @@ class FinalAssessmentSO(BaseModel):
     reasoning: str         # 判定理由
 ```
 
+#### PhishingAssessment (agent_foundations.py)
+```python
+class PhishingAssessment(BaseModel):
+    is_phishing: bool
+    confidence: float = Field(ge=0.0, le=1.0)
+    risk_level: str
+    detected_brands: List[str] = []
+    risk_factors: List[str] = []
+    reasoning: str = Field(min_length=20, max_length=2500)  # 2026-02-04改訂
+```
+
+**SOエラー対策 (2026-02-04)**:
+- `reasoning.max_length`: 1000 → 2500 に拡大
+- 背景: 平均reasoning長が1,263文字で、旧制限1000でValidationError発生
+- 効果: SOエラー率 23.4% → 0.0%
+
 ### 3.4 LLM設定
 
 | パラメータ | 値 |
@@ -98,9 +114,35 @@ class FinalAssessmentSO(BaseModel):
 ## 4. Phase6 ポリシーエンジン (llm_final_decision.py)
 
 ### 4.1 バージョン
-- `v1.6.3-fn-rescue`
+- `v1.7.1-prompt-recall` (2026-02-04更新)
 
-### 4.2 判定ルール (R1-R6)
+### 4.2 変更履歴
+
+| 日付 | バージョン | 変更内容 |
+|------|-----------|----------|
+| 2026-02-04 | v1.7.1-prompt-recall | プロンプト改善（Recall向上） |
+| 2026-02-03 | v1.7.0-rule-modules | ルールモジュール統合 |
+| 2026-01-28 | v1.6.5 | ブランド非依存フィッシング検出強化 |
+
+### 4.3 LLMプロンプト判定ルール (2026-02-04改訂)
+
+| ルール | 条件 | 判定 |
+|--------|------|------|
+| 1 | random_pattern + corroborating_signal | → Phishing |
+| 2 | dangerous_tld + free_ca + no_org | → **MUST Phishing** |
+| 3 | ML単独では判定しない | non-ML risk_factors必須 |
+| 4 | baseline_risk >= 0.55 | → **MUST Phishing** |
+| 4b | baseline_risk >= 0.40 + strong_signal | → Phishing |
+| 5 | risk_score < 0.40 | 他シグナルで判定 |
+| 6 | benign判定時のstrong risk signal | → mitigated_risk_factors必須 |
+| 8 | DV/Let's Encrypt | 緩和要因として扱わない |
+| 9 | ml < 0.15 + legitimate TLD | 保守的判定 |
+| 10 | **ML >= 0.5 + free_ca_no_org** | → **STRONG Phishing** (新規) |
+| 11 | **short_random_combo + dangerous_tld + free_ca** | → high risk (新規) |
+
+**注**: ルール4のbaseline_riskは `max(contextual, cert, domain, brand)`
+
+### 4.4 判定ルール (R1-R6) - ポリシー補正
 
 | ルール | 条件 | 判定 |
 |--------|------|------|
@@ -111,7 +153,7 @@ class FinalAssessmentSO(BaseModel):
 | R5 | ML < 0.5 + dangerous_tld + no_org + contextual >= 0.33 | → Phishing |
 | R6 | ML Paradox + dangerous_tld + (free_ca \| no_org) + ctx >= 0.35 | → Phishing |
 
-### 4.3 Strong Evidence定義
+### 4.5 Strong Evidence定義
 
 以下のいずれかが存在する場合:
 - `brand_impersonation` (ブランド偽装検出)
@@ -120,7 +162,7 @@ class FinalAssessmentSO(BaseModel):
 - `random_pattern` + (short/very_short/dangerous_tld/idn_homograph)
 - `self_signed` (自己署名証明書)
 
-### 4.4 Post-LLM Flip Gate
+### 4.6 Post-LLM Flip Gate
 
 | ゲート | 条件 | 効果 |
 |--------|------|------|
@@ -129,7 +171,7 @@ class FinalAssessmentSO(BaseModel):
 | P1 Gate | non-dangerous TLD + ML < 0.30 | low_signal_phishing_gateを無効化 |
 | P4 Gate | 中危険TLD + 短期証明書 + 低SAN + ML < 0.05 | FN救済 |
 
-### 4.5 graph_state出力フィールド
+### 4.7 graph_state出力フィールド
 
 | フィールド | 型 | 内容 |
 |-----------|-----|------|

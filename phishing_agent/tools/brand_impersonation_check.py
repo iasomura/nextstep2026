@@ -183,6 +183,15 @@ BOUNDARY_REQUIRED_BRANDS = frozenset([
     "promise",   # promise - "americaspromise" にcompoundマッチするFP
     "disney",    # disney - "disneydriven" 等のファンサイトにcompoundマッチするFP
     "mastercard",  # mastercard - "mastercardfdn" (正規財団) にsubstringマッチするFP
+    # 2026-02-04追加: FN削減用汎用キーワード（FP防止のためboundary必須）
+    "bank",      # bank - "databank", "foodbank", "riverbank" 等にマッチするFP
+    "auth",      # auth - "author", "authority", "authentic" 等にマッチするFP
+    "account",   # account - "accountant", "accountability" 等にマッチするFP
+    "support",   # support - "supportive", "unsupported" 等にマッチするFP
+    "login",     # login - "loginpage" 等の複合語にマッチするFP
+    "signin",    # signin - "signinpage" 等にマッチするFP
+    "verify",    # verify - "verifying", "verification" 等にマッチするFP
+    "secure",    # secure - "secured", "insecure" 等にマッチするFP
 ])
 
 # Common words that contain these brands as substrings (FP exclusion list)
@@ -286,6 +295,25 @@ BRAND_FP_EXCLUSION_WORDS = frozenset([
     "disneydriven", "disneyfan", "disneylife",
     # "mastercard" false positives
     "mastercardfdn", "mastercardfoundation",
+    # 2026-02-04追加: FN削減用汎用キーワードのFP除外
+    # "bank" false positives
+    "databank", "foodbank", "riverbank", "snowbank", "westbank", "eastbank",
+    "embankment", "bankrupt", "bankruptcy", "mobank", "interbank", "eurobank",
+    "worldbank", "centralbank", "investmentbank",
+    # "auth" false positives
+    # Note: "authentication" は除外しない (フィッシングドメインで使われる可能性あり)
+    "author", "authority", "authorize", "authorized", "authentic",
+    "oauth", "preauth", "unauth", "reauth",
+    # "account" false positives
+    "accountant", "accountancy", "accountability", "accountable", "unaccountable",
+    # "support" false positives
+    "supportive", "unsupported", "supportable", "supportability",
+    # "login" false positives
+    "loginpage", "loginform", "loginbutton", "loginscreen",
+    # "verify" false positives
+    "verifying", "verification", "verified", "unverified", "reverify",
+    # "secure" false positives
+    "secured", "insecure", "securely", "securement", "cybersecure",
 ])
 
 # ---------------------------------------------------------------------------
@@ -461,6 +489,23 @@ CRITICAL_BRAND_KEYWORDS = frozenset([
     # 注: "line" は "online" と誤検出するため除外
     # LINE は "linemessenger", "lineapp", "linepay" 等で検出
     "linemessenger", "lineapp", "linepay", "viber", "signal",
+
+    # --- 2026-02-04 追加: FN分析より ---
+    # 変更履歴:
+    #   - 2026-02-04: myjcb-open.com, kecbank.com 等のFN対応
+
+    # 日本のクレジットカード
+    "jcb",                       # JCBカード (myjcb-open.com, jcbrocl.com等で未検出)
+
+    # 汎用高リスクキーワード (boundary matching必須)
+    # 注: これらは一般的な英単語に含まれることが多いため、
+    #     BOUNDARY_REQUIRED_BRANDS に追加してFP防止
+    "bank",                      # 銀行系 (kecbank.com等)
+    "auth",                      # 認証系 (authenticationaua.shop等)
+    "account",                   # アカウント系 (saccount-members.com等)
+    "support",                   # サポート系 (ulys-support.com等)
+    "login", "signin",           # ログイン系
+    "verify", "secure",          # セキュリティ系
 ])
 
 # ---------------------------------------------------------------------------
@@ -586,7 +631,8 @@ def _check_brand_substring(token: str, brand: str, *, is_tld: bool = False) -> T
     # 2026-01-25: CRITICAL_BRAND_KEYWORDS に含まれる短いブランド (sbi等) は例外的に許可
     # 2026-01-26: FP分析より "sbi" を除外 (sbigblog, sbiketraders等で誤検出)
     #             "ups" は BOUNDARY_REQUIRED_BRANDS でカバー
-    _short_critical_brands = {"dhl", "irs", "nhs", "rbc", "bmo", "td"}
+    # 2026-02-04: "jcb" を追加 (FN分析: myjcb-open.com等で未検出)
+    _short_critical_brands = {"dhl", "irs", "nhs", "rbc", "bmo", "td", "jcb"}
     if len(brand) <= 3 and brand not in _short_critical_brands:
         return False, ""
 

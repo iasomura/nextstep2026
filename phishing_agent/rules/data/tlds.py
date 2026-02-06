@@ -9,18 +9,21 @@ from typing import Dict
 
 # High danger TLDs (>50% phishing rate based on analysis)
 # 変更履歴:
+#   - 2026-02-04: .shop を追加 (FN分析: authenticationaua.shop等で見逃し)
 #   - 2026-01-27: llm_final_decision.py と整合化
 HIGH_DANGER_TLDS: frozenset = frozenset([
     "tk", "ml", "ga", "cf", "gq",  # 無料TLD（フィッシング頻出）
     "icu", "cfd", "sbs", "rest", "cyou",  # フィッシング特化
     "pw", "buzz", "lat",  # 高フィッシング率
+    "shop",  # 2026-02-04追加: ECサイト偽装に多用
 ])
 
 # Medium danger TLDs (>20% phishing rate or commonly abused)
 # 変更履歴:
+#   - 2026-02-04: .shop を HIGH_DANGER_TLDS に移動
 #   - 2026-01-27: llm_final_decision.py から追加
 MEDIUM_DANGER_TLDS: frozenset = frozenset([
-    "top", "shop", "xyz", "cc", "online", "site", "website",
+    "top", "xyz", "cc", "online", "site", "website",  # .shop は HIGH に移動
     "club", "vip", "asia", "one", "link", "click", "live",
     "cn", "tokyo", "dev", "me", "pe", "ar", "cl", "mw", "ci",
 ])

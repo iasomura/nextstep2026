@@ -130,6 +130,7 @@ def get_default_config():
         'stage2_cert_benign_crl_enabled': True,       # CRL保有 → 正規寄り
         'stage2_cert_benign_crl_p1_max': 0.30,        # CRLルールのp1閾値
         'stage2_cert_benign_ov_ev_enabled': True,     # OV/EV証明書 → 確実に正規
+        'stage2_cert_benign_ov_ev_p1_max': 0.50,      # OV/EVルールのp1閾値 (#21: 2026-02-02追加)
         'stage2_cert_benign_wildcard_enabled': True,  # ワイルドカード → 正規寄り
         'stage2_cert_benign_long_validity_enabled': True,  # 長期有効期間 → 正規寄り
         'stage2_cert_benign_long_validity_days': 180,
@@ -1063,9 +1064,14 @@ def run_stage2_gate(df_defer, X_defer, p1_defer, y_defer, domains_defer, tlds_de
                 cert_rule_stats['benign_crl_hits'] = int(crl_mask.sum())
 
             # Rule 2: OV/EV Certificate (Subject Organizationあり)
+            # 変更履歴:
+            #   - 2026-02-02: ML閾値を追加 (#21) - Cloudflare等のCDN証明書悪用対策
+            #     高ML (>= 0.50) のドメインはOV/EV証明書でもStage3に送る
             if cfg.get('stage2_cert_benign_ov_ev_enabled', False):
+                ov_ev_p1_max = float(cfg.get('stage2_cert_benign_ov_ev_p1_max', 0.50))
                 has_org = X_defer[:, IDX_HAS_ORG] > 0.5
-                ov_ev_mask = has_org.copy()
+                # ML閾値を適用: ML < ov_ev_p1_max の場合のみbenign判定
+                ov_ev_mask = has_org & (p1_defer < ov_ev_p1_max)
 
                 # Scenario 7: TLD-based filtering (OV/EVは信頼性が高いのでdangerousのみブロック)
                 if tld_filtering_enabled:

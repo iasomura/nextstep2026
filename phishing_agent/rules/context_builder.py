@@ -8,6 +8,7 @@ Converts tool_summary, precheck, ml_probability, and LLM assessment
 into a RuleContext for rule evaluation.
 
 変更履歴:
+    - 2026-02-05: ブランド検出ソース統合（ツール検出 + LLM検出）
     - 2026-01-31: 初版作成（ルールモジュール移行計画 Step 1.1）
 """
 
@@ -63,12 +64,36 @@ class RuleContextBuilder:
         pre = precheck or {}
 
         # --- Extract brand info ---
+        # 2026-02-05: ツール検出とLLM検出のブランドを統合
         brand_data = tsum.get("brand") or {}
         brand_issues = set(brand_data.get("issues", []) or [])
+
+        # ツール検出ブランド
+        tool_brands = list(brand_data.get("brands", []) or [])
+
+        # LLM検出ブランド（llm_assessmentがある場合）
+        llm_brands: list = []
+        if llm_assessment is not None:
+            llm_brands = list(getattr(llm_assessment, "detected_brands", []) or [])
+
+        # 統合（重複除去、順序維持）
+        merged_brands: list = []
+        seen_brands: set = set()
+        for brand in tool_brands + llm_brands:
+            # ブランド名を正規化して重複チェック（括弧内のマッチタイプを除く）
+            brand_str = str(brand).strip()
+            brand_base = brand_str.split("(")[0].strip().lower()
+            if brand_base and brand_base not in seen_brands:
+                seen_brands.add(brand_base)
+                merged_brands.append(brand_str)
+
         brand_details = {
             "risk_score": brand_data.get("risk_score", 0.0),
-            "detected_brands": list(brand_data.get("brands", []) or []),
+            "detected_brands": merged_brands,
             "issues": list(brand_issues),
+            # 2026-02-05: ソース情報を追加（デバッグ用）
+            "_tool_brands": tool_brands,
+            "_llm_brands": llm_brands,
         }
 
         # --- Extract cert info ---

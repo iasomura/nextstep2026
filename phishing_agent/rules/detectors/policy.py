@@ -8,6 +8,10 @@ These rules combine ML probability, contextual score, and certificate
 characteristics to make nuanced phishing decisions.
 
 変更履歴:
+    - 2026-02-04: FP削減のための閾値調整
+        - PolicyR1Rule: ctx_threshold 0.28 → 0.32, ctx_threshold_legit_tld 0.34 → 0.38
+        - PolicyR2Rule: ctx_threshold 0.34 → 0.38
+        - PolicyR4Rule: ctx_threshold 0.34 → 0.40, ctx_threshold_legit_tld 0.35 → 0.42
     - 2026-01-27: 初版作成 (llm_final_decision.py から移植)
 """
 
@@ -166,8 +170,8 @@ class PolicyR1Rule(DetectionRule):
         self,
         enabled: bool = True,
         ml_threshold: float = 0.20,
-        ctx_threshold: float = 0.28,
-        ctx_threshold_legit_tld: float = 0.34,
+        ctx_threshold: float = 0.32,  # 2026-02-04: 0.28 → 0.32 (FP削減)
+        ctx_threshold_legit_tld: float = 0.38,  # 2026-02-04: 0.34 → 0.38 (FP削減)
     ):
         super().__init__(enabled=enabled)
         self._ml_threshold = ml_threshold
@@ -261,7 +265,7 @@ class PolicyR2Rule(DetectionRule):
         self,
         enabled: bool = True,
         ml_threshold: float = 0.30,
-        ctx_threshold: float = 0.34,
+        ctx_threshold: float = 0.38,  # 2026-02-04: 0.34 → 0.38 (FP削減)
     ):
         super().__init__(enabled=enabled)
         self._ml_threshold = ml_threshold
@@ -409,9 +413,9 @@ class PolicyR4Rule(DetectionRule):
         self,
         enabled: bool = True,
         ml_threshold: float = 0.50,
-        ctx_threshold: float = 0.34,
-        ctx_threshold_legit_tld: float = 0.35,
-        ctx_threshold_mrf: float = 0.33,
+        ctx_threshold: float = 0.40,  # 2026-02-04: 0.34 → 0.40 (FP削減、最優先対応)
+        ctx_threshold_legit_tld: float = 0.42,  # 2026-02-04: 0.35 → 0.42 (FP削減)
+        ctx_threshold_mrf: float = 0.38,  # 2026-02-04: 0.33 → 0.38 (FP削減)
     ):
         super().__init__(enabled=enabled)
         self._ml_threshold = ml_threshold

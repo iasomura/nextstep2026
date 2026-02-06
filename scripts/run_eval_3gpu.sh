@@ -5,6 +5,7 @@
 #      bash scripts/run_eval_3gpu.sh 2000 --resume  # 中断から再開
 #
 # 変更履歴:
+#   - 2026-02-02: RUN_IDをartifacts/_current/run_id.txtから動的に読み込むよう変更
 #   - 2026-01-31: 評価完了後に自動リトライを追加（Step 5）
 #   - 2026-01-31: --resume オプション追加（#11: 中断からの再開機能）
 
@@ -19,15 +20,26 @@ for arg in "$@"; do
         --resume|-r)
             RESUME_MODE=true
             ;;
-        [0-9]*)
+        [0-9]*|ALL)
             N_SAMPLE=$arg
             ;;
     esac
 done
 
-RESULTS_DIR="artifacts/2026-01-24_213326/results/stage2_validation"
+# RUN_IDを動的に取得
+RUN_ID_FILE="artifacts/_current/run_id.txt"
+if [ -f "$RUN_ID_FILE" ]; then
+    RUN_ID=$(cat "$RUN_ID_FILE")
+else
+    echo "エラー: $RUN_ID_FILE が見つかりません"
+    echo "先に 01_data_preparation と 02_main.py を実行してください"
+    exit 1
+fi
+
+RESULTS_DIR="artifacts/${RUN_ID}/results/stage2_validation"
 
 echo "=== 3GPU並列評価スクリプト ==="
+echo "RUN_ID: $RUN_ID"
 echo "サンプル数: $N_SAMPLE"
 if [ "$RESUME_MODE" = true ]; then
     echo "モード: 中断からの再開"
