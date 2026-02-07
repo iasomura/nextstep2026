@@ -107,7 +107,8 @@ def evaluate_xgboost_reference(X_test, y_test):
     with open(XGBOOST_MODEL, "rb") as f:
         model = pickle.load(f)
     y_pred = (model.predict_proba(X_test)[:, 1] >= 0.5).astype(int)
-    return calc_metrics(y_test, y_pred, "XGBoost (Stage1)", "depth=8, lr=0.1, n=500", 0)
+    # 変更履歴: 2026-02-07 P0-5: n=500→n=300 に修正（正: default.yaml n_estimators=300）
+    return calc_metrics(y_test, y_pred, "XGBoost (Stage1)", "depth=8, lr=0.1, n=300", 0)
 
 
 def evaluate_lightgbm(X_train, y_train, X_test, y_test):

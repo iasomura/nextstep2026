@@ -251,7 +251,8 @@ for each x in D_handoff:
 - 乱数シード固定、重複排除基準、前処理の詳細を明記する。
 
 #### 4.1.4 モデルと実行環境
-- Stage1: XGBoost（max_depth=8, n_estimators=100, learning_rate=0.1）
+<!-- CHANGED: P0-5 — n_estimators=100→300 に修正。正: 02_stage1_stage2/configs/default.yaml -->
+- Stage1: XGBoost（max_depth=8, n_estimators=300, learning_rate=0.1, subsample=0.8, colsample_bytree=0.8, early_stopping_rounds=20）
   - 5-fold交差検証でROC-AUCを報告
 - Stage2: Logistic Regression（p_error推定、StandardScalerで正規化）
 - Stage3: Qwen3-4B-Thinking GPTQ-Int8（vLLM推論サーバ、temperature=0.1, max_tokens=512） + ルールエンジン

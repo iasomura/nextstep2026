@@ -1,5 +1,5 @@
 model,params_summary,TP,FP,TN,FN,Precision,Recall,F1,FPR,FNR,train_time_sec
-XGBoost (Stage1),"depth=8, lr=0.1, n=500",62167,322,63289,1444,99.48,97.73,98.6,0.51,2.27,0.0
+XGBoost (Stage1),"depth=8, lr=0.1, n=300",62167,322,63289,1444,99.48,97.73,98.6,0.51,2.27,0.0
 LightGBM-A,"leaves=31, depth=8, lr=0.1, n=500",62211,297,63314,1400,99.52,97.8,98.65,0.47,2.2,6.0
 LightGBM-B,"leaves=63, depth=12, lr=0.05, n=800",62218,296,63315,1393,99.53,97.81,98.66,0.47,2.19,10.9
 RandomForest-A,"trees=500, depth=None, features=sqrt",62246,434,63177,1365,99.31,97.85,98.58,0.68,2.15,25.9

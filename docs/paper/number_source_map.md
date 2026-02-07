@@ -71,6 +71,42 @@
 | 0.3479% | 運用点のauto-decision error rate | tables/fig3_threshold_sweep.csv | auto_error_rate_pct |
 | 374–1,447 | auto-decision errors範囲（τ=0.0〜1.0） | tables/fig3_threshold_sweep.csv | auto_errors |
 
+## Stage1 ハイパーパラメータ
+
+| パラメータ | 値 | 出典ファイル |
+|-----------|-----|-------------|
+| n_estimators | 300 | 02_stage1_stage2/configs/default.yaml |
+| max_depth | 8 | 02_stage1_stage2/configs/default.yaml |
+| learning_rate | 0.1 | 02_stage1_stage2/configs/default.yaml |
+| subsample | 0.8 | 02_stage1_stage2/configs/default.yaml |
+| colsample_bytree | 0.8 | 02_stage1_stage2/configs/default.yaml |
+| early_stopping_rounds | 20 | 02_stage1_stage2/configs/default.yaml |
+
+## 処理遅延（図4）
+
+| 数値 | 意味 | 出典ファイル | キー/列名 |
+|------|------|-------------|----------|
+| p50=8.31s | 処理時間中央値 | tables/fig4_processing_time.csv | percentile=50 |
+| p90=15.27s | 処理時間90分位 | tables/fig4_processing_time.csv | percentile=90 |
+| p99=28.59s | 処理時間99分位 | tables/fig4_processing_time.csv | percentile=99 |
+| 11,952 | Stage3処理件数 | tables/fig4_processing_time.csv | worker count合計 |
+
+## 誤り分析（図5）
+
+| 数値 | 意味 | 出典ファイル | キー/列名 |
+|------|------|-------------|----------|
+| 1,158 | FN合計 | tables/fig5_error_categories.csv | FN Total |
+| 532 | FP合計 | tables/fig5_error_categories.csv | FP Total |
+| 3 / 395 / 760 | FN Stage別 | tables/fig5_error_categories.csv | FN Stage1/2/3 |
+| 2 / 1 / 529 | FP Stage別 | tables/fig5_error_categories.csv | FP Stage1/2/3 |
+
+## ベースライン比較（付録表A）
+
+| 数値 | 意味 | 出典ファイル |
+|------|------|-------------|
+| F1=98.58〜98.66% | 全モデルF1範囲 | tables/appendix_baselines.csv |
+| XGBoost n=300 | Stage1ハイパラ | 02_stage1_stage2/configs/default.yaml |
+
 ## データソースファイル一覧
 
 すべて `docs/paper/data/` 配下:
