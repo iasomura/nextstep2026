@@ -1,0 +1,24 @@
+{
+  "total_domains": 127222,
+  "routing": {
+    "auto_phishing": {
+      "count": 60767,
+      "TP": 60765,
+      "FP": 2
+    },
+    "auto_benign": {
+      "count": 8464,
+      "TN": 8461,
+      "FN": 3
+    },
+    "handoff": {
+      "count": 57991
+    }
+  },
+  "auto_decided_total": 69231,
+  "auto_decided_rate": 54.4,
+  "thresholds": {
+    "t_high": 0.95713,
+    "t_low": 0.0012
+  }
+}

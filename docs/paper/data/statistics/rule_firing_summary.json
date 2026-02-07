@@ -1,0 +1,151 @@
+{
+  "total_evaluated": 11952,
+  "domains_with_rules_fired": 2016,
+  "rule_firing_rate": 16.9,
+  "rules": {
+    "policy_r4": {
+      "fire_count": 1342,
+      "fire_rate_pct": 11.23,
+      "tp_contribution": 279,
+      "fp_contribution": 272
+    },
+    "policy_r2": {
+      "fire_count": 1189,
+      "fire_rate_pct": 9.95,
+      "tp_contribution": 165,
+      "fp_contribution": 217
+    },
+    "POST_LLM_FLIP_GATE": {
+      "fire_count": 771,
+      "fire_rate_pct": 6.45,
+      "tp_contribution": 0,
+      "fp_contribution": 0
+    },
+    "policy_r5": {
+      "fire_count": 751,
+      "fire_rate_pct": 6.28,
+      "tp_contribution": 213,
+      "fp_contribution": 177
+    },
+    "policy_r1": {
+      "fire_count": 649,
+      "fire_rate_pct": 5.43,
+      "tp_contribution": 106,
+      "fp_contribution": 198
+    },
+    "policy_r6": {
+      "fire_count": 621,
+      "fire_rate_pct": 5.2,
+      "tp_contribution": 127,
+      "fp_contribution": 136
+    },
+    "benign_cert_gate_skip": {
+      "fire_count": 489,
+      "fire_rate_pct": 4.09,
+      "tp_contribution": 273,
+      "fp_contribution": 128
+    },
+    "soft_ctx_trigger": {
+      "fire_count": 395,
+      "fire_rate_pct": 3.3,
+      "tp_contribution": 113,
+      "fp_contribution": 81
+    },
+    "policy_r3": {
+      "fire_count": 359,
+      "fire_rate_pct": 3.0,
+      "tp_contribution": 81,
+      "fp_contribution": 77
+    },
+    "brand_cert_high": {
+      "fire_count": 311,
+      "fire_rate_pct": 2.6,
+      "tp_contribution": 250,
+      "fp_contribution": 61
+    },
+    "ml_no_mitigation_gate": {
+      "fire_count": 309,
+      "fire_rate_pct": 2.59,
+      "tp_contribution": 188,
+      "fp_contribution": 121
+    },
+    "high_ml_ctx_rescue": {
+      "fire_count": 163,
+      "fire_rate_pct": 1.36,
+      "tp_contribution": 108,
+      "fp_contribution": 55
+    },
+    "very_high_ml_override": {
+      "fire_count": 137,
+      "fire_rate_pct": 1.15,
+      "tp_contribution": 116,
+      "fp_contribution": 21
+    },
+    "post_llm_flip_gate": {
+      "fire_count": 47,
+      "fire_rate_pct": 0.39,
+      "tp_contribution": 0,
+      "fp_contribution": 0
+    },
+    "hard_ctx_trigger": {
+      "fire_count": 37,
+      "fire_rate_pct": 0.31,
+      "tp_contribution": 21,
+      "fp_contribution": 16
+    },
+    "low_signal_phishing_gate_p3": {
+      "fire_count": 32,
+      "fire_rate_pct": 0.27,
+      "tp_contribution": 6,
+      "fp_contribution": 11
+    },
+    "high_ml_override": {
+      "fire_count": 20,
+      "fire_rate_pct": 0.17,
+      "tp_contribution": 4,
+      "fp_contribution": 16
+    },
+    "benign_cert_gate_b4": {
+      "fire_count": 17,
+      "fire_rate_pct": 0.14,
+      "tp_contribution": 0,
+      "fp_contribution": 0
+    },
+    "dangerous_tld_low_ml_relax": {
+      "fire_count": 13,
+      "fire_rate_pct": 0.11,
+      "tp_contribution": 0,
+      "fp_contribution": 0
+    },
+    "low_signal_phishing_gate_p4": {
+      "fire_count": 3,
+      "fire_rate_pct": 0.03,
+      "tp_contribution": 0,
+      "fp_contribution": 1
+    },
+    "low_signal_phishing_gate_p1": {
+      "fire_count": 2,
+      "fire_rate_pct": 0.02,
+      "tp_contribution": 2,
+      "fp_contribution": 0
+    },
+    "benign_cert_gate_b2": {
+      "fire_count": 2,
+      "fire_rate_pct": 0.02,
+      "tp_contribution": 0,
+      "fp_contribution": 0
+    },
+    "fuzzy_brand_low_ml_relax": {
+      "fire_count": 2,
+      "fire_rate_pct": 0.02,
+      "tp_contribution": 0,
+      "fp_contribution": 0
+    },
+    "ultra_low_ml_block": {
+      "fire_count": 1,
+      "fire_rate_pct": 0.01,
+      "tp_contribution": 0,
+      "fp_contribution": 0
+    }
+  }
+}

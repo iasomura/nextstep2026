@@ -1,0 +1,37 @@
+{
+  "total_domains": 127222,
+  "handoff_region": 57991,
+  "routing": {
+    "not_candidate": 69231,
+    "drop_to_auto": 46039,
+    "handoff_to_agent": 11952
+  },
+  "drop_to_auto_detail": {
+    "y_true_0": 45641,
+    "y_true_1": 398
+  },
+  "gates": {
+    "safe_benign_base": 32179,
+    "safe_benign_cert": 45171,
+    "safe_phishing_cert": 8,
+    "safe_benign_combined": 45307,
+    "high_ml_phish_selected": 1718
+  },
+  "cert_rules": {
+    "enabled": true,
+    "benign_crl_hits": 43310,
+    "benign_ov_ev_hits": 688,
+    "benign_wildcard_hits": 2658,
+    "benign_long_validity_hits": 5250,
+    "phishing_tier1_tld_hits": 8,
+    "phishing_dynamic_dns_hits": 0
+  },
+  "auto_errors": 401,
+  "auto_error_rate": 0.348,
+  "parameters": {
+    "tau": 0.4,
+    "override_tau": 0.3,
+    "phi_phish": 0.99,
+    "phi_benign": 0.01
+  }
+}

@@ -1,0 +1,13 @@
+item,count,note
+Source: certificates (JPCERT domains),532117,Phishing certs from JPCERT domains
+Source: jpcert_phishing_urls,222984,JPCERT phishing URL feed
+Source: phishtank_entries,94295,PhishTank verified phishing
+Source: trusted_certificates,554801,Tranco-ranked legitimate sites
+"Phishing (cert-holding, pre-dedup)",319383,Phishing domains with certificates
+Benign (balanced sampling),319383,Balanced benign sample
+Total (pre-pipeline),638766,Before inter-source dedup
+Phishing (post-pipeline),318055,After dedup + overlap removal
+Benign (post-pipeline),318055,After balance adjustment
+Total (post-pipeline),636110,Final dataset
+Train,508888,"80% split (254,444/class)"
+Test,127222,"20% split (63,611/class)"

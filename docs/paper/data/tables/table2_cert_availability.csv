@@ -1,0 +1,5 @@
+table_name,total_records,cert_data_count,availability_pct
+certificates,532117,196083,36.9
+jpcert_phishing_urls,222984,119439,53.6
+phishtank_entries,94295,52808,56.0
+trusted_certificates,554801,450545,81.2

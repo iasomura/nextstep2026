@@ -1,0 +1,9 @@
+stage,category,count,percentage
+Input,Total test domains,127222,100.0
+Stage1,auto_phishing,60767,47.8
+Stage1,auto_benign,8464,6.7
+Stage1,handoff_to_stage2,57991,45.6
+Stage2,drop_to_auto,46039,36.2
+Stage2,handoff_to_agent (Stage3),11952,9.4
+Summary,Auto-decided (Stage1+Stage2),115270,90.6
+Summary,Stage3 processed,11952,9.4

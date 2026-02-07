@@ -1,0 +1,30 @@
+# Stage3 Performance Metrics
+TP,FP,TN,FN,Precision,Recall,F1,FPR,total_evaluated,error_count,processing_time_mean,processing_time_p50,processing_time_p90,processing_time_p99,rule_fired_count,rule_fired_rate
+1686,532,8975,759,76.01,68.96,72.31,5.6,11952,0,9.25,8.31,15.36,28.65,2016,16.9
+
+# Rule Firing Summary
+rule_name,fire_count,fire_rate_pct
+policy_r4,1342,11.23
+policy_r2,1189,9.95
+POST_LLM_FLIP_GATE,771,6.45
+policy_r5,751,6.28
+policy_r1,649,5.43
+policy_r6,621,5.2
+benign_cert_gate_skip,489,4.09
+soft_ctx_trigger,395,3.3
+policy_r3,359,3.0
+brand_cert_high,311,2.6
+ml_no_mitigation_gate,309,2.59
+high_ml_ctx_rescue,163,1.36
+very_high_ml_override,137,1.15
+post_llm_flip_gate,47,0.39
+hard_ctx_trigger,37,0.31
+low_signal_phishing_gate_p3,32,0.27
+high_ml_override,20,0.17
+benign_cert_gate_b4,17,0.14
+dangerous_tld_low_ml_relax,13,0.11
+low_signal_phishing_gate_p4,3,0.03
+low_signal_phishing_gate_p1,2,0.02
+benign_cert_gate_b2,2,0.02
+fuzzy_brand_low_ml_relax,2,0.02
+ultra_low_ml_block,1,0.01

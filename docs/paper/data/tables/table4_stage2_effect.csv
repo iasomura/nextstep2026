@@ -1,0 +1,17 @@
+# Stage2 Decision Distribution
+decision,count,percentage,y_true_1,y_true_0
+not_candidate,69231,54.4,60768,8463
+drop_to_auto,46039,36.2,398,45641
+handoff_to_agent,11952,9.4,2445,9507
+
+# Gate Filtering Details
+gate,filtered_count
+safe_benign (base),32179
+safe_benign_cert (cert-enhanced),45171
+safe_phishing_cert,8
+safe_benign_combined,45307
+high_ml_phish override,1718
+
+# Auto-decision Summary
+auto_decided_total,auto_errors,auto_error_rate,stage3_input,stage3_input_rate
+115270,401,0.348,11952,9.4
