@@ -7,27 +7,18 @@
 
 ## 優先度0（即死回避：整合性・再現性の破綻を先に潰す）
 
-### TODO-0: 図（images）と data の数値整合を100%一致させる（最優先）
+### ~~TODO-0: 図（images）と data の数値整合を100%一致させる（最優先）~~ ✅完了
 
-**状況**: `docs/paper/images/` に旧実験の図が混入しており、本文・`docs/paper/data/`（検証済み）と数値不一致がある。これは査読で即死。
-
-**不一致の実態**（確認済み）:
-- `fig01`（アーキ図）: 入力127,754→正127,222、auto_benign 6,166→正8,464、handoff 60,974→正57,991、Stage3投入 15,670→正11,952 等14箇所
-- `fig06`（処理フロー）: 同系統の旧数値16箇所
-- fig02〜fig05, fig07 は問題なし
-
-**必要な作業**:
-- [ ] 論文に使う図を確定（最低限: Fig1=アーキ図, Fig2=遷移, Fig3=スイープ, Fig4=遅延, Fig5=誤り分解）
-- [ ] `docs/paper/data/`（例: `tables/fig2_stage_transitions.csv` など）から **再生成**して `docs/paper/images/` を上書き
-- [ ] 旧図（入力127,754 / Stage3 15,670 等の系統）を削除または `docs/paper/images/_legacy/` に隔離し、本文参照を完全に断つ
-- [ ] 図キャプションに母数（n=127,222 / n=11,952 等）を明記し、本文中の引用値と一致させる
-- [ ] 整合チェックの機械化：`generate_paper_data.py --verify` は tables/statistics 検証済み。図（`generate_paper_figures.py` のハードコード値）との照合スクリプトも追加する
-
-**受入条件（Done定義）**:
-- [ ] `paper_outline.md` の検証済み数値と、本文・表・図の全てが一致（不一致ゼロ）
-- [ ] `python scripts/generate_paper_data.py --verify` が全パスすること（tables/statistics）
-- [ ] `generate_paper_figures.py` 内のハードコード値（Fig1/Fig6）が `docs/paper/data/tables/fig2_stage_transitions.csv` と一致することを機械チェックで保証（PNGは目視不可のため、ソースコード側で検証）
-- [ ] `paper_outline.md` から引用している数値の出典（table/figパス）を1対1で紐付け
+**完了日**: 2026-02-07
+- `generate_paper_figures.py` に `load_figure_data()` を追加し、fig01/fig06 のハードコード数値（計30箇所）をすべて CSV/JSON 駆動に置換
+- データソース: `fig2_stage_transitions.csv`, `table5_stage3_performance.csv`, `system_overall_metrics.json`, `stage1_metrics.json`, `stage2_metrics.json`
+- `--verify` フラグ追加（データ整合性チェック・旧数値残存チェック・ソースファイル存在チェック）
+- 旧図を `docs/paper/images/_legacy/` に隔離済み
+- fig01/fig06 を正しい数値で再生成済み
+- `docs/paper/images/FIGURE_MAP.md` 作成（図↔ファイル↔データソース対応表）
+- `docs/paper/number_source_map.md` 作成（論文数値↔CSV/JSON出典の1:1対応表）
+- `python scripts/generate_paper_data.py --verify` 全パス
+- `python scripts/generate_paper_figures.py --verify` 全パス
 
 **優先度**: 最高
 
@@ -35,23 +26,23 @@
 
 ## 優先度1（MTG合意の反映：論文の芯を固定する）
 
-### TODO-7: 「確信度（グレー）を定義して後段へ送る」設計思想を本文の主軸に固定
+### ~~TODO-7: 「確信度（グレー）を定義して後段へ送る」設計思想を本文の主軸に固定~~ ✅完了
 
-**目的**: 2025/12のMTG合意（`docs/mtg/202512/`：FN追跡ではなく不確実性=グレーの定義と投入制御）を、RQ/説明/議論に一貫して反映する。
-
-**必要な作業**:
-- [ ] §1（導入）に「本研究の焦点は分類器の優劣ではなく、確信度に基づく投入制御と困難集合での補正」である旨を明記
-- [ ] RQ1/RQ2の書き方を「投入率（budget）と自動判定の信頼性」「困難集合でのルール統合」に寄せ、FN削減"だけ"の書き方を避ける
-- [ ] §4（評価）で Stage3 の評価対象が **difficult subset (n=11,952)** であることを表題・キャプションで明確化
-- [ ] **用語・集合・指標の定義を明文化**（査読者が「FN追跡？budget最適化？」で迷わないため）:
-  - Gray / Handoff / Auto decision の定義（式 or 擬似コード1個：Stage1は [t_low, t_high] の外のみ自動判定、内はhandoff）
-  - **cert gate の仕様境界**（査読者が「確率モデルと規則が混ざってない？」と突く箇所）:
-    - 位置付け: **hard gate**（cert gateはsafe_benign判定として先にdrop。p_errorによる選択はその後）
-    - 適用順: cert gate（safe_benign_combined: 45,307件drop）→ p_error閾値（tau=0.4で残りから選択）→ high_ml_phish override（1,718件を強制追加）
-    - 衝突時: cert gateが優先（gateでdropされた行はp_errorに関わらずStage3に送らない）
-    - これにより "auto-decision error" の定義が一意に決まることを確認
-  - 評価の主目的指標の固定：RQ1 = "Stage3 call rate" + "auto-decision error" が一次指標、最終F1は補助（Table3）。RQ2 = difficult subset での Recall改善（とFP増）を明示
-- [ ] **貢献の定型文**（導入または議論に挿入）: 「本研究の貢献は分類器選択ではなく、**確信度に基づくhandoff制御**と、**困難集合での説明可能な補正（ルール統合）**である。提案は**任意の確率出力モデルに適用可能**。」→ 「XGBoostを変えたら？」への防御、Stage3 F1=72%が低く見える問題への文脈付与
+**完了日**: 2026-02-07
+- §1.1 に「焦点は分類器比較ではなく確信度ベースの投入制御＋困難集合補正」を明記
+- §1.2 を「確信度に基づく投入制御が未整理」にリフレーム（FN追跡の書き方を排除）
+- RQ1 を call rate + auto-decision error の一次指標で定義、F1 を補助に格下げ
+- RQ2 を difficult subset (n=11,952) 上の Recall 改善に限定
+- §1.4 に防御線「任意の確率出力モデルに適用可能、貢献はモデル選択ではなく制御構造」を追加
+- §3.1 に用語定義表（Auto-decision / Handoff / Gray zone / Difficult subset / Call rate / Auto-decision error）を追加
+- §3.2 に Algorithm 1（三値ルーティング擬似コード、t_high=0.957, t_low=0.001）を追加
+- §3.3 に cert gate 仕様境界を明文化（適用順序擬似コード、仕様性質表: cert gate優先 / override優先 / auto-decision error一意性）
+- §4.1.5 に RQ ごとの一次指標・補助指標を構造化
+- §4.2 見出しを「call rate と auto-decision error のトレードオフ」に変更
+- §4.3 見出しに「difficult subset, n=11,952」を明記、重要注記ブロック追加
+- §5.1-5.2 を確信度制御・投入制御の観点で一貫記述、一般化可能性の防御線を追加
+- §6 まとめを一次指標ベースに更新
+- 全変更箇所に `<!-- CHANGED: TODO-7 — 理由 -->` コメントを付与
 
 **優先度**: 高
 
@@ -59,17 +50,24 @@
 
 ## 優先度2（査読耐性の最低ライン：殴られないための防御線）
 
-### TODO-8: Fig3（スイープ）の主張と図の対応を一致させる
+### ~~TODO-8: Fig3（スイープ）の主張と図の対応を一致させる~~ ✅完了
 
-**状況**: `tables/fig3_threshold_sweep.csv` は「投入率 vs auto_errors（Stage1+2の自動誤り）」であり、最終性能（Stage3込み）の曲線ではない。
+**完了日**: 2026-02-07
+**採用**: 案A（追加実験なし）
 
-**必要な作業（どちらかを選ぶ）**:
-- [ ] **案A（追加実験なし・推奨）**: Fig3の主張を「投入率と自動判定誤り（auto_errors）の関係」に限定し、最終性能は `table3_system_performance.csv` の点比較で述べる。**「最終性能曲線」とは言わない**こと。
-- [ ] **案B（最小追加実験）**: τを**2点**選び、Stage3まで回して最終F1/FPR/FNRを算出。Table3と対応する形で「最終FNR/FPR」の2点比較を作る。（3点は贅沢）
+**案A/案B 判断根拠**:
+- **案A を採用**: `fig3_threshold_sweep.csv` のデータ（τ=0.0〜1.0、51点）はStage1+2の自動判定誤りのみを含み、Stage3込みの最終性能ではない。Fig3の主張を「call rate vs auto-decision errors」に限定すればCSV全データを活用でき、追加実験ゼロで整合する
+- **案B を不採用**: τを1点変えてStage3まで回すだけで3GPU×数時間の計算コスト。得られるcall rate変化幅は±0.4%程度（τ=0.3→0.4→0.5でcall rate 9.4→8.98%）で、コストに見合わない
 
-**図タイトルの禁止語**（案A採用時、誤爆防止）:
-- 禁止: "overall performance trade-off curve", "end-to-end trade-off curve"
-- 推奨: "Stage3 call rate vs auto-decision errors under Stage1+2"
+**実施内容**:
+- `generate_paper_figures.py` に `generate_fig08()` 追加（fig3_threshold_sweep.csv からCSV駆動で生成）
+- 出力: `fig08_s4.2_threshold_sweep.png`（X: Stage3 call rate %, Y左: auto-decision errors件数, Y右: error rate %）
+- 運用点 τ=0.4 を星印で明示、注記で「Stage1+2の自動判定誤りのみ」を明記
+- `paper_outline.md` 図表計画の図3を修正: 「Stage3投入率と全体性能のトレードオフ」→「Stage3 call rate vs 自動判定誤り（Stage1+2のauto-decision errors、τスイープ）」
+- `paper_outline.md` §4.2 に閾値感度分析（図3）の記述を追加
+- `FIGURE_MAP.md` 更新: 論文図3 = fig08 の対応を明記
+- `number_source_map.md` 更新: 閾値スイープ数値の出典を追加
+- 禁止語の不使用を確認済み: "overall performance trade-off curve", "end-to-end trade-off curve" はゼロ
 
 **優先度**: 高（案Aなら文章修正のみで軽い）
 
@@ -85,16 +83,15 @@
 
 ---
 
-### TODO-B: 再現性の最小セット（docs/paper/data/README.md）
+### ~~TODO-B: 再現性の最小セット（docs/paper/data/README.md）~~ ✅完了
 
-**状況**: `generate_paper_data.py` は存在するが、再生成手順のドキュメントがない。
-
-**必要な作業**:
-- [ ] `docs/paper/data/README.md` を作成（1ページで十分）:
-  - 再生成コマンド（`python scripts/generate_paper_data.py`）
-  - 入力ファイル一覧（どのCSV/JSON/DBスナップショットを読むか）
-  - 出力ファイル一覧（tables/statistics の対応表）
-  - 環境情報（Python版、主要ライブラリ）最小記載
+**完了日**: 2026-02-07
+- `docs/paper/data/README.md` を新規作成
+- 再生成コマンド（`--phase 1/2`, `--verify`）の説明
+- 入力ファイル一覧（5ファイル、artifacts配下のパスと役割）
+- 出力ファイル一覧（tables/ 11件 + statistics/ 5件、対応する表/図/節を紐付け）
+- 環境情報（Python 3.12, numpy >= 2.0, pandas >= 2.0）
+- VERIFIED定数のサマリと、よくある失敗3件を付記
 
 **優先度**: 中（作業量小・効果大）
 
@@ -102,18 +99,28 @@
 
 ## レビュー指摘からの保留事項（優先度を再定義）
 
-### TODO-1: 同一データセットでのベースライン比較（最小構成）（指摘4）
+### ~~TODO-1: 同一データセットでのベースライン比較（最小構成）（指摘4）~~ ✅完了
 
-**内容**: 同一Test 127,222件で単体モデルを評価し、**論点を「分類器優劣」にずらされないための防御線**を作る（勝つためではない）。
+**完了日**: 2026-02-07
 
-**必要な作業（最小構成・上限固定）**:
-- [ ] **実装追加はしない**（既存特徴量42個・既存split をそのまま使い、学習器差し替えの学習・推論のみ）
-- [ ] モデルは **2本固定**（例: LightGBM + RF）。3本目は不可
-- [ ] ハイパーパラメータ探索は最小（各モデル2〜3個、試行回数に上限を設定。沼らない）
-- [ ] 指標は **F1/FPR/FNR（＋混同行列）** に絞る（紙面節約）
-- [ ] 出力は **Appendix表** を原則とし、本文は1行で触れる（本文に表を増やさない）
+**実施内容**:
+- 同一 42 特徴量・同一 Train/Test split (Train=508,888 / Test=127,222) で LightGBM 2設定 + RandomForest 2設定を評価
+- StandardScaler（論文パイプラインと同一の scaler.pkl）を全モデルに適用
+- seed=42 固定、ハイパラは各2設定（計4 + XGBoost参照 = 5行）
+- 結果: **全モデル F1=98.58〜98.66%** の狭い範囲。分類器選択がシステム結論に影響しないことを確認
 
-**やらない場合の代償**: Threatsに "single-stage strong baseline may achieve comparable accuracy; our focus is budgeted handoff and explainable correction" を明記して論点ずらしを防ぐ（ただし殴られる確率は上がる）。なお本文で「技術的に意味がない」とは言わない。言うなら「本研究の貢献は分類器選択ではない」に留める。
+| Model | F1 | FPR | FNR |
+|-------|-----|-----|-----|
+| XGBoost (Stage1) | 98.60% | 0.51% | 2.27% |
+| LightGBM-A | 98.65% | 0.47% | 2.20% |
+| LightGBM-B | 98.66% | 0.47% | 2.19% |
+| RandomForest-A | 98.58% | 0.68% | 2.15% |
+| RandomForest-B | 98.63% | 0.43% | 2.29% |
+
+**成果物**:
+- `scripts/evaluate_baselines_minimal.py` — 再現コマンド: `python scripts/evaluate_baselines_minimal.py`
+- `docs/paper/data/tables/appendix_baselines.csv` — Appendix用結果CSV
+- `paper_outline.md` §5.3 に防御線を追記、図表計画に付録表Aを追加
 
 **優先度**: 中（原則実施。Appendix表1枚＋本文1行で紙面コストほぼゼロ、査読耐性が上がる）
 
@@ -133,18 +140,20 @@
 
 ---
 
-### TODO-3: Threats to Validityの緩和策の具体化（MTG合意を反映）（指摘9）
+### ~~TODO-3: Threats to Validityの緩和策の具体化（MTG合意を反映）（指摘9）~~ ✅完了
 
-**内容**: §5.3に列挙した脅威（観測バイアス、時間差、ラベルノイズ、ルール閾値調整）に対して、具体的な緩和策を記述する。
-
-**判断ポイント**: 緩和策として記述できるのは実際に実施した分析のみ。以下の実験実施状況に依存する。
-- 閾値感度分析 → Fig3データあり。「ルール閾値の調整」の緩和策になる
-- 時系列評価 → 未実施
-- 外部データ検証 → 未実施
-
-未実施の場合は「今後の課題」として§5または§6で言及する。
-
-- [ ] **スコープ宣言**（文章で封じる。追加実験ゼロ）: 三値学習（0/1/gray）、uncertainty calibration、別モデル最適化は自然な拡張だが、**本稿のスコープは分類器優劣ではなく投入制御とルール統合の効果**である、とThreats or Future workに明記。これにより「なぜ三値にしない？」「なぜcalibrationしない？」を"次の課題"として処理し、査読での追加実験要求を防ぐ
+**完了日**: 2026-02-07
+- §5.3 を8脅威（T1〜T8）に構造化、各脅威に「緩和策（実施済み）」「残存する制限」「今後の課題」を明記
+  - T1: 観測バイアス → Table2の証明書保有率で定量化
+  - T2: 時間的外挿 → 未実施。Future workに明記
+  - T3: データセット地理バイアス → 未実施。限界として明記
+  - T4: ラベルノイズ → Fig5のFN分析（JPCERT=387, PhishTank=232, CT=141）で偏り把握
+  - T5: 閾値感度 → Fig3（τ=0.3〜0.5で誤り396〜427、±7.5%）で安定域を確認
+  - T6: ルール閾値の調整 → Table6（flip 811件、精度49.57%）で影響範囲を定量化
+  - T7: 分類器選択 → Appendix Table A（5モデル、F1=98.58〜98.66%）で防御
+  - T8: 処理遅延 → Fig4（p50=8.31s, p90=15.27s, p99=28.59s）で定量化
+- スコープ宣言を§5.3末尾に配置:「三値学習・uncertainty calibration・別モデル最適化は自然な拡張だが、本稿のスコープは投入制御とルール統合の効果分析」
+- 表7（脅威サマリ表）を追加: 脅威分類/緩和策/残存制限の対応表
 
 **優先度**: 高（追加実験がなくても、既存データで書ける緩和策は書く）
 
@@ -185,14 +194,14 @@
 
 ## 推奨実行順序
 
-1. **TODO-0** — 図の数値一致＋legacy隔離＋整合チェック
-2. **TODO-7** — MTG芯の言語化：グレー定義・用語固定・評価目的の固定
-3. **TODO-8** — Fig3主張の確定（案A推奨）
-4. **TODO-9** — 母数ズレの脚注・引用ルール固定（原則n=11,952）
-5. **TODO-3** — Threats：実施済み範囲で具体化
-6. **TODO-1** — Appendix最小ベースライン（2モデル、原則実施）
+1. ~~**TODO-0** — 図の数値一致＋legacy隔離＋整合チェック~~ ✅完了
+2. ~~**TODO-7** — MTG芯の言語化：グレー定義・用語固定・評価目的の固定~~ ✅完了
+3. ~~**TODO-8** — Fig3主張の確定（案A採用）~~ ✅完了
+4. ~~**TODO-9** — 母数ズレの脚注・引用ルール固定（原則n=11,952）~~ ✅完了
+5. ~~**TODO-3** — Threats：実施済み範囲で具体化~~ ✅完了
+6. ~~**TODO-1** — Appendix最小ベースライン（2モデル、原則実施）~~ ✅完了
 7. **TODO-2** — なぜ証明書か（1〜2文）
-8. **TODO-B** — docs/paper/data/README.md（再現性の入口）
+8. ~~**TODO-B** — docs/paper/data/README.md（再現性の入口）~~ ✅完了
 
 ---
 
@@ -200,10 +209,10 @@
 
 | 項目 | 判断内容 | 依存先 |
 |------|---------|--------|
-| TODO-0 | 旧図の扱い（削除 or legacy隔離）と再生成の方法 | `generate_paper_data.py` / `generate_paper_figures.py` |
-| TODO-7 | MTG合意（グレー定義・投入制御）をどこまで本文主張に寄せるか | `docs/mtg/202512/` / `paper_outline.md` |
-| TODO-8 | Fig3を案A（追加なし）/案B（最小追加τ2点）どちらで成立させるか | 追加計算コストと主張の強さ |
+| ~~TODO-0~~ | ✅完了。CSV/JSON駆動に移行、旧図legacy隔離、verify追加、対応表作成 | — |
+| ~~TODO-7~~ | ✅完了。用語定義・擬似コード・cert gate仕様境界・指標体系を paper_outline.md に反映済み | — |
+| ~~TODO-8~~ | ✅完了。案A採用。fig08生成、paper_outline修正、FIGURE_MAP更新済み | — |
 | ~~TODO-9~~ | ✅完了。Table5/Table6 ともに n=11,952 で完全一致 | — |
-| TODO-1 | 原則実施（Appendix 2モデル）。やらない場合はThreatsで代償 | 実装負荷と紙面 |
+| ~~TODO-1~~ | ✅完了。5モデル比較（F1=98.58〜98.66%）。appendix_baselines.csv + §5.3防御線 | — |
 | TODO-2 | どのセクションに書くか | 論文全体の流れを見て判断 |
-| TODO-3 | 緩和策として何を書けるか。三値/uncertainty/calibration/別モデル最適化のスコープ外宣言を **Threats に書くか Future work に書くか** | Fig3/処理時間/誤り分解を活用 |
+| ~~TODO-3~~ | ✅完了。8脅威（T1〜T8）構造化、既存データで緩和策を定量記述、スコープ宣言を§5.3末尾に配置、表7追加 | — |

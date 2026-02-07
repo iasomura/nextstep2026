@@ -10,17 +10,20 @@
   fig05_s3.4_agent_flow.png            - AI Agent解析フロー
   fig06_s4.5.1_processing_flow.png     - 処理フロー全体像
   fig07_s4.4.2_detection_pattern.png   - Stage3検知パターン
+  fig08_s4.2_threshold_sweep.png       - 閾値スイープ（call rate vs auto-decision errors）
 
 Usage:
     python scripts/generate_paper_figures.py
-    python scripts/generate_paper_figures.py --fig 3   # 特定の図のみ
-    python scripts/generate_paper_figures.py --lang ja  # 日本語ラベル（デフォルト）
-    python scripts/generate_paper_figures.py --lang en  # 英語ラベル
+    python scripts/generate_paper_figures.py --fig 3    # 特定の図のみ
+    python scripts/generate_paper_figures.py --lang ja   # 日本語ラベル（デフォルト）
+    python scripts/generate_paper_figures.py --lang en   # 英語ラベル
+    python scripts/generate_paper_figures.py --verify    # データ整合性検証
 """
 
 import sys
 import os
 import argparse
+import csv
 import pickle
 import json
 from pathlib import Path
@@ -47,6 +50,7 @@ TRAIN_DATA_PATH = PROJECT_ROOT / "artifacts" / "00-firststep" / "processed" / "t
 TEST_DATA_PATH = PROJECT_ROOT / "artifacts" / "00-firststep" / "processed" / "test_data.pkl"
 OUTPUT_DIR = PROJECT_ROOT / "docs" / "paper" / "images"
 LEARNING_CURVE_CACHE = OUTPUT_DIR / ".learning_curve_cache.pkl"
+DATA_DIR = PROJECT_ROOT / "docs" / "paper" / "data"
 
 # Feature names (from 02_stage1_stage2/src/features.py)
 FEATURE_ORDER = [
@@ -113,6 +117,124 @@ FEATURE_DISPLAY_NAMES = {
 }
 
 
+def load_figure_data() -> dict:
+    """検証済みCSV/JSONから図に使う数値を読み込む。
+
+    データソース:
+      - fig2_stage_transitions.csv   → Stage遷移件数
+      - table3_system_performance.csv → システム全体性能
+      - table5_stage3_performance.csv → Stage3混同行列
+      - system_overall_metrics.json   → F1等
+      - stage1_metrics.json           → Stage1 routing TP/FP/TN/FN
+      - stage2_metrics.json           → Stage2 drop detail
+
+    変更履歴:
+      - 2026-02-07: 新規作成 — fig01/fig06のハードコード除去のため
+    """
+    tables_dir = DATA_DIR / "tables"
+    stats_dir = DATA_DIR / "statistics"
+
+    # --- fig2_stage_transitions.csv ---
+    transitions = {}
+    with open(tables_dir / "fig2_stage_transitions.csv") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            key = f"{row['stage']}_{row['category']}"
+            transitions[key] = {
+                'count': int(row['count']),
+                'percentage': float(row['percentage']),
+            }
+
+    # --- table3_system_performance.csv ---
+    sys_perf = {}
+    with open(tables_dir / "table3_system_performance.csv") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            sys_perf[row['configuration']] = {k: float(v) for k, v in row.items() if k != 'configuration'}
+
+    # --- table5_stage3_performance.csv (first row only, skip comment lines) ---
+    with open(tables_dir / "table5_stage3_performance.csv") as f:
+        lines = [l for l in f if not l.startswith('#') and l.strip()]
+    reader = csv.DictReader(lines)
+    stage3_row = next(reader)
+    stage3_perf = {k: float(v) for k, v in stage3_row.items()}
+
+    # --- JSON statistics ---
+    with open(stats_dir / "system_overall_metrics.json") as f:
+        system_metrics = json.load(f)
+    with open(stats_dir / "stage1_metrics.json") as f:
+        stage1_metrics = json.load(f)
+    with open(stats_dir / "stage2_metrics.json") as f:
+        stage2_metrics = json.load(f)
+
+    # Build unified data dict
+    total = transitions['Input_Total test domains']['count']
+    auto_phishing = transitions['Stage1_auto_phishing']['count']
+    auto_benign = transitions['Stage1_auto_benign']['count']
+    handoff_s2 = transitions['Stage1_handoff_to_stage2']['count']
+    drop_to_auto = transitions['Stage2_drop_to_auto']['count']
+    stage3_count = transitions['Stage2_handoff_to_agent (Stage3)']['count']
+
+    # Stage1 confusion details
+    s1_ap_tp = stage1_metrics['routing']['auto_phishing']['TP']
+    s1_ap_fp = stage1_metrics['routing']['auto_phishing']['FP']
+    s1_ab_tn = stage1_metrics['routing']['auto_benign']['TN']
+    s1_ab_fn = stage1_metrics['routing']['auto_benign']['FN']
+
+    # Stage2 drop detail
+    s2_drop_tn = stage2_metrics['drop_to_auto_detail']['y_true_0']
+    s2_drop_fn = stage2_metrics['drop_to_auto_detail']['y_true_1']
+
+    # Stage3 confusion
+    s3_tp = int(stage3_perf['TP'])
+    s3_fp = int(stage3_perf['FP'])
+    s3_tn = int(stage3_perf['TN'])
+    s3_fn = int(stage3_perf['FN'])
+    s3_phishing = s3_tp + s3_fp
+    s3_benign = s3_tn + s3_fn
+
+    # System-level metrics
+    sys_f1 = system_metrics['f1']
+    sys_precision = system_metrics['precision']
+    sys_recall = system_metrics['recall']
+
+    return {
+        # Total
+        'total': total,
+        # Stage1
+        'auto_phishing': auto_phishing,
+        'auto_phishing_pct': auto_phishing / total * 100,
+        'auto_benign': auto_benign,
+        'auto_benign_pct': auto_benign / total * 100,
+        'handoff_s2': handoff_s2,
+        'handoff_s2_pct': handoff_s2 / total * 100,
+        # Stage1 confusion
+        's1_ap_tp': s1_ap_tp,
+        's1_ap_fp': s1_ap_fp,
+        's1_ab_tn': s1_ab_tn,
+        's1_ab_fn': s1_ab_fn,
+        # Stage2
+        'drop_to_auto': drop_to_auto,
+        'drop_to_auto_pct': drop_to_auto / total * 100,
+        'stage3_count': stage3_count,
+        'stage3_pct': stage3_count / total * 100,
+        # Stage2 drop confusion
+        's2_drop_tn': s2_drop_tn,
+        's2_drop_fn': s2_drop_fn,
+        # Stage3
+        's3_tp': s3_tp,
+        's3_fp': s3_fp,
+        's3_tn': s3_tn,
+        's3_fn': s3_fn,
+        's3_phishing': s3_phishing,
+        's3_benign': s3_benign,
+        # System metrics
+        'sys_f1': sys_f1,
+        'sys_precision': sys_precision,
+        'sys_recall': sys_recall,
+    }
+
+
 def setup_style():
     """Set up matplotlib style for paper figures."""
     # Use Noto Sans CJK JP for Japanese support, fallback to DejaVu Sans
@@ -141,7 +263,12 @@ def setup_style():
 # Fig 1: 3-Stage Cascade Architecture
 # ============================================================
 def generate_fig01(output_dir: Path, lang='ja'):
-    """3段カスケードアーキテクチャ図"""
+    """3段カスケードアーキテクチャ図
+
+    変更履歴:
+      - 2026-02-07: ハードコード数値を load_figure_data() に置換（CSV/JSON駆動）
+    """
+    d = load_figure_data()
     fig, ax = plt.subplots(figsize=(12, 7))
     ax.set_xlim(0, 12)
     ax.set_ylim(0, 7)
@@ -174,26 +301,31 @@ def generate_fig01(output_dir: Path, lang='ja'):
                     bbox=dict(boxstyle='round,pad=0.2', facecolor='white', edgecolor='gray', alpha=0.9))
 
     # Input
-    draw_box(0.3, 3.0, 2.0, 1.0, c_input,
-             'Input\n127,754 domains' if lang == 'en' else '入力\n127,754件', fontsize=9)
+    input_label = (f"Input\n{d['total']:,} domains" if lang == 'en'
+                   else f"入力\n{d['total']:,}件")
+    draw_box(0.3, 3.0, 2.0, 1.0, c_input, input_label, fontsize=9)
 
     # Stage 1
     draw_box(3.2, 3.0, 2.2, 1.0, c_stage1,
-             'Stage 1\nXGBoost' if lang == 'en' else 'Stage 1\nXGBoost', fontsize=10)
+             'Stage 1\nXGBoost', fontsize=10)
     ax.text(4.3, 2.7, '42 features, threshold-based routing' if lang == 'en'
             else '42特徴量, 確信度ベース振分', ha='center', fontsize=7, color='#555555')
 
     # Stage 1 outputs
-    draw_box(3.2, 5.2, 2.2, 0.7, c_output_p,
-             'auto_phishing\n60,614 (47.4%)' if lang == 'en' else 'auto_phishing\n60,614件 (47.4%)', fontsize=8)
-    draw_box(3.2, 0.8, 2.2, 0.7, c_output_b,
-             'auto_benign\n6,166 (4.8%)' if lang == 'en' else 'auto_benign\n6,166件 (4.8%)', fontsize=8)
+    ap_label = (f"auto_phishing\n{d['auto_phishing']:,} ({d['auto_phishing_pct']:.1f}%)" if lang == 'en'
+                else f"auto_phishing\n{d['auto_phishing']:,}件 ({d['auto_phishing_pct']:.1f}%)")
+    draw_box(3.2, 5.2, 2.2, 0.7, c_output_p, ap_label, fontsize=8)
+
+    ab_label = (f"auto_benign\n{d['auto_benign']:,} ({d['auto_benign_pct']:.1f}%)" if lang == 'en'
+                else f"auto_benign\n{d['auto_benign']:,}件 ({d['auto_benign_pct']:.1f}%)")
+    draw_box(3.2, 0.8, 2.2, 0.7, c_output_b, ab_label, fontsize=8)
 
     draw_arrow(4.3, 4.0, 4.3, 5.2)
     draw_arrow(4.3, 3.0, 4.3, 1.5)
 
     # Handoff arrow Stage1 -> Stage2
-    draw_arrow(5.4, 3.5, 6.2, 3.5, 'handoff\n60,974 (47.7%)')
+    handoff_s2_label = f"handoff\n{d['handoff_s2']:,} ({d['handoff_s2_pct']:.1f}%)"
+    draw_arrow(5.4, 3.5, 6.2, 3.5, handoff_s2_label)
 
     # Stage 2
     draw_box(6.2, 3.0, 2.2, 1.0, c_stage2,
@@ -202,13 +334,15 @@ def generate_fig01(output_dir: Path, lang='ja'):
             else '誤り確率推定 + 証明書属性ルール', ha='center', fontsize=7, color='#555555')
 
     # Stage 2 output (benign)
-    draw_box(6.2, 0.8, 2.2, 0.7, c_output_b,
-             'safe_benign\n45,304 (35.5%)' if lang == 'en' else 'safe_benign\n45,304件 (35.5%)', fontsize=8)
+    sb_label = (f"safe_benign\n{d['drop_to_auto']:,} ({d['drop_to_auto_pct']:.1f}%)" if lang == 'en'
+                else f"safe_benign\n{d['drop_to_auto']:,}件 ({d['drop_to_auto_pct']:.1f}%)")
+    draw_box(6.2, 0.8, 2.2, 0.7, c_output_b, sb_label, fontsize=8)
     draw_arrow(7.3, 3.0, 7.3, 1.5)
 
     # Handoff arrow Stage2 -> Stage3
-    draw_arrow(8.4, 3.5, 9.2, 3.5,
-               'handoff\n15,670 (12.3%)' if lang == 'en' else 'handoff\n15,670件 (12.3%)')
+    handoff_s3_label = (f"handoff\n{d['stage3_count']:,} ({d['stage3_pct']:.1f}%)" if lang == 'en'
+                        else f"handoff\n{d['stage3_count']:,}件 ({d['stage3_pct']:.1f}%)")
+    draw_arrow(8.4, 3.5, 9.2, 3.5, handoff_s3_label)
 
     # Stage 3
     draw_box(9.2, 3.0, 2.5, 1.0, c_stage3,
@@ -217,12 +351,13 @@ def generate_fig01(output_dir: Path, lang='ja'):
             else 'Qwen3-4B + ドメイン知識ルール35件', ha='center', fontsize=7, color='#555555')
 
     # Stage 3 outputs
-    draw_box(9.2, 5.2, 2.5, 0.7, c_output_p,
-             'phishing: 2,446\n(TP:1,781 / FP:665)' if lang == 'en'
-             else 'phishing: 2,446件\n(TP:1,781 / FP:665)', fontsize=8)
-    draw_box(9.2, 0.8, 2.5, 0.7, c_output_b,
-             'benign: 13,224\n(TN:12,266 / FN:958)' if lang == 'en'
-             else 'benign: 13,224件\n(TN:12,266 / FN:958)', fontsize=8)
+    s3p_label = (f"phishing: {d['s3_phishing']:,}\n(TP:{d['s3_tp']:,} / FP:{d['s3_fp']:,})" if lang == 'en'
+                 else f"phishing: {d['s3_phishing']:,}件\n(TP:{d['s3_tp']:,} / FP:{d['s3_fp']:,})")
+    draw_box(9.2, 5.2, 2.5, 0.7, c_output_p, s3p_label, fontsize=8)
+
+    s3b_label = (f"benign: {d['s3_benign']:,}\n(TN:{d['s3_tn']:,} / FN:{d['s3_fn']:,})" if lang == 'en'
+                 else f"benign: {d['s3_benign']:,}件\n(TN:{d['s3_tn']:,} / FN:{d['s3_fn']:,})")
+    draw_box(9.2, 0.8, 2.5, 0.7, c_output_b, s3b_label, fontsize=8)
     draw_arrow(10.45, 4.0, 10.45, 5.2)
     draw_arrow(10.45, 3.0, 10.45, 1.5)
 
@@ -239,8 +374,9 @@ def generate_fig01(output_dir: Path, lang='ja'):
               framealpha=0.9, edgecolor='gray')
 
     # System performance annotation
-    perf_text = ('System: F1 98.66%, Precision 99.15%, Recall 98.18%' if lang == 'en'
-                 else 'システム全体: F1 98.66%, Precision 99.15%, Recall 98.18%')
+    perf_text = (f"System: F1 {d['sys_f1']:.2f}%, Precision {d['sys_precision']:.2f}%, Recall {d['sys_recall']:.2f}%"
+                 if lang == 'en'
+                 else f"システム全体: F1 {d['sys_f1']:.2f}%, Precision {d['sys_precision']:.2f}%, Recall {d['sys_recall']:.2f}%")
     ax.text(6.0, 6.5, perf_text, ha='center', fontsize=10,
             bbox=dict(boxstyle='round,pad=0.4', facecolor='lightyellow', edgecolor='goldenrod'))
 
@@ -692,16 +828,16 @@ def generate_fig05(output_dir: Path, lang='ja'):
 # Fig 6: Processing Flow (Stage Counts)
 # ============================================================
 def generate_fig06(output_dir: Path, lang='ja'):
-    """処理フロー全体像（各Stageの件数遷移）"""
+    """処理フロー全体像（各Stageの件数遷移）
+
+    変更履歴:
+      - 2026-02-07: ハードコード数値を load_figure_data() に置換（CSV/JSON駆動）
+    """
+    d = load_figure_data()
     fig, ax = plt.subplots(figsize=(12, 6))
     ax.set_xlim(0, 12)
     ax.set_ylim(0, 6)
     ax.axis('off')
-
-    # Data from progress report
-    # Stage1: 127,754 -> auto_phishing 60,614 / auto_benign 6,166 / handoff 60,974
-    # Stage2: 60,974 -> safe_benign 45,304 / handoff 15,670
-    # Stage3: 15,670 -> phishing 2,446 / benign 13,224
 
     c_flow = '#5B9BD5'
     c_phishing = '#FF6B6B'
@@ -727,43 +863,58 @@ def generate_fig06(output_dir: Path, lang='ja'):
         draw_rbox(sx, 5.0, 3.0, 0.7, sc, sn, fontsize=10)
 
     # Stage1 results
-    draw_rbox(0.5, 3.8, 1.4, 0.5, c_phishing, 'auto_phishing\n60,614', fontsize=7)
-    draw_rbox(0.5, 2.3, 1.4, 0.5, c_benign, 'auto_benign\n6,166', fontsize=7)
-    draw_rbox(2.1, 3.1, 1.4, 0.5, c_handoff, 'handoff\n60,974', fontsize=7)
+    draw_rbox(0.5, 3.8, 1.4, 0.5, c_phishing,
+              f"auto_phishing\n{d['auto_phishing']:,}", fontsize=7)
+    draw_rbox(0.5, 2.3, 1.4, 0.5, c_benign,
+              f"auto_benign\n{d['auto_benign']:,}", fontsize=7)
+    draw_rbox(2.1, 3.1, 1.4, 0.5, c_handoff,
+              f"handoff\n{d['handoff_s2']:,}", fontsize=7)
 
     # Arrow Stage1 -> Stage2
     ax.annotate('', xy=(4.0, 3.35), xytext=(3.5, 3.35),
                 arrowprops=dict(arrowstyle='->', color='#333333', lw=2.0))
 
     # Stage2 results
-    draw_rbox(4.0, 2.3, 1.4, 0.5, c_benign, 'safe_benign\n45,304', fontsize=7)
-    draw_rbox(5.6, 3.1, 1.4, 0.5, c_handoff, 'handoff\n15,670', fontsize=7)
+    draw_rbox(4.0, 2.3, 1.4, 0.5, c_benign,
+              f"safe_benign\n{d['drop_to_auto']:,}", fontsize=7)
+    draw_rbox(5.6, 3.1, 1.4, 0.5, c_handoff,
+              f"handoff\n{d['stage3_count']:,}", fontsize=7)
 
     # Arrow Stage2 -> Stage3
     ax.annotate('', xy=(7.5, 3.35), xytext=(7.0, 3.35),
                 arrowprops=dict(arrowstyle='->', color='#333333', lw=2.0))
 
     # Stage3 results
-    draw_rbox(7.5, 3.8, 1.4, 0.5, c_phishing, 'phishing\n2,446', fontsize=7)
-    draw_rbox(7.5, 2.3, 1.4, 0.5, c_benign, 'benign\n13,224', fontsize=7)
+    draw_rbox(7.5, 3.8, 1.4, 0.5, c_phishing,
+              f"phishing\n{d['s3_phishing']:,}", fontsize=7)
+    draw_rbox(7.5, 2.3, 1.4, 0.5, c_benign,
+              f"benign\n{d['s3_benign']:,}", fontsize=7)
 
     # TP/FP/TN/FN annotations
     annot_style = dict(fontsize=6, color='#333333',
                        bbox=dict(boxstyle='round,pad=0.15', facecolor='white', alpha=0.9, edgecolor='gray'))
 
-    ax.text(1.95, 4.0, 'TP:60,612\nFP:2', **annot_style)
-    ax.text(1.95, 2.45, 'TN:6,158\nFN:8', **annot_style)
-    ax.text(5.45, 2.45, 'TN:44,786\nFN:518', **annot_style)
-    ax.text(8.95, 4.0, 'TP:1,781\nFP:665', **annot_style)
-    ax.text(8.95, 2.45, 'TN:12,266\nFN:958', **annot_style)
+    ax.text(1.95, 4.0, f"TP:{d['s1_ap_tp']:,}\nFP:{d['s1_ap_fp']:,}", **annot_style)
+    ax.text(1.95, 2.45, f"TN:{d['s1_ab_tn']:,}\nFN:{d['s1_ab_fn']:,}", **annot_style)
+    ax.text(5.45, 2.45, f"TN:{d['s2_drop_tn']:,}\nFN:{d['s2_drop_fn']:,}", **annot_style)
+    ax.text(8.95, 4.0, f"TP:{d['s3_tp']:,}\nFP:{d['s3_fp']:,}", **annot_style)
+    ax.text(8.95, 2.45, f"TN:{d['s3_tn']:,}\nFN:{d['s3_fn']:,}", **annot_style)
 
     # Bottom summary bar
     summary_y = 0.5
-    # Percentage bars
-    total = 127754
-    widths = [60614/total*10, 6166/total*10, 45304/total*10, 2446/total*10, 13224/total*10]
-    labels = ['auto_phishing\n47.4%', 'auto_benign\n4.8%', 'safe_benign\n35.5%',
-              'phishing\n1.9%', 'benign\n10.4%']
+    total = d['total']
+    ap_pct = d['auto_phishing'] / total * 100
+    ab_pct = d['auto_benign'] / total * 100
+    sb_pct = d['drop_to_auto'] / total * 100
+    s3p_pct = d['s3_phishing'] / total * 100
+    s3b_pct = d['s3_benign'] / total * 100
+
+    widths = [d['auto_phishing']/total*10, d['auto_benign']/total*10,
+              d['drop_to_auto']/total*10, d['s3_phishing']/total*10,
+              d['s3_benign']/total*10]
+    labels = [f"auto_phishing\n{ap_pct:.1f}%", f"auto_benign\n{ab_pct:.1f}%",
+              f"safe_benign\n{sb_pct:.1f}%", f"phishing\n{s3p_pct:.1f}%",
+              f"benign\n{s3b_pct:.1f}%"]
     colors = [c_phishing, c_benign, c_benign, c_phishing, c_benign]
     alphas = [0.9, 0.9, 0.7, 0.9, 0.7]
 
@@ -789,8 +940,9 @@ def generate_fig06(output_dir: Path, lang='ja'):
     ax.set_title(title, fontsize=13, fontweight='bold', pad=15)
 
     # Input annotation
-    ax.text(2.0, 5.5,
-            f'Input: 127,754 domains' if lang == 'en' else f'入力: 127,754件',
+    input_annot = (f"Input: {d['total']:,} domains" if lang == 'en'
+                   else f"入力: {d['total']:,}件")
+    ax.text(2.0, 5.5, input_annot,
             ha='center', fontsize=9, fontweight='bold',
             bbox=dict(boxstyle='round,pad=0.3', facecolor='lightyellow', edgecolor='goldenrod'))
 
@@ -901,14 +1053,229 @@ def generate_fig07(output_dir: Path, lang='ja'):
 
 
 # ============================================================
+# Fig 8: Threshold Sweep (Call Rate vs Auto-Decision Errors)
+# ============================================================
+def generate_fig08(output_dir: Path, lang='ja'):
+    """閾値スイープ: Stage3 call rate vs auto-decision errors (Stage1+2)
+
+    データソース: fig3_threshold_sweep.csv
+    X軸: Stage3 call rate (%)
+    Y軸(左): Auto-decision errors (件数)
+    Y軸(右): Auto-decision error rate (%)
+    運用点: τ=0.4 (call rate=9.39%, auto_errors=401)
+
+    論文 図3 に対応。Stage1+2 の自動判定誤りのみを示し、
+    最終性能（Stage3込み）の曲線ではないことに注意。
+
+    変更履歴:
+      - 2026-02-07: 新規作成（TODO-8: Fig3主張の整合性修正）
+    """
+    sweep_csv = DATA_DIR / "tables" / "fig3_threshold_sweep.csv"
+    df = pd.read_csv(sweep_csv)
+
+    # Operating point: τ=0.4
+    op = df[df['tau'] == 0.4].iloc[0]
+    op_call_rate = op['stage3_rate_pct']
+    op_errors = int(op['auto_errors'])
+    op_error_rate = op['auto_error_rate_pct']
+
+    fig, ax1 = plt.subplots(figsize=(9, 5.5))
+
+    # Primary Y-axis: auto_errors (count)
+    color1 = '#4472C4'
+    ax1.plot(df['stage3_rate_pct'], df['auto_errors'],
+             'o-', color=color1, markersize=3, linewidth=1.8, label='Auto-decision errors')
+    ax1.set_xlabel('Stage3 Call Rate (%)' if lang == 'en'
+                   else 'Stage3 投入率 (%)', fontsize=11)
+    ax1.set_ylabel('Auto-Decision Errors (count)' if lang == 'en'
+                   else '自動判定誤り (件数)', fontsize=11, color=color1)
+    ax1.tick_params(axis='y', labelcolor=color1)
+
+    # Secondary Y-axis: auto_error_rate_pct
+    ax2 = ax1.twinx()
+    color2 = '#ED7D31'
+    ax2.plot(df['stage3_rate_pct'], df['auto_error_rate_pct'],
+             's--', color=color2, markersize=3, linewidth=1.5, alpha=0.8,
+             label='Auto-decision error rate (%)')
+    ax2.set_ylabel('Auto-Decision Error Rate (%)' if lang == 'en'
+                   else '自動判定誤り率 (%)', fontsize=11, color=color2)
+    ax2.tick_params(axis='y', labelcolor=color2)
+
+    # Mark operating point (τ=0.4)
+    ax1.plot(op_call_rate, op_errors, '*', color='#C00000', markersize=15,
+             markeredgecolor='black', markeredgewidth=0.8, zorder=5)
+    op_label = (f'Operating point (τ=0.4)\n'
+                f'call rate={op_call_rate:.1f}%, errors={op_errors}')
+    ax1.annotate(op_label,
+                 xy=(op_call_rate, op_errors),
+                 xytext=(op_call_rate - 1.5, op_errors + 350),
+                 fontsize=8, fontweight='bold', color='#C00000',
+                 arrowprops=dict(arrowstyle='->', color='#C00000', lw=1.2),
+                 bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
+                           edgecolor='#C00000', alpha=0.9))
+
+    # X-axis direction: higher call rate (left) to lower call rate (right)
+    # The natural data order has high call rate at τ=0 and low at τ=1
+    ax1.invert_xaxis()
+
+    # Grid and title
+    ax1.grid(True, alpha=0.3, linestyle='-')
+    title = ('Stage3 Call Rate vs Auto-Decision Errors (Stage1+2)' if lang == 'en'
+             else 'Stage3投入率 vs 自動判定誤り (Stage1+2)')
+    ax1.set_title(title, fontsize=13, fontweight='bold', pad=12)
+
+    # Combined legend
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper right', fontsize=9)
+
+    # Annotation: range summary
+    summary = (f'τ range: 0.0–1.0\n'
+               f'Call rate range: {df["stage3_rate_pct"].min():.1f}%–{df["stage3_rate_pct"].max():.1f}%\n'
+               f'Error range: {df["auto_errors"].min():,}–{df["auto_errors"].max():,}')
+    ax1.text(0.03, 0.97, summary, transform=ax1.transAxes,
+             ha='left', va='top', fontsize=7.5, color='#555555',
+             bbox=dict(boxstyle='round,pad=0.3', facecolor='lightyellow',
+                       edgecolor='gray', alpha=0.8))
+
+    # Note: This is NOT end-to-end performance
+    note = ('Note: Errors are among Stage1+2 auto-decided items only.\n'
+            'End-to-end performance requires Stage3 evaluation.' if lang == 'en'
+            else '※ 誤りは Stage1+2 自動判定分のみ。\n'
+                 '　最終性能には Stage3 評価が必要。')
+    ax1.text(0.03, 0.03, note, transform=ax1.transAxes,
+             ha='left', va='bottom', fontsize=7, color='#888888', style='italic')
+
+    plt.tight_layout()
+    out = output_dir / 'fig08_s4.2_threshold_sweep.png'
+    plt.savefig(out, dpi=300, bbox_inches='tight', facecolor='white')
+    plt.close()
+    print(f"  -> {out}")
+
+
+# ============================================================
 # Main
 # ============================================================
+def verify_figure_data():
+    """図データの整合性を検証する。
+
+    1. load_figure_data() がCSV/JSONから正しく読み込めるか確認
+    2. ソースコード内に旧数値（ハードコード）が残っていないことを確認
+
+    変更履歴:
+      - 2026-02-07: 新規作成
+    """
+    print("=" * 60)
+    print("Figure Data Verification")
+    print("=" * 60)
+
+    # Step 1: load_figure_data() の検証
+    print("\n[1/3] Loading figure data from CSV/JSON...")
+    d = load_figure_data()
+
+    # 基本整合性チェック
+    errors = []
+    # total = auto_phishing + auto_benign + handoff_s2
+    s1_sum = d['auto_phishing'] + d['auto_benign'] + d['handoff_s2']
+    if s1_sum != d['total']:
+        errors.append(f"Stage1 sum mismatch: {s1_sum} != total {d['total']}")
+
+    # handoff_s2 = drop_to_auto + stage3_count
+    s2_sum = d['drop_to_auto'] + d['stage3_count']
+    if s2_sum != d['handoff_s2']:
+        errors.append(f"Stage2 sum mismatch: {s2_sum} != handoff_s2 {d['handoff_s2']}")
+
+    # stage3_count = s3_tp + s3_fp + s3_tn + s3_fn
+    s3_sum = d['s3_tp'] + d['s3_fp'] + d['s3_tn'] + d['s3_fn']
+    if s3_sum != d['stage3_count']:
+        errors.append(f"Stage3 sum mismatch: {s3_sum} != stage3_count {d['stage3_count']}")
+
+    if errors:
+        for e in errors:
+            print(f"  FAIL: {e}")
+    else:
+        print("  OK: All sums consistent")
+
+    # Print loaded values
+    print(f"\n  total           = {d['total']:,}")
+    print(f"  auto_phishing   = {d['auto_phishing']:,} ({d['auto_phishing_pct']:.1f}%)")
+    print(f"  auto_benign     = {d['auto_benign']:,} ({d['auto_benign_pct']:.1f}%)")
+    print(f"  handoff_s2      = {d['handoff_s2']:,} ({d['handoff_s2_pct']:.1f}%)")
+    print(f"  drop_to_auto    = {d['drop_to_auto']:,} ({d['drop_to_auto_pct']:.1f}%)")
+    print(f"  stage3_count    = {d['stage3_count']:,} ({d['stage3_pct']:.1f}%)")
+    print(f"  Stage3 TP/FP/TN/FN = {d['s3_tp']}/{d['s3_fp']}/{d['s3_tn']}/{d['s3_fn']}")
+    print(f"  System F1/Prec/Rec = {d['sys_f1']:.2f}%/{d['sys_precision']:.2f}%/{d['sys_recall']:.2f}%")
+
+    # Step 2: ソースコード内の旧数値チェック
+    print("\n[2/3] Checking for stale hardcoded values in source...")
+    stale_values = ['127754', '127,754', '15670', '15,670', '60974', '60,974',
+                    '6166', '6,166', '45304', '45,304', '2446', '2,446',
+                    '13224', '13,224', '60614', '60,614',
+                    '98.66', '99.15']
+    src_path = Path(__file__)
+    src_text = src_path.read_text()
+
+    # Exclude this verify function itself and comments from checking
+    found_stale = []
+    for i, line in enumerate(src_text.splitlines(), 1):
+        stripped = line.strip()
+        # Skip comments and docstrings
+        if stripped.startswith('#') or stripped.startswith("'") or stripped.startswith('"'):
+            continue
+        # Skip the stale_values list definition itself
+        if 'stale_values' in line:
+            continue
+        for val in stale_values:
+            if val in line:
+                found_stale.append((i, val, line.strip()))
+
+    if found_stale:
+        print(f"  WARNING: Found {len(found_stale)} stale value(s):")
+        for lineno, val, content in found_stale:
+            print(f"    L{lineno}: '{val}' in: {content[:80]}")
+    else:
+        print("  OK: No stale hardcoded values found")
+
+    # Step 3: CSV/JSON ファイル存在チェック
+    print("\n[3/3] Checking data source files...")
+    required_files = [
+        DATA_DIR / "tables" / "fig2_stage_transitions.csv",
+        DATA_DIR / "tables" / "table3_system_performance.csv",
+        DATA_DIR / "tables" / "table5_stage3_performance.csv",
+        DATA_DIR / "statistics" / "system_overall_metrics.json",
+        DATA_DIR / "statistics" / "stage1_metrics.json",
+        DATA_DIR / "statistics" / "stage2_metrics.json",
+    ]
+    all_exist = True
+    for f in required_files:
+        if f.exists():
+            print(f"  OK: {f.relative_to(PROJECT_ROOT)}")
+        else:
+            print(f"  MISSING: {f.relative_to(PROJECT_ROOT)}")
+            all_exist = False
+
+    # Final result
+    print("\n" + "=" * 60)
+    if errors or found_stale or not all_exist:
+        print("VERIFICATION FAILED")
+        sys.exit(1)
+    else:
+        print("VERIFICATION PASSED: All figure data is CSV/JSON-driven")
+    print("=" * 60)
+
+
 def main():
     parser = argparse.ArgumentParser(description='Generate paper figures')
     parser.add_argument('--fig', type=int, help='Generate specific figure only (1-7)')
     parser.add_argument('--lang', choices=['ja', 'en'], default='ja',
                         help='Language for labels (default: ja)')
+    parser.add_argument('--verify', action='store_true',
+                        help='Verify figure data consistency (no figure generation)')
     args = parser.parse_args()
+
+    if args.verify:
+        verify_figure_data()
+        return
 
     setup_style()
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -921,6 +1288,7 @@ def main():
         5: ('Fig 5: AI Agent Flow', generate_fig05),
         6: ('Fig 6: Processing Flow', generate_fig06),
         7: ('Fig 7: Detection Patterns', generate_fig07),
+        8: ('Fig 8: Threshold Sweep (Call Rate vs Errors)', generate_fig08),
     }
 
     if args.fig:
@@ -929,14 +1297,15 @@ def main():
             print(f"Generating {name}...")
             func(OUTPUT_DIR, lang=args.lang)
         else:
-            print(f"Error: --fig must be 1-7, got {args.fig}")
+            print(f"Error: --fig must be 1-8, got {args.fig}")
             sys.exit(1)
     else:
-        print(f"Generating all 7 figures (lang={args.lang})...")
+        n = len(generators)
+        print(f"Generating all {n} figures (lang={args.lang})...")
         print(f"Output: {OUTPUT_DIR}/")
         print()
         for num, (name, func) in sorted(generators.items()):
-            print(f"[{num}/7] {name}...")
+            print(f"[{num}/{n}] {name}...")
             func(OUTPUT_DIR, lang=args.lang)
 
     print(f"\nDone! All figures saved to: {OUTPUT_DIR}/")
