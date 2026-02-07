@@ -14,6 +14,7 @@ Usage:
     python scripts/generate_paper_data.py --verify      # 検証のみ
 
 変更履歴:
+  - 2026-02-07: SO failure再評価後のVERIFIED数値更新
   - 2026-02-07: 初版作成（Phase 1 + Phase 2 統合スクリプト）
 """
 
@@ -52,6 +53,10 @@ STATS_DIR = OUTPUT_DIR / "statistics"
 
 # ── Verified reference numbers (from paper_outline.md §検証済み数値リファレンス) ──
 # Used for verification after generation
+# 変更履歴:
+#   - 2026-02-07: SO failure 16件中15件を再評価してVERIFIED更新
+#     Stage3: TP 1686→1685, FP 532→529, TN 8975→8978, FN 759→760, F1 72.31→72.33
+#     System: TP 62454→62453, FP 535→532, TN 63076→63079, FN 1157→1158, F1 98.66→98.67
 VERIFIED = {
     "dataset_total": 636110,
     "dataset_train": 508888,
@@ -62,18 +67,18 @@ VERIFIED = {
     "stage2_not_candidate": 69231,
     "stage2_drop_to_auto": 46039,
     "stage2_handoff_to_agent": 11952,
-    "stage3_tp": 1686,
-    "stage3_fp": 532,
-    "stage3_tn": 8975,
-    "stage3_fn": 759,
-    "stage3_f1": 72.31,
-    "system_tp": 62454,
-    "system_fp": 535,
-    "system_tn": 63076,
-    "system_fn": 1157,
-    "system_precision": 99.15,
+    "stage3_tp": 1685,
+    "stage3_fp": 529,
+    "stage3_tn": 8978,
+    "stage3_fn": 760,
+    "stage3_f1": 72.33,
+    "system_tp": 62453,
+    "system_fp": 532,
+    "system_tn": 63079,
+    "system_fn": 1158,
+    "system_precision": 99.16,
     "system_recall": 98.18,
-    "system_f1": 98.66,
+    "system_f1": 98.67,
 }
 
 

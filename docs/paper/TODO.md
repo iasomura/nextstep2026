@@ -75,18 +75,21 @@
 
 ---
 
-### TODO-9: 母数のズレ（11,952 vs 11,936）を明示し、引用の混在を禁止する
+### TODO-9: ~~母数のズレ（11,952 vs 11,936）~~ → 解消済み（残1件のみ）
 
-**状況**:
-- Stage3全体の性能（困難集合）は `docs/paper/data/tables/table5_stage3_performance.csv`（n=11,952）
-- アブレーションは `docs/paper/data/tables/table6_stage3_ablation.csv`（n=11,936。`llm_raw_output` 抽出不可16件を除外）
+**状況（2026-02-07更新）**:
+- SO (Structured Output) parse failure 16件中15件を `scripts/retry_so_failures.py` で再評価・修復済み
+- max_tokens 2048→4096, vLLM max-model-len 4096→8192（一時的）で再実行
+- Table5: n=11,952、Table6: n=11,951（残1件 hamidi.sa.com のみ policy_trace 空。TP判定なので結果に影響なし）
+- 再評価により一部判定が変化: FP 532→529 (-3), FN 759→760 (+1), F1 72.31%→72.33%
 
-**必要な作業**:
-- [ ] Table5とTable6のキャプションに、母数と除外理由を明記（脚注でよい）
-- [ ] **引用元の固定**: 本文中のStage3性能は **原則 n=11,952（Table5）** で統一。アブレーション節のみ n=11,936 を明記（脚注）
-- [ ] 可能なら Table5側も 11,936 に揃えた再集計版を作り、本文の引用は揃えた方に統一（任意）
+**残作業**:
+- [ ] Table6キャプションに n=11,951 の脚注を付記（1件のみなので影響は無視可能と記載）
+- [x] eval CSVにSO再評価結果をマージ（バックアップ: `.bak_so_retry`）
+- [x] `generate_paper_data.py` のVERIFIED数値を更新
+- [x] `paper_outline.md` の検証済み数値リファレンスを更新
 
-**優先度**: 高（文章修正だけでリスクを大きく下げられる）
+**優先度**: 低（実質解消済み。脚注1行のみ）
 
 ---
 
@@ -159,21 +162,21 @@
 
 ### ~~TODO-4: Stage3アブレーション実験（LLMのみ vs LLM+ルール）~~ ✅完了
 
-**完了日**: 2026-02-07
+**完了日**: 2026-02-07（SO再評価後に数値更新）
 **成果物**: `docs/paper/data/tables/table6_stage3_ablation.csv`
-- `graph_state_slim_json` → `decision_trace[0].policy_trace` の `llm_raw_output` から抽出（11,936/11,952件）
-- LLM単体: P=87.69%, R=55.47%, F1=67.96%
-- LLM+Rules: P=76.14%, R=68.96%, F1=72.38%
-- 判定変更: 806件（6.75%）、flip精度49.5%
+- `graph_state_slim_json` → `decision_trace[0].policy_trace` の `llm_raw_output` から抽出（11,951/11,952件）
+- LLM単体: P=87.69%, R=55.36%, F1=67.87%
+- LLM+Rules: P=76.10%, R=68.90%, F1=72.32%
+- 判定変更: 810件（6.78%）、flip精度49.51%
 
 ---
 
 ### ~~TODO-5: 誤り分析（残存FN/増加FPのカテゴリ分類）~~ ✅完了
 
-**完了日**: 2026-02-07
+**完了日**: 2026-02-07（SO再評価後に数値更新）
 **成果物**: `docs/paper/data/tables/fig5_error_categories.csv`
-- FN Stage別: Stage1=3, Stage2=395, Stage3=759, 合計=1,157
-- FP Stage別: Stage1=2, Stage2=1, Stage3=532, 合計=535
+- FN Stage別: Stage1=3, Stage2=395, Stage3=760, 合計=1,158
+- FP Stage別: Stage1=2, Stage2=1, Stage3=529, 合計=532
 - Stage3 FN/FPのMLスコア統計、ソース別・TLD別分布を含む
 
 ---
@@ -208,7 +211,7 @@
 | TODO-0 | 旧図の扱い（削除 or legacy隔離）と再生成の方法 | `generate_paper_data.py` / `generate_paper_figures.py` |
 | TODO-7 | MTG合意（グレー定義・投入制御）をどこまで本文主張に寄せるか | `docs/mtg/202512/` / `paper_outline.md` |
 | TODO-8 | Fig3を案A（追加なし）/案B（最小追加τ2点）どちらで成立させるか | 追加計算コストと主張の強さ |
-| TODO-9 | 11,952/11,936 を統一するか（統一しない場合は脚注で明示） | table5/table6 |
+| TODO-9 | ~~11,952/11,936~~ → 解消済み（残1件のみ、脚注で対応） | table6キャプション |
 | TODO-1 | 原則実施（Appendix 2モデル）。やらない場合はThreatsで代償 | 実装負荷と紙面 |
 | TODO-2 | どのセクションに書くか | 論文全体の流れを見て判断 |
 | TODO-3 | 緩和策として何を書けるか。三値/uncertainty/calibration/別モデル最適化のスコープ外宣言を **Threats に書くか Future work に書くか** | Fig3/処理時間/誤り分解を活用 |

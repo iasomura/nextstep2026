@@ -2,18 +2,18 @@
 stage,count,percentage
 Stage1 (auto_benign),3,0.3
 Stage2 (drop_to_auto),395,34.1
-Stage3 (LLM+Rules),759,65.6
-Total,1157,100.0
+Stage3 (LLM+Rules),760,65.6
+Total,1158,100.0
 
 # False Positives by Stage
 stage,count,percentage
 Stage1 (auto_phishing),2,0.4
 Stage2 (drop_to_auto),1,0.2
-Stage3 (LLM+Rules),532,99.4
-Total,535,100.0
+Stage3 (LLM+Rules),529,99.4
+Total,532,100.0
 
-# Stage3 FN ML probability stats: {"mean": 0.197, "median": 0.1414, "p25": 0.0622, "p75": 0.2956}
-# Stage3 FP ML probability stats: {"mean": 0.3822, "median": 0.3356, "p25": 0.0812, "p75": 0.6392}
-# Stage3 FN by source: {"jpcert": 387, "phishtank": 232, "certificates": 140}
-# Stage3 FP by source: {"trusted": 532}
-# Stage3 FN top TLDs: {"com": 543, "cn": 31, "net": 22, "br": 11, "org": 9, "info": 8, "mx": 7, "cl": 6, "me": 5, "xyz": 5}
+# Stage3 FN ML probability stats: {"mean": 0.1969, "median": 0.1414, "p25": 0.0622, "p75": 0.2956}
+# Stage3 FP ML probability stats: {"mean": 0.3836, "median": 0.3374, "p25": 0.0804, "p75": 0.6444}
+# Stage3 FN by source: {"jpcert": 387, "phishtank": 232, "certificates": 141}
+# Stage3 FP by source: {"trusted": 529}
+# Stage3 FN top TLDs: {"com": 543, "cn": 32, "net": 22, "br": 11, "org": 9, "info": 8, "mx": 7, "cl": 6, "me": 5, "xyz": 5}

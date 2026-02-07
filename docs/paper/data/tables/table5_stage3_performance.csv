@@ -1,15 +1,15 @@
 # Stage3 Performance Metrics
 TP,FP,TN,FN,Precision,Recall,F1,FPR,total_evaluated,error_count,processing_time_mean,processing_time_p50,processing_time_p90,processing_time_p99,rule_fired_count,rule_fired_rate
-1686,532,8975,759,76.01,68.96,72.31,5.6,11952,0,9.25,8.31,15.36,28.65,2016,16.9
+1685,529,8978,760,76.11,68.92,72.33,5.56,11952,0,9.22,8.31,15.28,28.6,2011,16.8
 
 # Rule Firing Summary
 rule_name,fire_count,fire_rate_pct
-policy_r4,1342,11.23
-policy_r2,1189,9.95
-POST_LLM_FLIP_GATE,771,6.45
-policy_r5,751,6.28
-policy_r1,649,5.43
-policy_r6,621,5.2
+policy_r4,1338,11.19
+policy_r2,1185,9.91
+POST_LLM_FLIP_GATE,770,6.44
+policy_r5,745,6.23
+policy_r1,645,5.4
+policy_r6,617,5.16
 benign_cert_gate_skip,489,4.09
 soft_ctx_trigger,395,3.3
 policy_r3,359,3.0
@@ -18,8 +18,8 @@ ml_no_mitigation_gate,309,2.59
 high_ml_ctx_rescue,163,1.36
 very_high_ml_override,137,1.15
 post_llm_flip_gate,47,0.39
-hard_ctx_trigger,37,0.31
-low_signal_phishing_gate_p3,32,0.27
+hard_ctx_trigger,36,0.3
+low_signal_phishing_gate_p3,30,0.25
 high_ml_override,20,0.17
 benign_cert_gate_b4,17,0.14
 dangerous_tld_low_ml_relax,13,0.11

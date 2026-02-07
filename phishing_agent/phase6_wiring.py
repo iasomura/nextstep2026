@@ -84,6 +84,8 @@ def _build_llm_from_cfg(cfg: Dict[str, Any]):
 
     # API Key は空不可の実装があるため "EMPTY" を許容
     api_key = llm_cfg.get("api_key") or os.getenv("OPENAI_API_KEY") or "EMPTY"
+    # 変更履歴:
+    #   - 2026-02-07: max_tokens を 2048 → 4096 に変更（SO parse failure 16件の解消）
     try:
         from langchain_openai import ChatOpenAI  # type: ignore
 
@@ -92,7 +94,7 @@ def _build_llm_from_cfg(cfg: Dict[str, Any]):
             base_url=base_url,
             api_key=api_key,
             temperature=float(llm_cfg.get("temperature", 0.1) or 0.1),
-            max_tokens=2048,
+            max_tokens=4096,
             # Qwen3 thinking モードを無効化
             extra_body={"chat_template_kwargs": {"enable_thinking": False}},
         )

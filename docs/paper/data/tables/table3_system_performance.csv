@@ -1,3 +1,3 @@
 configuration,TP,FP,TN,FN,Precision,Recall,F1,FPR,FNR,Accuracy
 Stage1+2 only (ML prediction),62167,322,63289,1444,99.48,97.73,98.6,0.51,2.27,98.61
-Stage1+2+3 (Full cascade),62454,535,63076,1157,99.15,98.18,98.66,0.84,1.82,98.67
+Stage1+2+3 (Full cascade),62453,532,63079,1158,99.16,98.18,98.67,0.84,1.82,98.67

@@ -1,43 +1,43 @@
 {
   "total_evaluated": 11952,
-  "domains_with_rules_fired": 2016,
-  "rule_firing_rate": 16.9,
+  "domains_with_rules_fired": 2011,
+  "rule_firing_rate": 16.8,
   "rules": {
     "policy_r4": {
-      "fire_count": 1342,
-      "fire_rate_pct": 11.23,
-      "tp_contribution": 279,
-      "fp_contribution": 272
+      "fire_count": 1338,
+      "fire_rate_pct": 11.19,
+      "tp_contribution": 278,
+      "fp_contribution": 270
     },
     "policy_r2": {
-      "fire_count": 1189,
-      "fire_rate_pct": 9.95,
-      "tp_contribution": 165,
-      "fp_contribution": 217
+      "fire_count": 1185,
+      "fire_rate_pct": 9.91,
+      "tp_contribution": 164,
+      "fp_contribution": 215
     },
     "POST_LLM_FLIP_GATE": {
-      "fire_count": 771,
-      "fire_rate_pct": 6.45,
+      "fire_count": 770,
+      "fire_rate_pct": 6.44,
       "tp_contribution": 0,
       "fp_contribution": 0
     },
     "policy_r5": {
-      "fire_count": 751,
-      "fire_rate_pct": 6.28,
-      "tp_contribution": 213,
-      "fp_contribution": 177
+      "fire_count": 745,
+      "fire_rate_pct": 6.23,
+      "tp_contribution": 212,
+      "fp_contribution": 173
     },
     "policy_r1": {
-      "fire_count": 649,
-      "fire_rate_pct": 5.43,
-      "tp_contribution": 106,
-      "fp_contribution": 198
+      "fire_count": 645,
+      "fire_rate_pct": 5.4,
+      "tp_contribution": 105,
+      "fp_contribution": 196
     },
     "policy_r6": {
-      "fire_count": 621,
-      "fire_rate_pct": 5.2,
-      "tp_contribution": 127,
-      "fp_contribution": 136
+      "fire_count": 617,
+      "fire_rate_pct": 5.16,
+      "tp_contribution": 126,
+      "fp_contribution": 134
     },
     "benign_cert_gate_skip": {
       "fire_count": 489,
@@ -88,16 +88,16 @@
       "fp_contribution": 0
     },
     "hard_ctx_trigger": {
-      "fire_count": 37,
-      "fire_rate_pct": 0.31,
+      "fire_count": 36,
+      "fire_rate_pct": 0.3,
       "tp_contribution": 21,
-      "fp_contribution": 16
+      "fp_contribution": 15
     },
     "low_signal_phishing_gate_p3": {
-      "fire_count": 32,
-      "fire_rate_pct": 0.27,
-      "tp_contribution": 6,
-      "fp_contribution": 11
+      "fire_count": 30,
+      "fire_rate_pct": 0.25,
+      "tp_contribution": 5,
+      "fp_contribution": 10
     },
     "high_ml_override": {
       "fire_count": 20,

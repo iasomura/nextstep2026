@@ -1,14 +1,14 @@
 {
   "total_domains": 127222,
   "confusion_matrix": {
-    "TP": 62454,
-    "FP": 535,
-    "TN": 63076,
-    "FN": 1157
+    "TP": 62453,
+    "FP": 532,
+    "TN": 63079,
+    "FN": 1158
   },
-  "precision": 99.15,
+  "precision": 99.16,
   "recall": 98.18,
-  "f1": 98.66,
+  "f1": 98.67,
   "fpr": 0.84,
   "fnr": 1.82,
   "auto_decision_rate": 90.6,
