@@ -86,6 +86,7 @@ def _build_llm_from_cfg(cfg: Dict[str, Any]):
     api_key = llm_cfg.get("api_key") or os.getenv("OPENAI_API_KEY") or "EMPTY"
     # 変更履歴:
     #   - 2026-02-07: max_tokens を 2048 → 4096 に変更（SO parse failure 16件の解消）
+    #     注: 再評価時は一時的に8192+max-model-len=16384で実行。通常運用は4096+max-model-len=4096
     try:
         from langchain_openai import ChatOpenAI  # type: ignore
 

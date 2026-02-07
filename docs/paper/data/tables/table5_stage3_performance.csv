@@ -1,6 +1,6 @@
 # Stage3 Performance Metrics
 TP,FP,TN,FN,Precision,Recall,F1,FPR,total_evaluated,error_count,processing_time_mean,processing_time_p50,processing_time_p90,processing_time_p99,rule_fired_count,rule_fired_rate
-1685,529,8978,760,76.11,68.92,72.33,5.56,11952,0,9.22,8.31,15.28,28.6,2011,16.8
+1685,529,8978,760,76.11,68.92,72.33,5.56,11952,0,9.21,8.31,15.27,28.59,2011,16.8
 
 # Rule Firing Summary
 rule_name,fire_count,fire_rate_pct

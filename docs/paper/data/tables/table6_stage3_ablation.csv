@@ -1,8 +1,8 @@
 # Stage3 Ablation: LLM only vs LLM + Rules
 configuration,TP,FP,TN,FN,Precision,Recall,F1,FPR,n_evaluated
-LLM only,1353,190,9317,1091,87.69,55.36,67.87,2.0,11951
-LLM + Rules,1684,529,8978,760,76.1,68.9,72.32,5.56,11951
+LLM only,1353,190,9317,1092,87.69,55.34,67.85,2.0,11952
+LLM + Rules,1685,529,8978,760,76.11,68.92,72.33,5.56,11952
 
 # Rule Effect on Decision Flips
 total_flipped,flip_to_phishing,flip_to_benign,flip_rate_pct,flip_correct,flip_incorrect,flip_accuracy_pct
-810,740,70,6.78,401,409,49.51
+811,741,70,6.79,402,409,49.57
