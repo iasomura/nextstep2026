@@ -25,7 +25,9 @@
 
 **受入条件（Done定義）**:
 - [ ] `paper_outline.md` の検証済み数値と、本文・表・図の全てが一致（不一致ゼロ）
-- [ ] `python scripts/generate_paper_data.py --verify` が全パスすること
+- [ ] `python scripts/generate_paper_data.py --verify` が全パスすること（tables/statistics）
+- [ ] `generate_paper_figures.py` 内のハードコード値（Fig1/Fig6）が `docs/paper/data/tables/fig2_stage_transitions.csv` と一致することを機械チェックで保証（PNGは目視不可のため、ソースコード側で検証）
+- [ ] `paper_outline.md` から引用している数値の出典（table/figパス）を1対1で紐付け
 
 **優先度**: 最高
 
@@ -42,7 +44,12 @@
 - [ ] RQ1/RQ2の書き方を「投入率（budget）と自動判定の信頼性」「困難集合でのルール統合」に寄せ、FN削減"だけ"の書き方を避ける
 - [ ] §4（評価）で Stage3 の評価対象が **difficult subset (n=11,952)** であることを表題・キャプションで明確化
 - [ ] **用語・集合・指標の定義を明文化**（査読者が「FN追跡？budget最適化？」で迷わないため）:
-  - Gray / Handoff / Auto decision の定義（式 or 擬似コード1個：Stage1は [t_low, t_high] の外のみ自動判定、内はhandoff。Stage2は p_error + cert gate の適用順序）
+  - Gray / Handoff / Auto decision の定義（式 or 擬似コード1個：Stage1は [t_low, t_high] の外のみ自動判定、内はhandoff）
+  - **cert gate の仕様境界**（査読者が「確率モデルと規則が混ざってない？」と突く箇所）:
+    - 位置付け: **hard gate**（cert gateはsafe_benign判定として先にdrop。p_errorによる選択はその後）
+    - 適用順: cert gate（safe_benign_combined: 45,307件drop）→ p_error閾値（tau=0.4で残りから選択）→ high_ml_phish override（1,718件を強制追加）
+    - 衝突時: cert gateが優先（gateでdropされた行はp_errorに関わらずStage3に送らない）
+    - これにより "auto-decision error" の定義が一意に決まることを確認
   - 評価の主目的指標の固定：RQ1 = "Stage3 call rate" + "auto-decision error" が一次指標、最終F1は補助（Table3）。RQ2 = difficult subset での Recall改善（とFP増）を明示
 
 **優先度**: 高
@@ -58,6 +65,10 @@
 **必要な作業（どちらかを選ぶ）**:
 - [ ] **案A（追加実験なし・推奨）**: Fig3の主張を「投入率と自動判定誤り（auto_errors）の関係」に限定し、最終性能は `table3_system_performance.csv` の点比較で述べる。**「最終性能曲線」とは言わない**こと。
 - [ ] **案B（最小追加実験）**: τを**2点**選び、Stage3まで回して最終F1/FPR/FNRを算出。Table3と対応する形で「最終FNR/FPR」の2点比較を作る。（3点は贅沢）
+
+**図タイトルの禁止語**（案A採用時、誤爆防止）:
+- 禁止: "overall performance trade-off curve", "end-to-end trade-off curve"
+- 推奨: "Stage3 call rate vs auto-decision errors under Stage1+2"
 
 **優先度**: 高（案Aなら文章修正のみで軽い）
 
@@ -106,11 +117,9 @@
 - [ ] 指標は **F1/FPR/FNR（＋混同行列）** に絞る（紙面節約）
 - [ ] 出力は **Appendix表** を原則とし、本文は1行で触れる（本文に表を増やさない）
 
-**やらない場合の代償**: Threatsに "single-stage strong baseline may achieve comparable accuracy; our focus is budgeted handoff and explainable correction" を明記して論点ずらしを防ぐ（ただし殴られる確率は上がる）
+**やらない場合の代償**: Threatsに "single-stage strong baseline may achieve comparable accuracy; our focus is budgeted handoff and explainable correction" を明記して論点ずらしを防ぐ（ただし殴られる確率は上がる）。なお本文で「技術的に意味がない」とは言わない。言うなら「本研究の貢献は分類器選択ではない」に留める。
 
-**判断ポイント**: 本文で「多段設計の必然性」を強く主張するほど、ベースラインは"殴られないため"に必要度が上がる。
-
-**優先度**: 中〜高（本文1行＋Appendix表なら紙面コストほぼゼロ）
+**優先度**: 中（原則実施。Appendix表1枚＋本文1行で紙面コストほぼゼロ、査読耐性が上がる）
 
 ---
 
@@ -183,7 +192,7 @@
 3. **TODO-8** — Fig3主張の確定（案A推奨）
 4. **TODO-9** — 母数ズレの脚注・引用ルール固定（原則n=11,952）
 5. **TODO-3** — Threats：実施済み範囲で具体化
-6. **TODO-1** — Appendix最小ベースライン（2モデル）。やらない場合はThreatsで代償
+6. **TODO-1** — Appendix最小ベースライン（2モデル、原則実施）
 7. **TODO-2** — なぜ証明書か（1〜2文）
 8. **TODO-B** — docs/paper/data/README.md（再現性の入口）
 
@@ -197,6 +206,6 @@
 | TODO-7 | MTG合意（グレー定義・投入制御）をどこまで本文主張に寄せるか | `docs/mtg/202512/` / `paper_outline.md` |
 | TODO-8 | Fig3を案A（追加なし）/案B（最小追加τ2点）どちらで成立させるか | 追加計算コストと主張の強さ |
 | TODO-9 | 11,952/11,936 を統一するか（統一しない場合は脚注で明示） | table5/table6 |
-| TODO-1 | やる（Appendix 2モデル）/ やらない（Threatsで代償） | 実装負荷と紙面 |
+| TODO-1 | 原則実施（Appendix 2モデル）。やらない場合はThreatsで代償 | 実装負荷と紙面 |
 | TODO-2 | どのセクションに書くか | 論文全体の流れを見て判断 |
 | TODO-3 | 緩和策として何を書けるか | Fig3/処理時間/誤り分解を活用 |
