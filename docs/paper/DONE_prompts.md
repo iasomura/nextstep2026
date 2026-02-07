@@ -1,7 +1,8 @@
-# TODO 実行プロンプト集
+# DONE 実行プロンプト集（完了済みTODO用）
 
-各TODO項目を Claude Code に実行させる際に使用したプロンプト（原文）。
+完了済みTODO項目（Phase 1: TODO-0〜9, B, 1〜3）を Claude Code に実行させた際のプロンプト原文。
 再利用・類似論文への応用を想定し、パターンごとに記録する。
+OPEN タスク（P0-1〜P2-1）のプロンプトは `TODO_execution_prompts.md` を参照。
 
 作成日: 2026-02-07
 
