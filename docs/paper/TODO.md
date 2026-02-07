@@ -54,44 +54,34 @@
 
 ## 追加実験・データ準備
 
-### TODO-4: Stage3アブレーション実験（LLMのみ vs LLM+ルール）
+### ~~TODO-4: Stage3アブレーション実験（LLMのみ vs LLM+ルール）~~ ✅完了
 
-**内容**: §4.3（RQ2）の必須アブレーション。eval CSV 11,952件のデータからLLM単体判定（ルール適用前）の性能を抽出し、ルール統合後と比較する。
-
-**必要な作業**:
-- [ ] eval CSVの`graph_state_slim_json`からルール適用前のLLM判定を抽出
-- [ ] LLMのみ vs LLM+ルールのPrecision/Recall/F1を算出
-- [ ] 表6に結果を記載
-
-**優先度**: 高（RQ2の回答に必須）
+**完了日**: 2026-02-07
+**成果物**: `docs/paper/data/tables/table6_stage3_ablation.csv`
+- `graph_state_slim_json` → `decision_trace[0].policy_trace` の `llm_raw_output` から抽出（11,936/11,952件）
+- LLM単体: P=87.69%, R=55.47%, F1=67.96%
+- LLM+Rules: P=76.14%, R=68.96%, F1=72.38%
+- 判定変更: 806件（6.75%）、flip精度49.5%
 
 ---
 
-### TODO-5: 誤り分析（残存FN/増加FPのカテゴリ分類）
+### ~~TODO-5: 誤り分析（残存FN/増加FPのカテゴリ分類）~~ ✅完了
 
-**内容**: §4.3の誤り分析。残存FN 1,157件と増加FP 535件をカテゴリ分類する。
-
-**必要な作業**:
-- [ ] FNの発生Stage別分類（Stage1自動判定FN=3、Stage2 drop FN=398、Stage3 FN=759）
-- [ ] Stage3 FN/FPのパターン分析（MLスコア帯、証明書特徴、ルール発火有無）
-- [ ] 図5に結果を可視化
-
-**優先度**: 高（知見3の根拠として必須）
+**完了日**: 2026-02-07
+**成果物**: `docs/paper/data/tables/fig5_error_categories.csv`
+- FN Stage別: Stage1=3, Stage2=395, Stage3=759, 合計=1,157
+- FP Stage別: Stage1=2, Stage2=1, Stage3=532, 合計=535
+- Stage3 FN/FPのMLスコア統計、ソース別・TLD別分布を含む
 
 ---
 
-### TODO-6: 論文データ生成スクリプト
+### ~~TODO-6: 論文データ生成スクリプト~~ ✅完了
 
-**内容**: 図表に必要なデータを一括生成する`scripts/generate_paper_data.py`の作成。
-
-**必要な作業**:
-- [ ] 表1〜7のCSVデータ生成
-- [ ] 図1〜5の元データ生成
-- [ ] 統計メトリクスJSON生成
-
-**出力先**: `docs/paper/data/{tables,figures,statistics}/`（ディレクトリ作成済み）
-
-**優先度**: 中（論文執筆開始時に必要）
+**完了日**: 2026-02-07
+**成果物**: `scripts/generate_paper_data.py`
+- 表1〜6のCSV、図2〜5の元データCSV、統計JSON 5件を生成（計16ファイル）
+- 出力先: `docs/paper/data/{tables,statistics}/`
+- 検証済み数値リファレンスとの自動整合チェック付き
 
 ---
 
@@ -101,4 +91,4 @@
 |------|---------|--------|
 | TODO-1 | 紙面に入れるか補足資料か省略か | ページ配分の最終調整 |
 | TODO-2 | どのセクションに書くか | 論文全体の流れを見て判断 |
-| TODO-3 | 緩和策として何を書けるか | TODO-4,5の実験結果 |
+| TODO-3 | 緩和策として何を書けるか | TODO-4,5完了済み。閾値感度分析はfig3データあり |
