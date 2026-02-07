@@ -11,14 +11,21 @@
 
 **状況**: `docs/paper/images/` に旧実験の図が混入しており、本文・`docs/paper/data/`（検証済み）と数値不一致がある。これは査読で即死。
 
+**不一致の実態**（確認済み）:
+- `fig01`（アーキ図）: 入力127,754→正127,222、auto_benign 6,166→正8,464、handoff 60,974→正57,991、Stage3投入 15,670→正11,952 等14箇所
+- `fig06`（処理フロー）: 同系統の旧数値16箇所
+- fig02〜fig05, fig07 は問題なし
+
 **必要な作業**:
 - [ ] 論文に使う図を確定（最低限: Fig1=アーキ図, Fig2=遷移, Fig3=スイープ, Fig4=遅延, Fig5=誤り分解）
 - [ ] `docs/paper/data/`（例: `tables/fig2_stage_transitions.csv` など）から **再生成**して `docs/paper/images/` を上書き
 - [ ] 旧図（入力127,754 / Stage3 15,670 等の系統）を削除または `docs/paper/images/_legacy/` に隔離し、本文参照を完全に断つ
 - [ ] 図キャプションに母数（n=127,222 / n=11,952 等）を明記し、本文中の引用値と一致させる
+- [ ] 整合チェックの機械化：`generate_paper_data.py --verify` は tables/statistics 検証済み。図（`generate_paper_figures.py` のハードコード値）との照合スクリプトも追加する
 
 **受入条件（Done定義）**:
 - [ ] `paper_outline.md` の検証済み数値と、本文・表・図の全てが一致（不一致ゼロ）
+- [ ] `python scripts/generate_paper_data.py --verify` が全パスすること
 
 **優先度**: 最高
 
@@ -34,6 +41,9 @@
 - [ ] §1（導入）に「本研究の焦点は分類器の優劣ではなく、確信度に基づく投入制御と困難集合での補正」である旨を明記
 - [ ] RQ1/RQ2の書き方を「投入率（budget）と自動判定の信頼性」「困難集合でのルール統合」に寄せ、FN削減"だけ"の書き方を避ける
 - [ ] §4（評価）で Stage3 の評価対象が **difficult subset (n=11,952)** であることを表題・キャプションで明確化
+- [ ] **用語・集合・指標の定義を明文化**（査読者が「FN追跡？budget最適化？」で迷わないため）:
+  - Gray / Handoff / Auto decision の定義（式 or 擬似コード1個：Stage1は [t_low, t_high] の外のみ自動判定、内はhandoff。Stage2は p_error + cert gate の適用順序）
+  - 評価の主目的指標の固定：RQ1 = "Stage3 call rate" + "auto-decision error" が一次指標、最終F1は補助（Table3）。RQ2 = difficult subset での Recall改善（とFP増）を明示
 
 **優先度**: 高
 
@@ -46,8 +56,8 @@
 **状況**: `tables/fig3_threshold_sweep.csv` は「投入率 vs auto_errors（Stage1+2の自動誤り）」であり、最終性能（Stage3込み）の曲線ではない。
 
 **必要な作業（どちらかを選ぶ）**:
-- [ ] **案A（追加実験なし）**: Fig3の主張を「投入率と自動判定誤り（auto_errors）の関係」に限定し、最終性能は `table3_system_performance.csv` の点比較で述べる
-- [ ] **案B（最小追加実験）**: τを2〜3点選び、Stage3まで回して最終F1/FPR/FNRを算出し、Fig3を"最終性能トレードオフ"として成立させる
+- [ ] **案A（追加実験なし・推奨）**: Fig3の主張を「投入率と自動判定誤り（auto_errors）の関係」に限定し、最終性能は `table3_system_performance.csv` の点比較で述べる。**「最終性能曲線」とは言わない**こと。
+- [ ] **案B（最小追加実験）**: τを**2点**選び、Stage3まで回して最終F1/FPR/FNRを算出。Table3と対応する形で「最終FNR/FPR」の2点比較を作る。（3点は贅沢）
 
 **優先度**: 高（案Aなら文章修正のみで軽い）
 
@@ -61,10 +71,25 @@
 
 **必要な作業**:
 - [ ] Table5とTable6のキャプションに、母数と除外理由を明記（脚注でよい）
-- [ ] 本文で Stage3 の性能値を引用するとき、どちらの母数かを必ず付記（例: "on the difficult subset (n=11,952)"）
+- [ ] **引用元の固定**: 本文中のStage3性能は **原則 n=11,952（Table5）** で統一。アブレーション節のみ n=11,936 を明記（脚注）
 - [ ] 可能なら Table5側も 11,936 に揃えた再集計版を作り、本文の引用は揃えた方に統一（任意）
 
 **優先度**: 高（文章修正だけでリスクを大きく下げられる）
+
+---
+
+### TODO-B: 再現性の最小セット（docs/paper/data/README.md）
+
+**状況**: `generate_paper_data.py` は存在するが、再生成手順のドキュメントがない。
+
+**必要な作業**:
+- [ ] `docs/paper/data/README.md` を作成（1ページで十分）:
+  - 再生成コマンド（`python scripts/generate_paper_data.py`）
+  - 入力ファイル一覧（どのCSV/JSON/DBスナップショットを読むか）
+  - 出力ファイル一覧（tables/statistics の対応表）
+  - 環境情報（Python版、主要ライブラリ）最小記載
+
+**優先度**: 中（作業量小・効果大）
 
 ---
 
@@ -80,6 +105,8 @@
 - [ ] 最低限のチューニング（過剰探索は禁止）
 - [ ] 指標は **F1/FPR/FNR（＋混同行列）** に絞る（紙面節約）
 - [ ] 出力は **Appendix表** を原則とし、本文は1行で触れる（本文に表を増やさない）
+
+**やらない場合の代償**: Threatsに "single-stage strong baseline may achieve comparable accuracy; our focus is budgeted handoff and explainable correction" を明記して論点ずらしを防ぐ（ただし殴られる確率は上がる）
 
 **判断ポイント**: 本文で「多段設計の必然性」を強く主張するほど、ベースラインは"殴られないため"に必要度が上がる。
 
@@ -106,9 +133,9 @@
 **内容**: §5.3に列挙した脅威（観測バイアス、時間差、ラベルノイズ、ルール閾値調整）に対して、具体的な緩和策を記述する。
 
 **判断ポイント**: 緩和策として記述できるのは実際に実施した分析のみ。以下の実験実施状況に依存する。
-- 閾値感度分析 → 実施すれば「ルール閾値の調整」の緩和策になる
-- 時系列評価 → 実施すれば「時間差」の緩和策になる
-- 外部データ検証 → 実施すれば「観測バイアス」の緩和策になる
+- 閾値感度分析 → Fig3データあり。「ルール閾値の調整」の緩和策になる
+- 時系列評価 → 未実施
+- 外部データ検証 → 未実施
 
 未実施の場合は「今後の課題」として§5または§6で言及する。
 
@@ -149,14 +176,27 @@
 
 ---
 
+## 推奨実行順序
+
+1. **TODO-0** — 図の数値一致＋legacy隔離＋整合チェック
+2. **TODO-7** — MTG芯の言語化：グレー定義・用語固定・評価目的の固定
+3. **TODO-8** — Fig3主張の確定（案A推奨）
+4. **TODO-9** — 母数ズレの脚注・引用ルール固定（原則n=11,952）
+5. **TODO-3** — Threats：実施済み範囲で具体化
+6. **TODO-1** — Appendix最小ベースライン（2モデル）。やらない場合はThreatsで代償
+7. **TODO-2** — なぜ証明書か（1〜2文）
+8. **TODO-B** — docs/paper/data/README.md（再現性の入口）
+
+---
+
 ## 判断待ち事項（更新）
 
 | 項目 | 判断内容 | 依存先 |
 |------|---------|--------|
-| TODO-0 | 旧図の扱い（削除 or legacy隔離）と再生成の方法 | `generate_paper_data.py` / 図生成スクリプト |
-| TODO-7 | MTG合意（グレー定義・投入制御）をどこまで本文主張に寄せるか（RQ/Abstract/Conclusionのトーン） | `docs/mtg/202512/` / `paper_outline.md` |
-| TODO-8 | Fig3を案A（追加なし）/案B（最小追加）どちらで成立させるか | 追加計算コストと主張の強さ |
-| TODO-9 | 11,952/11,936 を表5/表6で統一するか（統一しない場合は脚注で明示） | `docs/paper/data/tables/table5_stage3_performance.csv` / `docs/paper/data/tables/table6_stage3_ablation.csv` |
-| TODO-1 | Appendixに置くモデル数（2 or 3） | 実装負荷と紙面 |
+| TODO-0 | 旧図の扱い（削除 or legacy隔離）と再生成の方法 | `generate_paper_data.py` / `generate_paper_figures.py` |
+| TODO-7 | MTG合意（グレー定義・投入制御）をどこまで本文主張に寄せるか | `docs/mtg/202512/` / `paper_outline.md` |
+| TODO-8 | Fig3を案A（追加なし）/案B（最小追加τ2点）どちらで成立させるか | 追加計算コストと主張の強さ |
+| TODO-9 | 11,952/11,936 を統一するか（統一しない場合は脚注で明示） | table5/table6 |
+| TODO-1 | やる（Appendix 2モデル）/ やらない（Threatsで代償） | 実装負荷と紙面 |
 | TODO-2 | どのセクションに書くか | 論文全体の流れを見て判断 |
-| TODO-3 | 緩和策として何を書けるか（実施済みの範囲で） | TODO-4,5完了済み。Fig3/処理時間/誤り分解を活用 |
+| TODO-3 | 緩和策として何を書けるか | Fig3/処理時間/誤り分解を活用 |
