@@ -1,11 +1,12 @@
 # docs/ ディレクトリ構成
 
-更新日: 2026-02-01
+更新日: 2026-02-07
 
 ## フォルダ構成
 
 ```
 docs/
+├── paper/          論文執筆関連 (NEW)
 ├── specs/          仕様書 (15ファイル)
 ├── analysis/       分析レポート (6ファイル)
 ├── sakusen/        計画・戦略 (8ファイル)
@@ -15,6 +16,32 @@ docs/
 ├── mtg/            打ち合わせ記録
 └── chatgpt/        ChatGPT関連メモ (3ファイル)
 ```
+
+---
+
+## paper/ - 論文執筆関連 (NEW)
+
+```
+paper/
+├── paper_outline.md          論文骨子（検証済み数値リファレンス付き）
+├── review_notes.md           森先生レビュー指摘事項と対応状況
+├── TODO.md                   未着手作業リスト（実験・判断待ち事項）
+├── mori_professor_prompt.md  森教授ペルソナプロンプト（AI指導用）
+├── prompt_for_external_ai.md 外部AIレビュー用プロンプト
+├── images/                   生成済み図 (7 PNG)
+├── mori/                     参考文献PDF (journals/, conferences/)
+└── data/                     論文用データ出力先
+    ├── tables/               表データ (CSV)
+    ├── figures/              図の元データ (CSV)
+    └── statistics/           統計メトリクス (JSON)
+```
+
+| ファイル | 内容 |
+|---------|------|
+| `paper_outline.md` | **論文骨子（メイン）** RQ2つ、評価章との1対1対応、検証済み数値リファレンス |
+| `review_notes.md` | 森先生レビュー指摘10件の追跡（7件反映済み、3件要相談） |
+| `TODO.md` | 保留事項3件 + 追加実験3件の作業リスト |
+| `mori_professor_prompt.md` | 森研論文9本から抽出した指導方針・論文パターン |
 
 ---
 
@@ -104,12 +131,18 @@ docs/
 
 ## 主要ドキュメント
 
-### 改善効果分析 (最重要)
+### 論文骨子（最重要）
+
+**`docs/paper/paper_outline.md`**
+
+- CSS論文「3段カスケード型フィッシング検出における投入制御とルール統合の効果分析」
+- RQ2つ、評価章と1対1対応、検証済み数値リファレンス付き
+
+### 改善効果分析
 
 **`docs/analysis/02_improvement_analysis.md`**
 
 - FP/FN分析、問題メカニズム、改善推奨事項
-- やることリスト、変更履歴
 - チューニング知見 (Appendix A)
 - 検出不能FN分析 (Appendix B)
 
@@ -131,7 +164,7 @@ docs/
 
 - 3GPU並列評価システムの仕様
 
-### データパイプラインガイド (NEW)
+### データパイプラインガイド
 
 **`docs/reference/data_pipeline_guide.md`**
 
