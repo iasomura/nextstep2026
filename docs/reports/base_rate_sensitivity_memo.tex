@@ -79,9 +79,32 @@ and $PPV^\star=0.95$ requires $p \gtrsim 0.139$ (Benign:Phish $\lesssim 6:1$).
 This provides a quantitative rationale for \textbf{candidate-generation (Stage~0)}: pre-filtering must raise the effective base rate to a range
 where high-precision operation is feasible.
 
+\paragraph{Required FPR (dual reverse requirement).}
+We can also solve Eq.~\eqref{eq:ppv_prior_shift} for $FPR$ to obtain the maximum tolerable false positive rate at a given base rate:
+\begin{equation}
+FPR \le \frac{TPR \cdot p \cdot (1-PPV^\star)}{PPV^\star \cdot (1-p)}.
+\label{eq:fpr_threshold_for_ppv}
+\end{equation}
+With $TPR=0.9818$ and $PPV^\star=0.90$:
+\begin{center}
+\begin{tabular}{rcl}
+\hline
+Base rate $p$ & Benign:Phish & Required $FPR$ \\
+\hline
+0.5   & 1:1     & $\le 10.91\%$ \\
+0.01  & 100:1   & $\le 0.110\%$ \\
+0.001 & 1000:1  & $\le 0.0109\%$ \\
+\hline
+\end{tabular}
+\end{center}
+Our system's $FPR=0.84\%$ is adequate under balanced evaluation but exceeds the required level by an order of magnitude at CT-log scale.
+This is not a weakness specific to our method---it is a structural constraint for \emph{any} detector with finite $FPR$ (base-rate fallacy).
+
 \paragraph{Implication for CT-log-scale monitoring.}
 If CT logs produce millions of benign certificates per day and only thousands are phishing (e.g., Benign:Phish $\approx 100{:}1$ to $1000{:}1$),
-then even a small $FPR$ yields substantial false positives (``base-rate fallacy'').
+then even a small $FPR$ yields substantial false positives.
+Our cascade is designed as a \textbf{classifier within a monitoring pipeline}, not as a standalone Internet-wide scanner.
+Table~8 quantifies the base-rate condition that the upstream candidate-generation filter must satisfy.
 In such settings, monitoring typically requires (i) a candidate filter to increase the effective base rate, and/or (ii) stricter thresholds to reduce $FPR$.
 
 \paragraph{Caveats and next steps.}
