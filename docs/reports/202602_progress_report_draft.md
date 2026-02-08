@@ -94,7 +94,7 @@ $$PPV(p) = \frac{TPR \cdot p}{TPR \cdot p + FPR \cdot (1-p)}$$
 
 (b) **必要FPR**: 所与のベースレートで目標Precisionを達成するためのFPR上限
 
-$$FPR \leq \frac{TPR \cdot p \cdot (1-PPV^*)}{PPV^* \cdot (1-p)}$$
+$$FPR \leq \frac{TPR \cdot p \cdot (1-PPV^{*})}{PPV^{*} \cdot (1-p)}$$
 
 | ベースレート p | 正規:フィッシング | PPV≥90%に必要なFPR |
 |---|---|---|
@@ -316,8 +316,8 @@ Stage1 XGBoost（42特徴量）のSHAP TreeExplainerによる特徴量重要度�
 
 #### Top-10 特徴量
 
-| 順位 | 特徴量 | 種別 | Mean \|SHAP\| |
-|------|--------|------|--------------|
+| 順位 | 特徴量 | 種別 | Mean abs(SHAP) |
+|------|--------|------|----------------|
 | 1 | dot_count | Domain | 2.617 |
 | 2 | domain_length | Domain | 1.797 |
 | 3 | tld_length | Domain | 1.559 |
@@ -344,5 +344,8 @@ Top-20内訳: ドメイン特徴量8個、証明書特徴量12個。上位3つ�
 
 Gray zone（handoff領域）では cert_is_lets_encrypt の重要度が全体比 **1.32倍** に上昇。Let's Encrypt証明書がフィッシング/正規の判別を困難にしている主因であることを示唆する。
 
-図: `docs/paper/images/shap_global_importance.png`, `docs/paper/images/shap_beeswarm.png`
-詳細: `docs/reports/shap_analysis_report.md`
+![SHAP Global Feature Importance](../paper/images/shap_global_importance.png)
+
+![SHAP Beeswarm Summary](../paper/images/shap_beeswarm.png)
+
+詳細: [`docs/reports/shap_analysis_report.md`](shap_analysis_report.md)
