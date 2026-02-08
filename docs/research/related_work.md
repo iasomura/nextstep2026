@@ -1,11 +1,18 @@
 # 関連研究調査
 
 調査日: 2026-01-25
-更新日: 2026-02-06（引用監査に基づくCritical/Major/Minor修正適用、§13追加）
+更新日: 2026-02-08（著者名修正、査読状態明記、§14を査読付き/プレプリント分離）
 
 ## 概要
 
 本研究（3段カスケード型フィッシング検出: XGBoost → Gate → AI Agent (Qwen3-4B)）に関連する過去研究を、査読付き論文を中心に調査した。
+
+### 引用方針（2026-02-08追記）
+
+- **論文の参考文献には査読付き英語論文のみ**を掲載する
+- arXiv preprint は参考情報として本調査ノートに記録するが、論文には引用しない
+- 査読なし論文の知見を論文で使用する場合、同内容の査読付き論文を探して置き換える
+- paper_outline.md の参考文献リスト [1]-[9] が論文で引用する確定論文
 
 ---
 
@@ -13,6 +20,7 @@
 
 ### 1.1 Phishing Detection in the Gen-AI Era: Quantized LLMs vs Classical Models (arXiv, July 2025)
 - **URL**: https://arxiv.org/html/2507.07406v1
+- **査読**: なし (arXiv preprint) ⚠️
 - **内容**: ML/DL と量子化LLMの比較評価
 - **主要結論**: ハイブリッドアプローチ（ML+LLM）が最適
 - **関連性**: DeepSeek R1 Distill Qwen 14B (Q8_0) が 17GB VRAM で80%以上。LLMは文脈説明と敵対的攻撃耐性で優位、MLは速度で優位 → 両者の組み合わせを推奨
@@ -25,9 +33,11 @@
 - **関連性**: 2段階構造のカスケードエラー伝播問題を指摘
 - **本研究との差異**: メール対象、DLのみ（LLMエージェントなし）
 
-### 1.3 A comprehensive dual-layer architecture for phishing and spam (Computers & Security, 2023)
+### 1.3 A comprehensive dual-layer architecture for phishing and spam (Computers & Security, 2023) → paper_outline [7]
+- **著者**: J. Doshi, K. Parmar, R. Sanghavi, N. Shekokar
 - **URL**: https://www.sciencedirect.com/science/article/abs/pii/S0167404823002882
-- **査読**: あり (Elsevier)
+- **査読**: あり (Elsevier) ✅
+- **DOI**: 10.1016/j.cose.2023.103378
 - **内容**: Layer 1 で軽量分類 → Layer 2 で詳細分析
 - **関連性**: 本研究のStage1→Stage2/3と同じ思想
 - **本研究との差異**: ANN/RNN/CNNの2層であり、LLMエージェントは不使用
@@ -37,7 +47,9 @@
 ## 2. LLMマルチエージェント型フィッシング検出
 
 ### 2.1 PhishDebate (arXiv, June 2025) ★重要
+- **著者**: W. Li, S. Manickam, Y. Chong, S. Karuppayah
 - **URL**: https://arxiv.org/html/2506.15656v1
+- **査読**: なし (arXiv preprint) ⚠️
 - **内容**: 4専門エージェント (URL構造, HTML構造, コンテンツ意味, ブランド偽装) + Moderator + Judge
 - **アーキテクチャ**:
   - URL Analyst Agent: ドメイン名、サブドメイン、URLパターンを分析
@@ -65,14 +77,18 @@
 - **示唆**: Single-Agent → Multi-Agent で F1が74.69% → 94.14%に大幅改善。本研究のアーキテクチャ改善の参考になる
 
 ### 2.2 MultiPhishGuard (arXiv, May 2025)
+- **著者**: Y. Xue, E. Spero, Y. S. Koh, G. Russello
 - **URL**: https://arxiv.org/html/2505.23803v1
+- **査読**: なし (arXiv preprint) ⚠️
 - **内容**: メタデータ・本文・URLを並列に専門エージェントが分析、verdict + confidence + rationale を出力
 - **関連性**: 本研究の Judge ノード（統合判定）に相当する Explanation Simplifier Agent
 - **本研究との差異**: メール対象、大型LLM前提
 
-### 2.3 Debate-Driven Multi-Agent LLMs (ISDFS 2025, March 2025)
-- **URL**: https://arxiv.org/html/2503.22038v1
-- **査読**: あり (IEEE ISDFS)
+### 2.3 Debate-Driven Multi-Agent LLMs (ISDFS 2025, March 2025) → paper_outline [6]
+- **著者**: N. T. V. Nguyen, F. D. Childress, Y. Yin
+- **URL**: https://arxiv.org/html/2503.22038v1 | https://ieeexplore.ieee.org/document/11012014/
+- **査読**: あり (IEEE ISDFS) ✅
+- **DOI**: 10.1109/ISDFS65363.2025.11012014
 - **内容**: 2つのLLMエージェントが賛否議論、Judge が最終判定
 - **関連性**: 多角的分析による精度向上
 - **本研究との差異**: Debate型（賛否議論）vs 本研究のツール呼び出し型（順次分析）
@@ -83,34 +99,42 @@
 
 ### 3.1 Small Language Models for Phishing Website Detection (arXiv, Nov 2025)
 - **URL**: https://arxiv.org/html/2511.15434v1
+- **査読**: なし (arXiv preprint) ⚠️
 - **内容**: クラウドAPIのプライバシー・コスト問題 → ≤70B のローカルLLMを評価
 - **関連性**: 本研究と同じ動機（ローカル推論、プライバシー保護）
 - **本研究との差異**: LLM単体評価（カスケードなし）、HTMLベース分析
 
 ### 3.2 Improving Phishing Email Detection of Small LLMs (arXiv, May 2025)
+- **著者**: Z. Lin, Z. Liu, H. Fan
 - **URL**: https://arxiv.org/pdf/2505.00034
+- **査読**: なし (arXiv preprint) ⚠️
 - **内容**: Qwen-2.5-1.5B, Phi-4-mini (3.8B), LLaMA-3.2 (3B) を評価
 - **主要結果**: Qwen-2.5-1.5B はファインチューニングで精度 0.388 → 0.860 (122%向上)
 - **関連性**: 単一RTX 3090で推論・FT可能（本研究の環境に近い）
 - **本研究との差異**: メール対象、FT前提（本研究はプロンプトエンジニアリング + ツール呼び出し）
 
-### 3.3 Benchmarking 21 Open-Source LLMs for Phishing URL Detection (MDPI Information, Apr 2025)
+### 3.3 Benchmarking 21 Open-Source LLMs for Phishing URL Detection (MDPI Information, Apr 2025) → paper_outline [4]
+- **著者**: A. H. Nasution, W. Monika, A. Onan, Y. Murakami
 - **URL**: https://www.mdpi.com/2078-2489/16/5/366
-- **査読**: あり (MDPI)
+- **査読**: あり (MDPI) ✅
+- **DOI**: 10.3390/info16050366
 - **内容**: Qwen, Llama3, Gemma, DeepSeek 等 21モデルを4種のプロンプト技法で比較
 - **主要結果**: Few-shot で21モデル平均 F1=82.6%（最高 91.24%, Llama3.3-70B）。9B以上のモデルが上位を占める
 - **関連性**: 本研究 (Qwen3-4B, F1=72.5%) の性能比較のベンチマーク
 - **本研究との差異**: LLM単体（カスケードなし）、URL文字列のみ入力
 
 ### 3.4 How Can We Effectively Use LLMs for Phishing Detection? (arXiv, Nov 2025)
+- **著者**: F. Ji, D. Kim
 - **URL**: https://arxiv.org/abs/2511.09606
+- **査読**: なし (arXiv preprint) ⚠️
 - **内容**: 入力モダリティ（スクリーンショット, ロゴ, HTML, URL）の影響を評価
 - **主要結果**: 商用LLMが93-95%精度、Qwenは最大92%
 - **関連性**: スクリーンショット入力が最高精度（本研究はURL+証明書のみ）
 
-### 3.5 Benchmarking LLMs for Zero-shot and Few-shot Phishing URL Detection (NeurIPS 2025 Workshop)
+### 3.5 Benchmarking LLMs for Zero-shot and Few-shot Phishing URL Detection (NeurIPS 2025 Workshop) → paper_outline [5]
+- **著者**: N. Hasan, P. BusiReddyGari
 - **URL**: https://openreview.net/pdf?id=COmhlLFVk9
-- **査読**: あり (NeurIPS Workshop)
+- **査読**: あり (NeurIPS Workshop) ✅
 - **内容**: GPT-4o, Claude-3-7-sonnet, Grok-3-Beta をゼロショット・フューショットで評価
 
 ---
@@ -118,7 +142,9 @@
 ## 4. 説明可能AI (XAI) によるフィッシング検出【2026-02-03追加】
 
 ### 4.1 EXPLICATE (arXiv, March 2025) ★重要
+- **著者**: B. Lim, R. Huerta, A. Sotelo, A. Quintela, P. Kumar
 - **URL**: https://arxiv.org/html/2503.20796v1
+- **査読**: なし (arXiv preprint) ⚠️
 - **内容**: ML検出 + SHAP/LIME説明 + LLM自然言語変換の3層アーキテクチャ
 - **アーキテクチャ**:
   1. **ML Detection Layer**: ロジスティック回帰 + TF-IDF + NLP特徴量でフィッシング検出
@@ -142,8 +168,11 @@
 - **関連性**: XAIによるFP削減は本研究の課題（FP 560件）に直接関連
 - **示唆**: SHAP統合でFP削減の可能性
 
-### 4.3 Explainable Phishing for Sustainable Cyber Infrastructure (Nature Scientific Reports, 2025)
+### 4.3 Explainable Phishing for Sustainable Cyber Infrastructure (Nature Scientific Reports, 2025) → paper_outline [9]
+- **著者**: T. Kehkashan, M. Abdelhaq, A. S. Al-Shamayleh, N. Huda, I. A. Yaseen, A. I. A. Ahmed, A. Akhunzada
 - **URL**: https://www.nature.com/articles/s41598-025-27984-w
+- **査読**: あり (Nature) ✅
+- **DOI**: 10.1038/s41598-025-27984-w
 - **内容**: Random Forest + SHAPによる解釈可能なフィッシング検出
 - **主要結果**: Random Forestが精度97%を達成、SHAPで特徴量重要度を可視化
 - **関連性**: 本研究のStage1 (XGBoost) に直接適用可能
@@ -292,22 +321,28 @@ LLMの優位性:
 
 ## 8. 証明書特徴量によるフィッシング検出
 
-### 8.1 Unmasking phishers: ML for malicious certificate detection (Computers & Industrial Eng., 2024)
+### 8.1 Unmasking phishers: ML for malicious certificate detection (Computers & Industrial Eng., 2024) → paper_outline [2]
+- **著者**: M. Haraldsdottir, S. Homayoun, E. Lynge, C. D. Jensen
 - **URL**: https://www.sciencedirect.com/science/article/pii/S0360835224007745
-- **査読**: あり (Elsevier)
+- **査読**: あり (Elsevier) ✅
+- **DOI**: 10.1016/j.cie.2024.110652
 - **内容**: 証明書 + ドメイン名特徴量で ML 検出
 - **データ**: PhishTank + Tranco、Censys で証明書取得（本研究と同じデータソース）
 - **主要結果**: 証明書のみ F1=0.77 → ドメイン名ベクトル追加で F1=0.89
 - **関連性**: 本研究の Stage1 特徴量設計と直接的に関連
 
-### 8.2 ML models for phishing detection from TLS traffic (Cluster Computing, 2023)
+### 8.2 ML models for phishing detection from TLS traffic (Cluster Computing, 2023) → paper_outline [3]
+- **著者**: M. Kumar, C. Kondaiah, A. R. Pais, R. S. Rao
 - **URL**: https://link.springer.com/article/10.1007/s10586-023-04042-6
-- **査読**: あり (Springer)
+- **査読**: あり (Springer) ✅
+- **DOI**: 10.1007/s10586-023-04042-6
 - **内容**: TLS 1.2/1.3 トラフィックから特徴抽出（復号不要）
 
-### 8.3 An effective detection approach for phishing websites (Nature Scientific Reports, 2022)
+### 8.3 An effective detection approach for phishing websites (Nature Scientific Reports, 2022) → paper_outline [1]
+- **著者**: A. Aljofey, Q. Jiang, A. Rasool, H. Chen, W. Liu, Q. Qu, Y. Wang
 - **URL**: https://www.nature.com/articles/s41598-022-10841-5.pdf
-- **査読**: あり (Nature)
+- **査読**: あり (Nature) ✅
+- **DOI**: 10.1038/s41598-022-10841-5
 - **内容**: URL + HTML + 証明書のハイブリッド特徴量、XGBoost で F1=96.38%
 
 ---
@@ -749,55 +784,58 @@ Stage3の価値は「全体F1の改善」ではなく「難しいケースの救
 
 ## 14. 参考文献一覧
 
-**注**: 番号1-27は既存、28以降は2026-02-06追加分
+<!-- CHANGED: 2026-02-08 — 査読付き/プレプリントを分離。paper_outline.md 引用論文を明示 -->
 
-1. Li, Y. et al., "KnowPhish: Large Language Models Meet Multimodal Knowledge Graphs for Enhancing Reference-Based Phishing Detection," USENIX Security 2024.
-2. PhishDebate, "An LLM-Based Multi-Agent Framework for Phishing Website Detection," arXiv:2506.15656, 2025.
-3. MultiPhishGuard, "An LLM-based Multi-Agent System for Phishing Email Detection," arXiv:2505.23803, 2025.
-4. "Debate-Driven Multi-Agent LLMs for Phishing Email Detection," IEEE ISDFS 2025.
-5. "Small Language Models for Phishing Website Detection," arXiv:2511.15434, 2025.
-6. "Improving Phishing Email Detection Performance of Small Large Language Models," arXiv:2505.00034, 2025.
-7. "Benchmarking 21 Open-Source Large Language Models for Phishing Link Detection," MDPI Information 16(5), 2025.
-8. Ji, F. and Kim, D., "How Can We Effectively Use LLMs for Phishing Detection?," arXiv:2511.09606, 2025.
-9. "Phishing Detection in the Gen-AI Era: Quantized LLMs vs Classical Models," arXiv:2507.07406, 2025.
-10. "Unmasking phishers: ML for malicious certificate detection," Computers & Industrial Engineering, 2024.
-11. "Machine learning models for phishing detection from TLS traffic," Cluster Computing, 2023.
-12. "An effective detection approach for phishing websites," Nature Scientific Reports, 2022.
-13. "A Two-Stage Deep Learning Framework for AI-Driven Phishing Email Detection," MDPI Computers 14(12), 2025.
-14. "A comprehensive dual-layer architecture for phishing and spam email detection," Computers & Security, 2023.
-15. "Enhancing Phishing Detection: Integrating XGBoost with Feature Selection," SSRN, 2025.
-16. "Benchmarking Large Language Models for Zero-shot and Few-shot Phishing URL Detection," NeurIPS 2025 Workshop.
-17. "Lightweight malicious URL detection using deep learning and large language models," Nature Scientific Reports, 2025.
+### 14.1 論文引用確定（paper_outline.md [1]-[9]）— 査読付き英語論文のみ
 
-### 2026-02-03 追加分
+| # | 著者 | タイトル | 会議/誌名 | 年 | DOI |
+|---|------|---------|----------|-----|-----|
+| [1] | Aljofey et al. | An effective detection approach for phishing websites using URL and HTML features | Scientific Reports (Nature) | 2022 | 10.1038/s41598-022-10841-5 |
+| [2] | Haraldsdottir et al. | Unmasking phishers: ML for malicious certificate detection | Computers & Industrial Engineering | 2024 | 10.1016/j.cie.2024.110652 |
+| [3] | Kumar et al. | Machine learning models for phishing detection from TLS traffic | Cluster Computing (Springer) | 2023 | 10.1007/s10586-023-04042-6 |
+| [4] | Nasution et al. | Benchmarking 21 open-source LLMs for phishing link detection | Information (MDPI) | 2025 | 10.3390/info16050366 |
+| [5] | Hasan, BusiReddyGari | Benchmarking LLMs for zero-shot and few-shot phishing URL detection | NeurIPS 2025 Workshop (LAW) | 2025 | — |
+| [6] | Nguyen et al. | Debate-driven multi-agent LLMs for phishing email detection | IEEE ISDFS | 2025 | 10.1109/ISDFS65363.2025.11012014 |
+| [7] | Doshi et al. | A comprehensive dual-layer architecture for phishing and spam | Computers & Security (Elsevier) | 2023 | 10.1016/j.cose.2023.103378 |
+| [8] | Y. Li et al. | KnowPhish: LLMs meet multimodal knowledge graphs for phishing detection | USENIX Security | 2024 | — (ISBN: 978-1-939133-44-1) |
+| [9] | Kehkashan et al. | Explainable phishing website detection for sustainable cyber infrastructure | Scientific Reports (Nature) | 2025 | 10.1038/s41598-025-27984-w |
 
-18. EXPLICATE, "Enhancing Phishing Detection through Explainable AI and LLM-Powered Interpretability," arXiv:2503.20796, 2025.
-19. "Phishing detection in IoT: an integrated CNN-LSTM framework with explainable AI and LLM-enhanced analysis," Discover Internet of Things (Springer), 2025.
-20. "Explainable phishing website detection for secure and sustainable cyber infrastructure," Nature Scientific Reports, 2025.
-21. ZdAD-UML, "An intelligent zero-day attack detection system using unsupervised machine learning," Knowledge-Based Systems (ScienceDirect), 2025.
-22. "Automated AI-Driven Phishing Detection and Countermeasures for Zero-Day Phishing Attacks," eHaCON 2026, Springer LNNS (published Jan 2026).
-23. X-Phishing-Writer, "A Framework for Cross-lingual Phishing E-mail Generation," ACM TALLIP, 2024.
-24. "Multilingual Email Phishing Attacks Detection using OSINT and Machine Learning," arXiv:2501.08723, 2025.
-25. "When LLMs meet cybersecurity: a systematic literature review," Cybersecurity (Springer), 2025.
-26. "Machine Learning and Neural Networks for Phishing Detection: A Systematic Review (2017–2024)," MDPI Electronics, 2025.
-27. "Staying ahead of phishers: a review of recent advances and emerging methodologies," Artificial Intelligence Review (Springer), 2024.
+### 14.2 追加引用候補（査読付き・§13含む）
 
-### 2026-02-06 追加分（証明書ベース研究）
+28. AlSabah, M. et al.: "Content-Agnostic Detection of Phishing Domains using CT and Passive DNS," RAID 2022. ✅
+29. Rudis, B. et al.: "Finding Phish in a Haystack: Pipeline for Phishing Classification on CT Logs," ARES 2021. ✅
+30. Fasllija, E. et al.: "Phish-Hook: Detecting Phishing Certificates Using CT Logs," SecureComm 2019. ✅
+33. Oztoprak, K. et al.: "ML-Based Malicious X.509 Certificates' Detection," Applied Sciences (MDPI), 2021. ✅
+34. Sakurai, Y., Watanabe, T., Okuda, T., Akiyama, M., **Mori, T.**: "Identifying Phishing Websites Using TLS Certificate Patterns," JCSM 2021 / IEEE EuroSPW 2020. ✅
+35. "Malcertificate: GCN-Based Malicious Certificate Detection," Applied Sciences (MDPI), 2022. ✅
+36. Chiba, D. et al.: "DomainDynamics: Lifecycle-Aware Risk Timeline Construction," IEEE CCNC 2025 / Computers & Security. ✅
+37. Pletinckx, S. et al.: "Certifiably Vulnerable: Using CT Logs for Target Reconnaissance," IEEE EuroS&P 2023. ✅
+38. Kondracki, B. et al.: "Uninvited Guests: Identity and Behavior of CT Bots," USENIX Security 2022. ✅
+39. Sun, A. et al.: "Certificate Transparency Revisited," NDSS 2024. ✅
+40. Shashwat, K. et al.: "Using LLM Embeddings for Botnet TLS Certificate Detection (C-BERT)," AISec/CCS 2024. ✅
+41. "Enhanced Malicious Traffic Detection Using TLS Features," JNSM (Springer), 2024. ✅
+42. "Ensemble Learning for Detecting Phishing URLs in Encrypted TLS Traffic," Telecom. Systems (Springer), 2024. ✅
+43. "Effectiveness of CT Check in Countering Phishing," INDIACom 2023 (IEEE). ✅
+44. "Leveraging ML to Proactively Identify Phishing Campaigns," Journal of Big Data (Springer), 2025. ✅
+13. "A Two-Stage Deep Learning Framework for Phishing Email Detection," MDPI Computers, 2025. ✅
+19. "Phishing detection in IoT: CNN-LSTM + XAI + LLM," Discover Internet of Things (Springer), 2025. ✅
+21. ZdAD-UML, "Intelligent zero-day attack detection using unsupervised ML," Knowledge-Based Systems, 2025. ✅
+22. "Automated AI-Driven Phishing Detection for Zero-Day Attacks," eHaCON 2026, Springer. ✅
+23. X-Phishing-Writer, "Cross-lingual Phishing E-mail Generation," ACM TALLIP, 2024. ✅
+25. "When LLMs meet cybersecurity: a systematic literature review," Cybersecurity (Springer), 2025. ✅
+26. "ML and Neural Networks for Phishing Detection: Systematic Review (2017–2024)," MDPI Electronics, 2025. ✅
+27. "Staying ahead of phishers: review of recent advances," Artificial Intelligence Review (Springer), 2024. ✅
 
-28. AlSabah, M., Nabeel, M., Boshmaf, Y., Choo, E.: "Content-Agnostic Detection of Phishing Domains using Certificate Transparency and Passive DNS," Proc. RAID 2022, https://dl.acm.org/doi/10.1145/3545948.3545958
-29. Rudis, B. et al.: "Finding Phish in a Haystack: A Pipeline for Phishing Classification on Certificate Transparency Logs," Proc. ARES 2021, https://dl.acm.org/doi/10.1145/3465481.3470111
-30. Fasllija, E., Eniser, H.F., Prunster, B.: "Phish-Hook: Detecting Phishing Certificates Using Certificate Transparency Logs," SecureComm 2019, Springer LNCS vol. 305, https://link.springer.com/chapter/10.1007/978-3-030-37231-6_18
-31. Ostertag, R., Stanek, M.: "Anomaly Detection in Certificate Transparency Logs," arXiv:2405.05206, 2024.
-32. "Graph-Based Phishing Domain Detection via Certificate-DNS Heterogeneous Networks," Preprints.org, December 2025, https://www.preprints.org/manuscript/202512.2708
-33. Oztoprak, K. et al.: "Machine Learning-Based Malicious X.509 Certificates' Detection," Applied Sciences (MDPI) 11(5):2164, 2021. https://www.mdpi.com/2076-3417/11/5/2164
-34. Sakurai, Y., Watanabe, T., Okuda, T., Akiyama, M., Mori, T.: "Identifying the Phishing Websites Using the Patterns of TLS Certificates," Journal of Cyber Security and Mobility 10(2):451-486, 2021. (Extended from IEEE EuroSPW 2020)
-35. "Malcertificate: Malicious Certificate Detection Algorithm Based on GCN," Applied Sciences (MDPI) 12(9):4440, 2022.
-36. Chiba, D., Nakano, H., Koide, T.: "DomainDynamics: Lifecycle-Aware Risk Timeline Construction for Domain Names," IEEE CCNC 2025 / Computers & Security, 2025. https://arxiv.org/abs/2410.02096
-37. Pletinckx, S. et al.: "Certifiably Vulnerable: Using Certificate Transparency Logs for Target Reconnaissance," IEEE EuroS&P 2023. https://ieeexplore.ieee.org/document/10190522/
-38. Kondracki, B., So, J., Nikiforakis, N.: "Uninvited Guests: Analyzing the Identity and Behavior of Certificate Transparency Bots," USENIX Security 2022. (NSA Best Scientific Cybersecurity Paper 2023)
-39. Sun, A. et al.: "Certificate Transparency Revisited: The Public Inspections on Third-party Monitors," NDSS 2024.
-40. Shashwat, K., Hahn, F., Millar, S., Ou, X.: "Using LLM Embeddings with Similarity Search for Botnet TLS Certificate Detection," AISec 2024 (ACM CCS Workshop). https://dl.acm.org/doi/10.1145/3689932.3694766
-41. "Enhanced Malicious Traffic Detection in Encrypted Communication Using TLS Features and a Multi-class Classifier Ensemble," Journal of Network and Systems Management (Springer), 2024.
-42. "An Ensemble Learning Approach for Detecting Phishing URLs in Encrypted TLS Traffic," Telecommunication Systems (Springer) 87(4), 2024.
-43. "Effectiveness of Certificate Transparency (CT) Check and Other Datapoints in Countering Phishing Attacks," INDIACom 2023 (IEEE). https://ieeexplore.ieee.org/document/10112566/
-44. "Leveraging Machine Learning to Proactively Identify Phishing Campaigns Before They Strike," Journal of Big Data (Springer) 12:124, 2025.
+### 14.3 参考情報のみ（arXiv preprint / 査読なし — 論文には引用しない）
+
+2. W. Li et al., "PhishDebate: An LLM-Based Multi-Agent Framework," arXiv:2506.15656, 2025. ⚠️
+3. Y. Xue et al., "MultiPhishGuard: An LLM-based Multi-Agent System," arXiv:2505.23803, 2025. ⚠️
+5. "Small Language Models for Phishing Website Detection," arXiv:2511.15434, 2025. ⚠️
+6. Z. Lin et al., "Improving Phishing Email Detection of Small LLMs," arXiv:2505.00034, 2025. ⚠️
+8. F. Ji, D. Kim, "How Can We Effectively Use LLMs for Phishing Detection?," arXiv:2511.09606, 2025. ⚠️
+9. "Phishing Detection in the Gen-AI Era: Quantized LLMs vs Classical Models," arXiv:2507.07406, 2025. ⚠️
+15. "Enhancing Phishing Detection: Integrating XGBoost with Feature Selection," SSRN, 2025. ⚠️
+18. B. Lim et al., "EXPLICATE: Enhancing Phishing Detection through Explainable AI," arXiv:2503.20796, 2025. ⚠️
+24. "Multilingual Email Phishing Detection using OSINT and ML," arXiv:2501.08723, 2025. ⚠️
+31. Ostertag, R., Stanek, M.: "Anomaly Detection in CT Logs," arXiv:2405.05206, 2024. ⚠️
+32. "Graph-Based Phishing Domain Detection via Certificate-DNS Networks," Preprints.org, 2025. ⚠️
