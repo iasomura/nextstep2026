@@ -15,6 +15,7 @@
 - 2026-02-08: §5.3にT9（FN不可観測性）追加、T2を時間的妥当性として拡張（concept drift）。§5.5今後の課題を新設（特徴量拡張・2段階検証・継続的傾向分析）。§5.2にbase-rate sensitivity analysis（表8）を追加（MTG 2025-12-25 森先生指摘対応）。
 - 2026-02-08: §5.2に必要FPR逆算式・表を追加。フレーミングを「限界の告白」から「運用成立条件（operational envelope）の定量化」に修正。本方式は監視パイプラインに組み込む判定器であることを明記。
 - 2026-02-08: §2関連研究に具体的な論文名・著者名を追加（related_work.mdから主要論文を選定）。§2.3を「マルチエージェント型」に分離し、§2.5「知識拡張と説明可能性」を新設。
+- 2026-02-08: 参考文献を査読付き英語論文のみに絞り込み（12件→9件）。arXiv preprint 5件と日本語論文1件を除外し、査読付き代替3件（IEEE ISDFS, NeurIPS Workshop, Nature Sci. Rep.）を追加。CSS2025自己引用は本文中で言及。
 
 ---
 
@@ -86,7 +87,7 @@
 
 ---
 
-<!-- CHANGED: 2026-02-08 — 関連研究に具体的な論文名・著者名を追加。docs/research/related_work.md から主要論文を選定 -->
+<!-- CHANGED: 2026-02-08 — 関連研究に具体的な論文名・著者名を追加。査読付き英語論文のみ。docs/research/related_work.md から主要論文を選定 -->
 ## 2. 関連研究
 
 ### 2.1 機械学習によるフィッシング検出
@@ -97,23 +98,23 @@ URL・ドメイン特徴量によるML検出は広く研究されている。Alj
 
 ### 2.2 LLMによるフィッシング検出
 
-大型LLMの高精度性とコスト問題が議論されている。Nasution et al. [4] は21種のオープンソースLLMを4種のプロンプト技法で比較し、Few-shotで平均F1=82.6%（最高91.24%, Llama3.3-70B）を報告した。Ji and Kim [5] はスクリーンショット・ロゴ・HTML・URLの入力モダリティ別にLLM性能を評価し、商用LLMで93-95%を達成した。小型LLMでは、Lin et al. [6] がQwen-2.5-1.5Bのファインチューニングで精度0.388→0.860への改善を報告している。
+大型LLMの高精度性とコスト問題が議論されている。Nasution et al. [4] は21種のオープンソースLLMを4種のプロンプト技法で比較し、Few-shotで平均F1=82.6%（最高91.24%, Llama3.3-70B）を報告した。Hasan and BusiReddyGari [5] はGPT-4o・Claude-3.7-Sonnet・Grok-3-Betaをゼロショット・フューショットで評価し、プロンプト設計がLLM検出性能に与える影響を定量化した。
 
 - 共通課題: 全件LLM処理の非効率性、再現性、説明性
 
 ### 2.3 マルチエージェント型フィッシング検出
 
-LLMエージェントの協調による精度向上が近年活発に研究されている。W. Li et al. [7] (PhishDebate) は4つの専門エージェント（URL構造・HTML構造・コンテンツ意味・ブランド偽装）+ Moderator + Judgeの構成でF1=94.14%を達成し、Single-Agent（F1=74.69%）からの大幅改善を示した。Xue et al. [8] (MultiPhishGuard) はメタデータ・本文・URLを並列分析するマルチエージェント構成を提案した。
+LLMエージェントの協調による精度向上が研究されている。Nguyen et al. [6] は2つのLLMエージェントが賛否議論し、Judgeが最終判定するDebate型構成を提案した。複数エージェントの相互検証によりハルシネーションを抑制し、判断根拠の透明性を向上させることが報告されている。
 
 - 共通課題: GPT-4レベルの大型LLM前提、全件にLLM適用（トリアージなし）、ページ内容取得が必要
 
 ### 2.4 ハイブリッド手法と投入制御
 
-MLによる絞り込み + LLM精査（トリアージ）のアプローチが提案されている。Doshi et al. [9] はLayer 1で軽量分類、Layer 2で詳細分析する二層構造を提案した。朝村ら [10] では二段設計（XGBoost → AI Agent）を実装したが、投入制御機構がなく全handoffをLLMが処理する非効率性があった。本研究は誤り確率推定層（Stage2）を導入した三段拡張により、この課題に対処する。
+MLによる絞り込み + LLM精査（トリアージ）のアプローチが提案されている。Doshi et al. [7] はLayer 1で軽量分類、Layer 2で詳細分析する二層構造を提案した。我々の先行研究（Asomura and Mori, CSS 2025）では二段設計（XGBoost → AI Agent）を実装したが、投入制御機構がなく全handoffをLLMが処理する非効率性があった。本研究は誤り確率推定層（Stage2）を導入した三段拡張により、この課題に対処する。
 
 ### 2.5 知識拡張と説明可能性
 
-知識ベースの拡張による精度向上として、Y. Li et al. [11] (KnowPhish) は20,000ブランドの多モーダル知識ベースを自動構築し、既存検出器にplug-and-playで統合する手法を報告した。説明可能性では、Lim et al. [12] (EXPLICATE) がML検出 + SHAP/LIME説明 + LLMによる自然言語変換の3層アーキテクチャを提案し、検出精度98.4%と説明品質94.2%を両立させた。
+知識ベースの拡張による精度向上として、Y. Li et al. [8] (KnowPhish) は20,000ブランドの多モーダル知識ベースを自動構築し、既存検出器にplug-and-playで統合する手法を報告した。説明可能性では、Kehkashan et al. [9] がRandom Forest + SHAPによる解釈可能なフィッシング検出を提案し、精度97%とSHAPベースの特徴量重要度可視化を両立させた。
 
 - 本研究はXAIとは異なる系統の説明可能性として、ルールエンジン統合による決定過程のトレース（rules_fired + risk_factors）を採用する
 
@@ -613,7 +614,7 @@ Stage2証明書ゲート内訳:
 
 ---
 
-<!-- CHANGED: 2026-02-08 — 参考文献リストを追加。Webから正式な書誌情報を取得し著者名を修正 -->
+<!-- CHANGED: 2026-02-08 — 参考文献リストを査読付き英語論文のみに絞り込み（9件）。Webから正式な書誌情報を取得 -->
 ## 参考文献
 
 [1] A. Aljofey, Q. Jiang, A. Rasool, H. Chen, W. Liu, Q. Qu, and Y. Wang, "An effective detection approach for phishing websites using URL and HTML features," *Scientific Reports*, vol. 12, article 8842, 2022. DOI: 10.1038/s41598-022-10841-5
@@ -624,18 +625,12 @@ Stage2証明書ゲート内訳:
 
 [4] A. H. Nasution, W. Monika, A. Onan, and Y. Murakami, "Benchmarking 21 open-source large language models for phishing link detection with prompt engineering," *Information*, vol. 16, no. 5, article 366, 2025. DOI: 10.3390/info16050366
 
-[5] F. Ji and D. Kim, "How can we effectively use LLMs for phishing detection?: Evaluating the effectiveness of large language model-based phishing detection models," arXiv:2511.09606, 2025.
+[5] N. Hasan and P. BusiReddyGari, "Benchmarking large language models for zero-shot and few-shot phishing URL detection," in *NeurIPS 2025 Workshop on Bridging Language, Agent, and World Models for Reasoning and Planning (LAW)*, 2025. URL: https://openreview.net/forum?id=COmhlLFVk9
 
-[6] Z. Lin, Z. Liu, and H. Fan, "Improving phishing email detection performance of small large language models," arXiv:2505.00034, 2025.
+[6] N. T. V. Nguyen, F. D. Childress, and Y. Yin, "Debate-driven multi-agent LLMs for phishing email detection," in *Proc. 2025 13th International Symposium on Digital Forensics and Security (ISDFS)*, pp. 1–5, IEEE, 2025. DOI: 10.1109/ISDFS65363.2025.11012014
 
-[7] W. Li, S. Manickam, Y. Chong, and S. Karuppayah, "PhishDebate: An LLM-based multi-agent framework for phishing website detection," arXiv:2506.15656, 2025.
+[7] J. Doshi, K. Parmar, R. Sanghavi, and N. Shekokar, "A comprehensive dual-layer architecture for phishing and spam email detection," *Computers & Security*, vol. 133, pp. 103378, 2023. DOI: 10.1016/j.cose.2023.103378
 
-[8] Y. Xue, E. Spero, Y. S. Koh, and G. Russello, "MultiPhishGuard: An LLM-based multi-agent system for phishing email detection," arXiv:2505.23803, 2025.
+[8] Y. Li, C. Huang, S. Deng, M. L. Lock, T. Cao, N. Oo, H. W. Lim, and B. Hooi, "KnowPhish: Large language models meet multimodal knowledge graphs for enhancing reference-based phishing detection," in *Proc. 33rd USENIX Security Symposium*, pp. 793–810, 2024. ISBN: 978-1-939133-44-1
 
-[9] J. Doshi, K. Parmar, R. Sanghavi, and N. Shekokar, "A comprehensive dual-layer architecture for phishing and spam email detection," *Computers & Security*, vol. 133, pp. 103378, 2023. DOI: 10.1016/j.cose.2023.103378
-
-[10] 朝村一郎, 森達哉, "機械学習とAIエージェントを組み合わせたハイブリッド型フィッシングサイト検出システムの開発と評価," CSS2025, 2025.
-
-[11] Y. Li, C. Huang, S. Deng, M. L. Lock, T. Cao, N. Oo, H. W. Lim, and B. Hooi, "KnowPhish: Large language models meet multimodal knowledge graphs for enhancing reference-based phishing detection," in *Proc. 33rd USENIX Security Symposium*, pp. 793–810, 2024. ISBN: 978-1-939133-44-1
-
-[12] B. Lim, R. Huerta, A. Sotelo, A. Quintela, and P. Kumar, "EXPLICATE: Enhancing phishing detection through explainable AI and LLM-powered interpretability," arXiv:2503.20796, 2025.
+[9] T. Kehkashan, M. Abdelhaq, A. S. Al-Shamayleh, N. Huda, I. A. Yaseen, A. I. A. Ahmed, and A. Akhunzada, "Explainable phishing website detection for secure and sustainable cyber infrastructure," *Scientific Reports*, vol. 15, article 41751, 2025. DOI: 10.1038/s41598-025-27984-w
