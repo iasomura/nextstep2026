@@ -228,7 +228,7 @@ class RuleResult:
 | `low_signal_phishing` | 低シグナルフィッシング検出 |
 | `dv_suspicious_combo` | DV証明書 + 疑わしい組み合わせ |
 
-### ML Guard (4個) - `ml_guard.py` [2026-01-27追加]
+### ML Guard (5個) - `ml_guard.py` [2026-01-27追加, 01-31拡張]
 
 | ルール名 | 説明 | 効果 |
 |---------|------|------|
@@ -236,6 +236,7 @@ class RuleResult:
 | `high_ml_override` | ML >= 0.40 + (random or dangerous_tld) → phishing | force_phishing |
 | `ultra_low_ml_block` | ML < 0.05 + no brand + no dangerous TLD → benign | force_benign |
 | `post_llm_flip_gate` | 低ML + LLM phishing判定 → ブロック (TLD別閾値) | force_benign |
+| `high_ml_ctx_rescue` | ML >= 0.35 + ctx >= 0.40 + benign判定 → FN救済 | force_phishing |
 
 ### Cert Gate (4個) - `cert_gate.py` [2026-01-27追加]
 
@@ -519,7 +520,7 @@ print(f"Reasoning: {result.reasoning}")
 
 | ファイル | 内容 |
 |----------|------|
-| `detectors/ml_guard.py` | ML閾値ベースのガード (4ルール) |
+| `detectors/ml_guard.py` | ML閾値ベースのガード (5ルール) |
 | `detectors/cert_gate.py` | 証明書品質によるBENIGN保護 (4ルール) |
 | `detectors/low_signal_gate.py` | 低シグナルフィッシング検出 (4ルール) |
 | `detectors/policy.py` | 複合条件ポリシー (6ルール) |

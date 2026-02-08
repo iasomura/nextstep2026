@@ -53,25 +53,20 @@ paper/
 
 ---
 
-## specs/ - 仕様書
+## specs/ - 仕様書 (9アクティブ + 7アーカイブ)
 
 | ファイル | 内容 |
 |---------|------|
-| `stage3_ai_agent_spec.md` | AI Agent仕様 |
-| `parallel_evaluation_spec.md` | 並列評価仕様 |
-| `rules_modularization_spec.md` | ルールモジュール化仕様 |
-| `stage1_stage2_feature_spec.md` | Stage1/2特徴量仕様 |
-| `stage2_certificate_rules_spec.md` | 証明書ルール仕様 |
-| `stage3_certificate_enhancement_spec.md` | 証明書強化仕様 |
-| `low_signal_phishing_detection_spec.md` | 低シグナル検出仕様 |
-| `evaluate_e2e_spec.md` | E2E評価仕様 |
+| `system_specification.md` | **システム全体仕様（概要）** |
+| `stage3_ai_agent_spec.md` | Stage3 AI Agent仕様 |
+| `rules_modularization_spec.md` | ルールモジュール化仕様 (26ルール) |
+| `parallel_evaluation_spec.md` | 3GPU並列評価仕様 |
+| `evaluate_e2e_spec.md` | E2E評価スクリプト仕様 |
 | `pipeline_execution_order.md` | パイプライン実行順序 |
-| `vt_batch_investigation_spec.md` | VirusTotal調査仕様 |
 | `data_specification_v1.md` | データ仕様v1 |
-| `data_specification_draft.md` | データ仕様ドラフト |
-| `system_specification.md` | システム仕様 |
-| `02_spec.md` | 初期仕様 |
-| `98_notebooks_specification.md` | ノートブック仕様 |
+| `llm_domain_features_spec.md` | LLMドメイン特徴量仕様 (frozen) |
+| `vt_batch_investigation_spec.md` | VirusTotal調査仕様 |
+| `archived/` | 役目を終えた仕様7件（初期設計・superseded） |
 
 ---
 
