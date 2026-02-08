@@ -323,7 +323,7 @@ all_rules = (
     create_low_signal_gate_rules() +
     create_policy_rules()
 )
-print(f"Total rules: {len(all_rules)}")  # 26
+print(f"Total rules: {len(all_rules)}")  # 27 (7ファクトリ分)
 ```
 
 ### 個別ルールの使用

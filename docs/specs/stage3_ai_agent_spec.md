@@ -102,7 +102,7 @@ class PhishingAssessment(BaseModel):
 |-----------|-----|
 | モデル | Qwen3-4B-Thinking-2507-GPTQ-Int8 |
 | サーバ | vLLM (localhost:8000) |
-| 最大トークン | 8192 (max_model_len) |
+| 最大トークン | 4096 (max_model_len; vllm.sh/parallel_config.yaml準拠) |
 | 同時リクエスト | 8 (max_num_seqs) |
 | GPU利用率 | 0.5 (gpu_memory_utilization) |
 
@@ -444,14 +444,16 @@ langgraph_module.py
 └── llm_final_decision.py  (Phase6: ポリシーエンジン)
 ```
 
-## 10. 性能指標 (128,002ドメイン評価)
+## 10. 性能指標 (127,222ドメイン評価)
 
-| 指標 | Stage3単体 | パイプライン全体 |
+| 指標 | Stage3単体 (n=11,952) | パイプライン全体 (n=127,222) |
 |------|-----------|----------------|
-| Precision | 91.6% | 99.68% |
-| Recall | 60.0% | 97.08% |
-| F1 Score | 72.5% | 98.36% |
-| 処理速度 | ~8.5件/分/GPU | — |
+| Precision | 76.11% | 99.16% |
+| Recall | 68.92% | 98.18% |
+| F1 Score | 72.33% | 98.67% |
+| 処理速度 | ~10件/分/GPU | — |
+
+<!-- 変更履歴: 2026-02-08 性能値を最新評価結果(127,222ドメイン)に更新 -->
 
 ---
 
