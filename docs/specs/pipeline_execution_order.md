@@ -1,6 +1,6 @@
 # パイプライン実行順序
 
-**更新日**: 2026-02-08
+**更新日**: 2026-01-24
 
 ## 概要
 
@@ -18,7 +18,7 @@
 | 6 | `04-1_config_and_data_preparation.ipynb` | papermill | 統計分析準備 | ~2秒 |
 | 7 | `04-2_statistical_analysis_COMPAT_PATCHED_v2_skip_smoke_and_fix_known_domains.ipynb` | papermill | 統計分析 | ~3秒 |
 | 8 | `04-3_llm_tools_setup.ipynb` | papermill | LLMツール設定 | ~8秒 |
-| 9 | `bash scripts/run_eval_3gpu.sh ALL` | bash | AI Agent全件評価 (3GPU並列) | **~6時間 (3GPU)** |
+| 9 | `scripts/evaluate_e2e_parallel.py` | python | AI Agent全件評価 (並列) | **~17時間 (2GPU)** |
 
 ## 自動実行スクリプト
 
@@ -69,45 +69,48 @@ curl -s http://localhost:8000/v1/models
 | エラーで中断した場合 | 問題解決に時間がかかるなら停止 |
 | アイドル10分以上 | 停止 |
 
-## Stage3 評価
+## Stage3 評価 (並列版)
 
-### 必須スクリプト
-
-**重要**: Stage3評価は必ず以下のラッパースクリプトを使用すること。
-`python scripts/evaluate_e2e_parallel.py` の直接実行は禁止。
+### 基本使用法
 
 ```bash
-# 全件評価（3GPU並列、必須）
-bash scripts/run_eval_3gpu.sh ALL
+# GPU 0のみ (デフォルト)
+python scripts/evaluate_e2e_parallel.py -y
 
-# 件数指定
-bash scripts/run_eval_3gpu.sh 3000
+# GPU 0 + 1 で並列 (推奨)
+python scripts/evaluate_e2e_parallel.py --add-gpu 1 -y
 
-# 中断から再開
-bash scripts/run_eval_3gpu.sh ALL --resume
+# 3GPU並列
+python scripts/evaluate_e2e_parallel.py --add-gpu 1,2 -y
+
+# テスト (100件)
+python scripts/evaluate_e2e_parallel.py --add-gpu 1 --n-sample 100 -y
+
+# 中断後の再開
+python scripts/evaluate_e2e_parallel.py --add-gpu 1 --resume -y
+
+# GPU確認
+python scripts/evaluate_e2e_parallel.py --check-gpus
 ```
 
-スクリプトの機能:
-- RUN_IDの自動取得（`artifacts/_current/run_id.txt`）
-- vLLM自動起動（Port 8000/8001/8002）
-- SSHトンネル自動作成（Port 8002用）
-- 3GPU並列評価実行
-- 失敗ドメインの自動リトライ
+### バックグラウンド実行
 
-### GPUポート構成
+```bash
+# バッファリング防止 + バックグラウンド
+PYTHONUNBUFFERED=1 nohup python scripts/evaluate_e2e_parallel.py \
+  --add-gpu 1 -y > artifacts/{RUN_ID}/logs/parallel_all.log 2>&1 &
 
-| ポート | 場所 | 管理 |
-|-------|------|------|
-| 8000 | ローカル GPU 0 | 自動起動/停止 |
-| 8001 | 外部サーバ (RTX 3080) | 常時起動（ユーザー管理） |
-| 8002 | リモート 192.168.100.70 (RTX 4000 Ada) | SSHトンネル経由 |
+# 進捗確認
+tail -f artifacts/{RUN_ID}/logs/parallel_all.log
+```
 
 ### 処理時間目安
 
-| GPU数 | 11,952ドメイン | スループット |
+| GPU数 | 17,434ドメイン | スループット |
 |-------|---------------|-------------|
-| 1 GPU | ~20時間 | ~10 domains/min |
-| 3 GPU | ~6時間 | ~30 domains/min |
+| 1 GPU | ~33時間 | ~8.5 domains/min |
+| 2 GPU | ~17時間 | ~17 domains/min |
+| 3 GPU | ~11時間 | ~25 domains/min |
 
 ## 出力ファイル
 

@@ -1,6 +1,6 @@
 # docs/ ディレクトリ構成
 
-更新日: 2026-02-08
+更新日: 2026-02-07
 
 ## フォルダ構成
 
@@ -19,54 +19,51 @@ docs/
 
 ---
 
-## paper/ - 論文執筆関連
+## paper/ - 論文執筆関連 (NEW)
 
 ```
 paper/
 ├── paper_outline.md          論文骨子（検証済み数値リファレンス付き）
-├── number_source_map.md      数値出典対応表
-├── STYLE_GUIDE.md            スタイルガイド
-├── data/                     論文用データ出力先
-│   ├── tables/               表データ (CSV)
-│   └── statistics/           統計メトリクス (JSON)
-├── images/                   生成済み図 (5 PNG + FIGURE_MAP.md)
-│   └── _unused/              旧版・不使用図
-├── mori/                     森先生の参考文献PDF (journals/, conferences/)
-├── notes/                    作業メモ
-│   ├── READING_NOTES_for_outline_update.md  森研論文の読書メモ
-│   └── review_notes.md                     レビュー指摘事項と対応状況
-├── prompts/                  AI用プロンプト
-│   ├── mori_professor_prompt.md             森教授ペルソナプロンプト
-│   └── prompt_for_external_ai.md            外部AIレビュー用プロンプト
-└── tasks/                    タスク管理
-    ├── TODO.md                              未着手作業リスト
-    ├── TODO_execution_prompts.md            実行プロンプト集
-    ├── 20260207-DONE.md                     完了タスクログ
-    └── 20260207-DONE_prompts.md             完了プロンプトログ
+├── review_notes.md           森先生レビュー指摘事項と対応状況
+├── TODO.md                   未着手作業リスト（実験・判断待ち事項）
+├── mori_professor_prompt.md  森教授ペルソナプロンプト（AI指導用）
+├── prompt_for_external_ai.md 外部AIレビュー用プロンプト
+├── images/                   生成済み図 (7 PNG)
+├── mori/                     参考文献PDF (journals/, conferences/)
+└── data/                     論文用データ出力先
+    ├── tables/               表データ (CSV)
+    ├── figures/              図の元データ (CSV)
+    └── statistics/           統計メトリクス (JSON)
 ```
 
 | ファイル | 内容 |
 |---------|------|
 | `paper_outline.md` | **論文骨子（メイン）** RQ2つ、評価章との1対1対応、検証済み数値リファレンス |
-| `number_source_map.md` | 全主要数値の出典（CSV/JSON）対応表 |
-| `STYLE_GUIDE.md` | 論文記述のスタイルガイド |
+| `review_notes.md` | 森先生レビュー指摘10件の追跡（7件反映済み、3件要相談） |
+| `TODO.md` | 保留事項3件 + 追加実験3件の作業リスト |
+| `mori_professor_prompt.md` | 森研論文9本から抽出した指導方針・論文パターン |
 
 ---
 
-## specs/ - 仕様書 (9アクティブ + 7アーカイブ)
+## specs/ - 仕様書
 
 | ファイル | 内容 |
 |---------|------|
-| `system_specification.md` | **システム全体仕様（概要）** |
-| `stage3_ai_agent_spec.md` | Stage3 AI Agent仕様 |
-| `rules_modularization_spec.md` | ルールモジュール化仕様 (26ルール) |
-| `parallel_evaluation_spec.md` | 3GPU並列評価仕様 |
-| `evaluate_e2e_spec.md` | E2E評価スクリプト仕様 |
+| `stage3_ai_agent_spec.md` | AI Agent仕様 |
+| `parallel_evaluation_spec.md` | 並列評価仕様 |
+| `rules_modularization_spec.md` | ルールモジュール化仕様 |
+| `stage1_stage2_feature_spec.md` | Stage1/2特徴量仕様 |
+| `stage2_certificate_rules_spec.md` | 証明書ルール仕様 |
+| `stage3_certificate_enhancement_spec.md` | 証明書強化仕様 |
+| `low_signal_phishing_detection_spec.md` | 低シグナル検出仕様 |
+| `evaluate_e2e_spec.md` | E2E評価仕様 |
 | `pipeline_execution_order.md` | パイプライン実行順序 |
-| `data_specification_v1.md` | データ仕様v1 |
-| `llm_domain_features_spec.md` | LLMドメイン特徴量仕様 (frozen) |
 | `vt_batch_investigation_spec.md` | VirusTotal調査仕様 |
-| `archived/` | 役目を終えた仕様7件（初期設計・superseded） |
+| `data_specification_v1.md` | データ仕様v1 |
+| `data_specification_draft.md` | データ仕様ドラフト |
+| `system_specification.md` | システム仕様 |
+| `02_spec.md` | 初期仕様 |
+| `98_notebooks_specification.md` | ノートブック仕様 |
 
 ---
 

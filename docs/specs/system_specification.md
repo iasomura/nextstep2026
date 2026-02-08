@@ -1,7 +1,6 @@
 # フィッシング検知システム仕様概要
 
 作成日: 2026-01-12
-更新日: 2026-02-08
 
 ## 1. システム概要
 
@@ -72,7 +71,7 @@ nextstep/
 
 ### 3.2 特徴量 (`02_stage1_stage2/src/features.py`)
 
-**総特徴量数**: 15（ドメイン） + 27（証明書） = 42
+**総特徴量数**: 42（ドメイン15 + 証明書27）
 
 #### ドメイン特徴量 (15)
 | # | 特徴量名 | 説明 |
@@ -94,6 +93,7 @@ nextstep/
 | 15 | has_www | www有無 |
 
 #### 証明書特徴量 (27)
+<!-- 注: 以下のリストは26項目だが、実際の特徴量抽出では27個が生成される。差分1個は features.py を参照 -->
 | # | 特徴量名 | 説明 |
 |---|----------|------|
 | 1 | cert_validity_days | 証明書有効期間（日） |
@@ -122,154 +122,68 @@ nextstep/
 | 24 | cert_has_ext_key_usage | 拡張キー使用法有無 |
 | 25 | cert_has_policies | ポリシー有無 |
 | 26 | cert_issuer_type | 発行者タイプ |
-| 27 | cert_is_le_r3 | Let's Encrypt R3/E1中間CA発行（フィッシング33% vs 正規0%） |
 
-### 3.3 XGBoost学習手順
-
-#### ハイパーパラメータ（Optuna Trial 25で最適化, `scripts/tune_xgboost.py`）
-
-| パラメータ | 値 | 探索範囲 |
-|-----------|-----|---------|
-| n_estimators | 500 | 100-1000 |
-| max_depth | 10 | 3-10 |
-| learning_rate | 0.206 | 0.01-0.3 (log) |
-| min_child_weight | 6 | 1-10 |
-| subsample | 0.77 | 0.6-1.0 |
-| colsample_bytree | 0.70 | 0.6-1.0 |
-| gamma | 2.38 | 0-5 |
-| reg_alpha | 0.11 | 1e-8 to 10 (log) |
-| reg_lambda | 2.37 | 1e-8 to 10 (log) |
-| early_stopping_rounds | 50 | − |
-| eval_metric | logloss | − |
-| tree_method | hist (CUDA) | − |
-
-#### 学習・分割
-
-- **データ分割**: 80/20 stratified split (`random_state=42`)
-- **前処理**: StandardScaler正規化
-- **早期停止**: 訓練データの10%をバリデーションに使用
-- **scale_pos_weight**: 不使用（50:50バランスデータのため不要）
-- **チューニング**: 5-fold StratifiedKFold（Optunaスクリプト内のみ）
-
-### 3.4 閾値設計（Wilson score confidence interval）
-
-**目的**: 自動判定の誤り率を統計的に保証する閾値を自動選択。
-
+### 3.3 閾値設計
 ```python
-# xgb_risk_max_auto_benign  = 0.001  # auto-benign区間の最大FNR
-# xgb_risk_max_auto_phish   = 0.0002 # auto-phishing区間の最大FPR
-# xgb_risk_alpha             = 0.05   # Wilson信頼水準
-# xgb_min_auto_samples       = 200    # 最小サンプル数
-```
-
-**アルゴリズム**:
-1. **t_low**: バリデーション集合（テストの40%）の予測値を昇順に走査。Wilson上界FNR ≤ 0.001 かつ n ≥ 200 を満たす最大の閾値を選択
-2. **t_high**: 降順に走査。Wilson上界FPR ≤ 0.0002 かつ n ≥ 200 を満たす最小の閾値を選択
-
-**結果**:
-```
-t_low  = 0.001  → auto_benign:  8,464件 (6.7%)
-t_high = 0.957  → auto_phishing: 60,767件 (47.8%)
-handoff:         57,991件 (45.6%)
+theta_low = 0.001   # AUTO_BENIGN閾値
+theta_high = 0.957  # AUTO_PHISH閾値
 ```
 
 ## 4. Stage2: ロジスティック回帰 + 証明書ルール
 
 ### 4.1 概要
-- **目的**: Stage1のDEFERをさらにフィルタリングし、Stage3投入を最小化
-- **入力**: Stage1 DEFER集合 (57,991件; テスト127,222件中45.6%)
+- **目的**: Stage1のDEFERをさらにフィルタリング
+- **入力**: Stage1 DEFER集合 (57,991件)
 - **出力**: handoff_to_agent / drop_to_auto
 - **実装**: `02_main.py` 内の `run_stage2_gate()` 関数
 
-### 4.2 LR誤り確率推定
+### 4.2 Stage2の処理内容
 
-LRモデルは**Stage1の誤り確率 (p_error)** を予測するメタ学習器:
+Stage2は以下のシナリオを組み合わせてフィルタリングを行う：
 
-- **学習目標**: `err = (stage1_pred != y_true)` — Stage1が間違えたかどうか
-- **特徴量**: 42基本特徴量 + 2派生特徴量 = **44特徴量**
-  - `entropy`: `-(p*log(p) + (1-p)*log(1-p))` — p=0.5で最大
-  - `uncertainty`: `1.0 - |p1 - 0.5| * 2.0` — p=0.5で1.0、端で0.0
-- **学習**: 5-fold StratifiedKFold OOF、`LogisticRegression(max_iter=1000, class_weight='balanced')`
-- **推論**: `p_error = lr.predict_proba(X)[:, 1]` — 高いほどStage1が間違えている可能性が高い
+| シナリオ | 内容 | 効果 |
+|----------|------|------|
+| Scenario 5 | Safe BENIGN filter (低p1 + 低p_error) | 自動benign判定 |
+| Scenario 6 | 証明書ルール (CRL/OV/EV/Wildcard) | 自動benign判定 |
+| Scenario 7 | TLD分類 (危険TLD → 証明書ルール無効) | FN削減 |
+| Scenario 8 | 高ML救済 (ML >= 0.50) | Stage3へ強制送信 |
 
-### 4.3 ゲート判定ロジック
+### 4.3 証明書ルール (Scenario 6)
 
-**主要パラメータ**:
+以下のいずれかを満たす場合、Benign（正規）と判定：
 
-| パラメータ | 値 | 意味 |
-|-----------|-----|------|
-| stage2_tau | 0.40 | handoff最低defer_score |
-| stage2_override_tau | 0.30 | p_error救済閾値 |
-| stage2_phi_phish | 0.99 | p1 ≥ 0.99 = 確定phishing |
-| stage2_phi_benign | 0.01 | p1 ≤ 0.01 = 確定benign |
-
-**判定フロー**:
-
-```
-入力: p1 (Stage1予測確率), p_error (LR誤り確率), 証明書特徴量
-
-1. clear判定: p1 >= 0.99 or p1 <= 0.01 → Stage1の判定を確定
-2. override: p_error >= 0.30 → Stage3へ強制送信（Stage1が間違えている可能性が高い）
-3. gray: defer_score >= 0.40 → Stage3へ送信
-
-4. Scenario 5: Safe BENIGN — p1 < 0.15 かつ defer_score < 0.40 → auto benign
-   ※危険TLDは除外、中立TLDはp1 < 0.03を要求
-
-5. Scenario 6: 証明書ハードゲート（4 safe-benign + 2 safe-phishing ルール）
-
-6. Scenario 8: 高ML救済 — p1 >= 0.50 かつ cert_benignでない → Stage3へ
-
-最終判定: auto_decided = safe_benign | safe_phishing
-          picked = (override | gray | high_ml_rescue) & ~auto_decided
-```
-
-### 4.4 証明書ハードゲート（Scenario 6）
-
-**Safe-BENIGNルール**（Stage3をスキップ、benign確定）:
-
-| ルール | 条件 | 効果 |
-|--------|------|------|
-| CRL | has_crl AND p1 < 0.30 | benign確定 |
-| OV/EV | has_org AND p1 < 0.50 | benign確定 |
-| Wildcard | is_wildcard AND NOT dangerous_tld | benign確定 |
-| Long Validity | validity_days > 180 AND p1 < 0.25 | benign確定 |
-
-**Safe-PHISHINGルール**（Stage3をスキップ、phishing確定）:
-
-| ルール | 条件 | 効果 |
-|--------|------|------|
-| Tier1 TLD + LE | TLD ∈ {gq,ga,ci,cfd,tk} AND is_lets_encrypt | phishing確定 |
-| Dynamic DNS + 高SAN | Dynamic DNS suffix AND san_count >= 20 | phishing確定 |
-
-**TLDフィルタリング（Scenario 7）**: 危険TLD (42種) では safe-benign ルールを無効化（Stage3へ送る）。
+| ルール | 条件 | 識別力 |
+|--------|------|--------|
+| CRL | cert_has_crl_dp = True | 83.5% |
+| OV/EV | cert_subject_has_org = True | 5.9% |
+| Wildcard | cert_is_wildcard = True | 11.0% |
+| Long Validity | cert_validity_days > 180 | 19.4% |
 
 ### 4.4 フィルタリング実績
 
 | 指標 | 値 |
 |------|-----|
-| Stage1 handoff | 57,991件 (45.6%) |
-| cert gate safe化 | +12,992件 |
-| 高ML救済 override | 1,718件 |
-| Stage2 drop_to_auto | 46,039件 (36.2%) |
-| **Stage3投入** | **11,952件 (9.4%)** |
+| Stage1 DEFER | 57,991件 |
+| Stage2 通過 (handoff) | 11,952件 |
+| **削減率** | **79.4%** |
 
-### 4.5 設計の変遷
+### 4.5 将来実装 (Stage2 v2)
 
-Stage2は当初LRベースの誤り確率推定のみだったが、以下の改善を統合：
+新設計のStage2実装が `future/stage2_v2/` に格納されています。
+現時点では未統合ですが、以下の改善を目指しています：
 
-- Wilson score confidence intervalによる統計的閾値選択（t_high/t_low）
-- 証明書ハードゲート（CRL/OV・EV/Wildcard/長期有効）
-- TLD分類による証明書ルール無効化（危険TLD → ゲート適用除外）
-- 高ML救済（ML ≥ 0.50 → Stage3へ強制送信）
+- LR → XGBoost への変更
+- p_error (誤り確率) → p2 (フィッシング確率) への変更
+- Wilson boundによる統計的閾値選択
+
+詳細は `future/stage2_v2/README.md` を参照。
 
 ## 5. Stage3: AI Agent (LangGraph)
 
 ### 5.1 概要
 - **目的**: Stage2のDEFER2に対してLLMベースの最終判定
 - **フレームワーク**: LangGraph (状態機械)
-- **LLM**: vLLM (JunHowie/Qwen3-4B-Thinking-2507-GPTQ-Int8)
-- **ルール**: 27ルールモジュール (`phishing_agent/rules/detectors/`)
-- **評価**: 3GPU並列 (`bash scripts/run_eval_3gpu.sh`)
+- **LLM**: vLLM (Qwen3-4B-Thinking GPTQ-Int8)
 
 ### 5.2 アーキテクチャ (`phishing_agent/langgraph_module.py`)
 
@@ -337,12 +251,12 @@ END
     ↓ (handoff/04-2_statistical_analysis.pkl)
 04-3_llm_tools_setup.ipynb
     ↓ (handoff/04-3_llm_tools_setup_with_tools.pkl)
-┌──────────────────────────────────────────────┐
-│  Stage3 評価 (スクリプトベース)                │
-│    bash scripts/run_eval_3gpu.sh [件数]       │
-│    → 3GPU並列 (Port 8000/8001/8002)          │
-│    → チェックポイント・リトライ自動化          │
-└──────────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│  98-*.ipynb (AI Agent実行 - 目的に応じて選択) │
+│    - 98-20251221-3 (開発・デバッグ)         │
+│    - 98-randomN_for_paper_v6 (論文用評価)   │
+│    - 98-stage2-handoff-validation (検証)    │
+└─────────────────────────────────────────────┘
     ↓ (評価結果CSV, results/)
 ```
 
@@ -357,46 +271,20 @@ END
 | Part3 | 03_ai_agent_analysis_part3.pkl | DANGEROUS_TLDS, LEGITIMATE_TLDS |
 | 04-1 | 04-1_config_and_data_preparation.pkl | cfg, DB_CONFIG, RUN_ID |
 
-## 7. データ収集・構築パイプライン
+## 7. データソース
 
-### 7.1 データソース
+### 7.1 PostgreSQLテーブル
 
-| ソース | テーブル | 生レコード | 証明書あり (SUCCESS) | 収集期間 |
-|--------|---------|-----------|---------------------|---------|
-| PhishTank | phishtank_entries | 94,295 | 52,805 | 2011-2025 (verified) |
-| JPCERT/CC | jpcert_phishing_urls | 222,984 | 115,620 | 2019-01 〜 2025-03 |
-| JPCERT→証明書 | certificates | 532,117 | 196,083 | 2025-03 〜 2025-08 |
-| Tranco (正規) | trusted_certificates | 554,801 | 450,545 | 2025-04 〜 2025-07 |
+| テーブル | 内容 | レコード数 |
+|----------|------|------------|
+| phishtank_entries | PhishTankフィッシングURL | ~54,000 |
+| jpcert_phishing_urls | JPCERTフィッシングURL | ~116,000 |
+| certificates | フィッシング証明書 | ~196,000 |
+| trusted_certificates | 正規サイト証明書 | ~450,000 |
 
-### 7.2 証明書取得
-
-- **ソース**: crt.sh（Certificate Transparency Log）
-- **保存形式**: DER形式 X.509バイナリ (`cert_data bytea`)
-- **ステータス**: SUCCESS / NOT_FOUND / DOWNLOAD_ERROR / UNKNOWN_ERROR / SEARCH_ERROR
-- **使用条件**: ステータス=SUCCESS かつ cert_data NOT NULL のみ
-
-### 7.3 データ構築フロー (`01_data_preparation_*.ipynb`)
-
-```
-1. PostgreSQLから取得: フィッシング 365,351件 + 正規 450,545件
-
-2. ソース間重複排除（優先: phishtank > jpcert > certificates）:
-   phishtank: 53,327 → 17,140
-   jpcert:   115,866 → 111,755
-   certificates: 196,158 → 190,075
-   → フィッシング合計: 318,970件
-
-3. クラス間重複除去: 243ドメインが両方に存在 → フィッシングから除去
-
-4. バランシング: 少数クラスに合わせてダウンサンプル（50:50）
-   → 318,727件 × 2 = 637,454件
-
-5. 学習/テスト分割: 80/20 stratified (random_state=42)
-   → 学習: ~510,000件 / テスト: ~127,000件
-
-6. 証明書パース不能レコードを除外
-   → テスト: 127,222件（最終）
-```
+### 7.2 prepared_data.pkl
+- フィッシング: ~320,000 ドメイン
+- 正規サイト: ~320,000 ドメイン（バランス調整後）
 
 ## 8. 設定ファイル (`_compat/config.json`)
 
@@ -416,7 +304,7 @@ END
     "enabled": true,
     "provider": "vllm",
     "base_url": "http://localhost:8000/v1",
-    "model": "JunHowie/Qwen3-4B-Thinking-2507-GPTQ-Int8"
+    "model": "Qwen/Qwen3-14B-FP8"
   },
   "tld_analysis": {
     "enabled": true,
@@ -477,16 +365,11 @@ ARTIFACTS = f"artifacts/{RUN_ID}/"
 - `train_stage2_xgb(X2_train, y_train)` → XGBClassifier
 - `Stage2Thresholds` データクラス
 
-## 12. システム性能（最新評価）
+## 12. 改善課題
 
-| 項目 | 値 |
-|------|-----|
-| テストデータ | 127,222件（balanced） |
-| System F1 | 98.67% |
-| Precision | 99.16% |
-| Recall | 98.18% |
-| 自動判定率 | 90.6% |
-| Stage3投入率 | 9.4% (11,952件) |
+1. **Stage2過学習対策**: 証明書ルールの閾値を独立データで再調整
+2. **TLD分析強化**: 危険TLDリストの定期更新機構
+3. **LLM最適化**: プロンプトチューニング、モデル選定
 
 ---
 
@@ -507,7 +390,7 @@ ARTIFACTS = f"artifacts/{RUN_ID}/"
 | 98-randomN_for_paper_v6_*.ipynb | AI Agent論文用フル評価 |
 | 98-stage2-handoff-validation_*.ipynb | Stage2 Gate+E2E評価 |
 
-**注**: 98-*.ipynbは `scripts/evaluate_e2e_parallel.py` に置き換え済み（`bash scripts/run_eval_3gpu.sh` で実行）
+**注**: 98-*.ipynbの詳細は [98_notebooks_specification.md](98_notebooks_specification.md) を参照
 
 ### Python Modules (*.py)
 | ファイル | 目的 |
@@ -520,8 +403,6 @@ ARTIFACTS = f"artifacts/{RUN_ID}/"
 | phishing_agent/precheck_module.py | 事前チェック |
 | phishing_agent/tools_module.py | ツール定義 |
 | phishing_agent/llm_final_decision.py | LLM最終判定 |
-| phishing_agent/rules/detectors/ | ルールモジュール (27ルール) |
+| phishing_agent/rules/ | ルールエンジン (モジュール化) |
 | phishing_agent/tools/*.py | 分析ツール群 |
-| scripts/evaluate_e2e.py | 単一GPU評価スクリプト |
-| scripts/evaluate_e2e_parallel.py | 3GPU並列評価スクリプト |
-| scripts/run_eval_3gpu.sh | 評価実行ラッパー（必須） |
+| future/stage2_v2/ | 将来実装予定のStage2 v2 |

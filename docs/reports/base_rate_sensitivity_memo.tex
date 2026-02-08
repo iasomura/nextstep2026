@@ -40,20 +40,20 @@ F_1(p) = \frac{2 \cdot PPV(p) \cdot TPR}{PPV(p) + TPR}.
 \end{itemize}
 
 \paragraph{Base-rate table (correct ratio direction).}
-Using the full-cascade rates from Table~X (e.g., $TPR=0.9818$, $FPR=0.0084$), we obtain the following projections.
+Using the full-cascade rates from Table~X (e.g., $TPR=0.9818$, $FPR=0.00836$), we obtain the following projections.
 \textbf{Note:} the ratio is written as \textbf{Benign:Phish} (e.g., 10:1 means 10 benign per 1 phishing).
 \begin{center}
 \begin{tabular}{rccc}
 \hline
 Benign:Phish & $PPV$ (Precision) & $TPR$ (Recall) & $F_1$ \\
 \hline
-1:1    & 99.15\% & 98.18\% & 98.66\% \\
-5:1    & 95.90\% & 98.18\% & 97.03\% \\
-10:1   & 92.12\% & 98.18\% & 95.05\% \\
-20:1   & 85.39\% & 98.18\% & 91.34\% \\
-50:1   & 70.04\% & 98.18\% & 81.76\% \\
-100:1  & 53.89\% & 98.18\% & 69.59\% \\
-1000:1 & 10.46\% & 98.18\% & 18.91\% \\
+1:1    & 99.16\% & 98.18\% & 98.67\% \\
+5:1    & 95.91\% & 98.18\% & 97.03\% \\
+10:1   & 92.15\% & 98.18\% & 95.07\% \\
+20:1   & 85.44\% & 98.18\% & 91.37\% \\
+50:1   & 70.13\% & 98.18\% & 81.82\% \\
+100:1  & 54.00\% & 98.18\% & 69.68\% \\
+1000:1 & 10.51\% & 98.18\% & 19.02\% \\
 \hline
 \end{tabular}
 \end{center}
@@ -65,7 +65,7 @@ FP &\approx FPR \cdot (1-p) \cdot N_{\text{total}}, \\
 TP &\approx TPR \cdot p \cdot N_{\text{total}}.
 \end{align}
 When $p$ is small, $(1-p)\approx 1$ and thus $FP \approx FPR \cdot N_{\text{total}}$ becomes almost independent of the base rate.
-For example, with $FPR=0.0084$ and $N_{\text{total}}=10{,}000$, $FP \approx 84$ per day (and $\approx 42$ per day at $p=0.5$).
+For example, with $FPR=0.00836$ and $N_{\text{total}}=10{,}000$, $FP \approx 84$ per day (and $\approx 42$ per day at $p=0.5$).
 
 \paragraph{Reverse requirement (stronger, recommended).}
 We can also \emph{invert} Eq.~\eqref{eq:ppv_prior_shift} to estimate the minimum base rate required to achieve a target precision $PPV^\star$:
@@ -74,7 +74,7 @@ p \ge
 \frac{PPV^\star \cdot FPR}{TPR \cdot (1-PPV^\star) + PPV^\star \cdot FPR}.
 \label{eq:prior_threshold_for_ppv}
 \end{equation}
-With $TPR=0.9818$ and $FPR=0.0084$, achieving $PPV^\star=0.90$ requires $p \gtrsim 0.0715$ (i.e., Benign:Phish $\lesssim 13:1$),
+With $TPR=0.9818$ and $FPR=0.00836$, achieving $PPV^\star=0.90$ requires $p \gtrsim 0.0712$ (i.e., Benign:Phish $\lesssim 13:1$),
 and $PPV^\star=0.95$ requires $p \gtrsim 0.139$ (Benign:Phish $\lesssim 6:1$).
 This provides a quantitative rationale for \textbf{candidate-generation (Stage~0)}: pre-filtering must raise the effective base rate to a range
 where high-precision operation is feasible.
@@ -85,7 +85,7 @@ We can also solve Eq.~\eqref{eq:ppv_prior_shift} for $FPR$ to obtain the maximum
 FPR \le \frac{TPR \cdot p \cdot (1-PPV^\star)}{PPV^\star \cdot (1-p)}.
 \label{eq:fpr_threshold_for_ppv}
 \end{equation}
-With $TPR=0.9818$ and $PPV^\star=0.90$:
+With $TPR=0.9818$ and $PPV^\star=0.90$ (using system $FPR=0.00836$):
 \begin{center}
 \begin{tabular}{rcl}
 \hline
@@ -97,7 +97,7 @@ Base rate $p$ & Benign:Phish & Required $FPR$ \\
 \hline
 \end{tabular}
 \end{center}
-Our system's $FPR=0.84\%$ is adequate under balanced evaluation but exceeds the required level by an order of magnitude at CT-log scale.
+Our system's $FPR=0.836\%$ is adequate under balanced evaluation but exceeds the required level by an order of magnitude at CT-log scale.
 This is not a weakness specific to our method---it is a structural constraint for \emph{any} detector with finite $FPR$ (base-rate fallacy).
 
 \paragraph{Implication for CT-log-scale monitoring.}

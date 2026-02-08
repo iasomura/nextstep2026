@@ -2,20 +2,20 @@
 
 **報告日**: 2026年2月
 **前回打ち合わせ**: 2025年12月25日
-**対象論文**: CSS論文「3段カスケード型フィッシング検出における投入制御とルール統合の効果分析」
+**対象論文**: 「3段カスケード型フィッシング検出における投入制御とルール統合の効果分析」
 
 ---
 
 ## 1. 本報告の位置づけ
 
-2025年12月25日の打ち合わせで合意した「確信度駆動の二層連携設計」を**3段カスケードとして実装・評価**し、CSS論文としてまとめる段階にある。本報告では、評価結果と論文の構成・主張を報告する。
+2025年12月25日の打ち合わせで合意した「確信度駆動の二層連携設計」を**3段カスケードとして実装・評価**し、論文としてまとめる段階にある。本報告では、評価結果と論文の構成・主張を報告する。
 
 ### 前回打ち合わせでの合意事項と対応状況
 
 | # | 合意事項 | 対応状況 |
 |---|---------|---------|
 | 1 | グレー判定を許容する設計 | ✅ Stage1の三値ルーティング（auto_phishing / auto_benign / handoff）として実装 |
-| 2 | 高確信度誤判定の削減 | ✅ Stage2の証明書ゲート + LR誤り確率推定で対応 |
+| 2 | 高確信度誤判定の削減 | ✅ Stage2の証明書ゲート + LR誤り確率推定で対応。SHAP分析により特徴量重要度を可視化（付録C） |
 | 3 | XGBoostに固執しない | ✅ LightGBM/RandomForestとの比較を実施（F1差0.08pt以内、付録表A） |
 | 4 | 実分布（正規多数）での評価 | ✅ prior shift analysis で比率別Precisionを推定（§5.2 表8） |
 | 5 | LLM支援環境の整備 | ✅ Claude Code導入、3GPU並列評価基盤構築 |
@@ -179,7 +179,7 @@ $$FPR \leq \frac{TPR \cdot p \cdot (1-PPV^*)}{PPV^* \cdot (1-p)}$$
 
 ## 5. 論文の構成と進捗
 
-### 5.1 論文構成（CSS 8ページ）
+### 5.1 論文構成（8ページ目安）
 
 | セクション | ページ | 状態 |
 |----------|-------|------|
@@ -242,6 +242,9 @@ $$FPR \leq \frac{TPR \cdot p \cdot (1-PPV^*)}{PPV^* \cdot (1-p)}$$
 | 前回打ち合わせ記録 | `docs/mtg/202512/20251228.txt` |
 | base-rate数学解説 | `docs/reports/base_rate_math_explanation.md` |
 | base-rateメモ(LaTeX) | `docs/reports/base_rate_sensitivity_memo.tex` |
+| SHAP分析レポート | `docs/reports/shap_analysis_report.md` |
+| SHAP重要度図 | `docs/paper/images/shap_global_importance.png` |
+| SHAP Beeswarm図 | `docs/paper/images/shap_beeswarm.png` |
 
 ### B. 用語集
 
@@ -255,3 +258,40 @@ $$FPR \leq \frac{TPR \cdot p \cdot (1-PPV^*)}{PPV^* \cdot (1-p)}$$
 | Auto-decision error | 自動判定された集合における誤分類（401件、0.348%） |
 | Prior shift | クラス比率（事前確率）のみが変化し、特徴量分布は不変という仮定 |
 | Base-rate fallacy | 低頻度イベントの検知でFPRが小さくてもFPが大量に出る現象 |
+
+### C. SHAP特徴量重要度分析（MTG合意事項#2対応）
+
+Stage1 XGBoost（42特徴量）のSHAP TreeExplainerによる特徴量重要度分析。テスト全127,222件で計算。
+
+#### Top-10 特徴量
+
+| 順位 | 特徴量 | 種別 | Mean |SHAP| |
+|------|--------|------|------------|
+| 1 | dot_count | Domain | 2.617 |
+| 2 | domain_length | Domain | 1.797 |
+| 3 | tld_length | Domain | 1.559 |
+| 4 | cert_has_crl_dp | Cert | 1.448 |
+| 5 | cert_validity_days | Cert | 1.427 |
+| 6 | cert_issuer_length | Cert | 1.376 |
+| 7 | max_consonant_length | Domain | 0.989 |
+| 8 | cert_is_le_r3 | Cert | 0.884 |
+| 9 | cert_is_lets_encrypt | Cert | 0.748 |
+| 10 | entropy | Domain | 0.404 |
+
+Top-20内訳: ドメイン特徴量8個、証明書特徴量12個。上位3つはドメイン構造特徴量が占め、4位以降は証明書メタ特徴量が交互に並ぶ。
+
+#### 高確信度誤判定の分析
+
+| 種別 | 件数 | 特徴 |
+|------|------|------|
+| Auto-phishing FP（p₁≥0.957, y=0） | 4件 | dot_count, domain_length が強くphishing方向に押し、cert特徴量のbenign方向補正を上回った |
+| Auto-benign FN（p₁≤0.001, y=1） | 2件 | cert_validity_days, cert_is_lets_encrypt, cert_issuer_length が強くbenign方向。**正規に見える証明書を持つフィッシング**が原因 |
+
+高確信度誤判定は合計6件（127,222件中 0.005%）であり、閾値設計（t_high=0.957, t_low=0.001）が適切に機能していることを示す。
+
+#### Gray zone の特徴
+
+Gray zone（handoff領域）では cert_is_lets_encrypt の重要度が全体比 **1.32倍** に上昇。Let's Encrypt証明書がフィッシング/正規の判別を困難にしている主因であることを示唆する。
+
+図: `docs/paper/images/shap_global_importance.png`, `docs/paper/images/shap_beeswarm.png`
+詳細: `docs/reports/shap_analysis_report.md`
