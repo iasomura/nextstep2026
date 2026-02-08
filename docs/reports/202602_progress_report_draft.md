@@ -57,16 +57,16 @@
 
 #### 高確信度誤判定の結果（6件 / 127,222件中 0.005%）
 
-| ドメイン | 方向 | p₁ | 最終判定 | 根本原因 |
-|---------|------|-----|---------|---------|
-| estyn.gov.wales | FP | 0.963 | auto_phishing確定 | 稀なTLD（.wales）の訓練データ不足 |
-| www.gov.scot | FP | 0.966 | auto_phishing確定 | 稀なTLD（.scot）の訓練データ不足 |
-| lightsystemsoft.com.br | FP | 0.957 | handoff→救済 | LE + 共有ホスティング証明書 |
-| skatepro.com | FP | 0.957 | handoff→救済 | LE + CN不一致（多地域EC） |
-| mebelkomomsk.ru | FN | 0.001 | auto_benign確定 | 正規サイト乗っ取り（GlobalSign CA残存） |
-| fb.st | FN | 0.000 | auto_benign確定 | 正規SaaS基盤悪用 + 超短ドメイン |
+| ドメイン | 方向 | p₁ | 経路 | 最終判定 | 根本原因 |
+|---------|------|-----|------|---------|---------|
+| estyn.gov.wales | FP | 0.963 | auto_phishing | FP確定 | 稀なTLD（.wales）の訓練データ不足 |
+| www.gov.scot | FP | 0.966 | auto_phishing | FP確定 | 稀なTLD（.scot）の訓練データ不足 |
+| lightsystemsoft.com.br | FP | 0.957 | handoff→Stage3 | FP確定 | LE + 共有ホスティング証明書。LLMはbenignと正しく判定したが、very_high_ml_overrideルール（ML≥0.85）が上書き |
+| skatepro.com | FP | 0.957 | handoff→Stage3 | FP確定 | LE + CN不一致。LLMはbenignと正しく判定したが、同ルールが上書き |
+| mebelkomomsk.ru | FN | 0.001 | auto_benign | FN確定 | 正規サイト乗っ取り（GlobalSign CA残存） |
+| fb.st | FN | 0.000 | auto_benign | FN確定 | 正規SaaS基盤悪用 + 超短ドメイン |
 
-6件中4件がauto判定として確定し後段で救済されない。FP 2件は稀な地理TLD、FN 2件は正規インフラの悪用が原因で、証明書・ドメイン特徴量のみでは原理的に検出が困難なケース。
+6件すべてが最終的に誤判定のまま確定している。FP-3, FP-4はStage3に到達しLLMが正しくbenignと判定したが、ML確信度が高い場合にLLMを上書きするガードルール（very_high_ml_override）により最終的にFPとなった。
 
 詳細: [`docs/reports/high_confidence_error_analysis.md`](high_confidence_error_analysis.md)
 
