@@ -55,14 +55,20 @@
 
 **対応**: SHAP TreeExplainerで全127,222件の特徴量重要度を分析し、高確信度誤判定を抽出した。
 
-#### 高確信度誤判定の結果
+#### 高確信度誤判定の結果（6件 / 127,222件中 0.005%）
 
-| 種別 | 件数 | 主な原因 |
-|------|------|---------|
-| Auto-phishing FP（p₁≥0.957, y=0） | 4件 | dot_count, domain_lengthが強くphishing方向に押し、cert特徴量の補正を上回った |
-| Auto-benign FN（p₁≤0.001, y=1） | 2件 | cert_validity_days, cert_is_lets_encryptが強くbenign方向。**正規に見える証明書を持つフィッシング**が原因 |
+| ドメイン | 方向 | p₁ | 最終判定 | 根本原因 |
+|---------|------|-----|---------|---------|
+| estyn.gov.wales | FP | 0.963 | auto_phishing確定 | 稀なTLD（.wales）の訓練データ不足 |
+| www.gov.scot | FP | 0.966 | auto_phishing確定 | 稀なTLD（.scot）の訓練データ不足 |
+| lightsystemsoft.com.br | FP | 0.957 | handoff→救済 | LE + 共有ホスティング証明書 |
+| skatepro.com | FP | 0.957 | handoff→救済 | LE + CN不一致（多地域EC） |
+| mebelkomomsk.ru | FN | 0.001 | auto_benign確定 | 正規サイト乗っ取り（GlobalSign CA残存） |
+| fb.st | FN | 0.000 | auto_benign確定 | 正規SaaS基盤悪用 + 超短ドメイン |
 
-高確信度誤判定は合計**6件**（127,222件中 0.005%）。閾値設計が適切に機能していることを確認した。
+6件中4件がauto判定として確定し後段で救済されない。FP 2件は稀な地理TLD、FN 2件は正規インフラの悪用が原因で、証明書・ドメイン特徴量のみでは原理的に検出が困難なケース。
+
+詳細: [`docs/reports/high_confidence_error_analysis.md`](high_confidence_error_analysis.md)
 
 #### Stage2による二重チェック
 
